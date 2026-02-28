@@ -4,25 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import type { TokenCategory } from "@/lib/design-tokens";
 import { importCssDocument, normalizeTokenDocument, serializeDocumentToCss, updateDocumentToken, type TokenDocument } from "@/features/token-visualizer/document";
-
-const SAMPLE_CSS = `:root {
-  --color-primary-500: #2563eb;
-  --color-surface: #ffffff;
-  --color-text: #101828;
-  --space-1: 0.25rem;
-  --space-4: 1rem;
-  --radius-md: 0.5rem;
-  --shadow-card: 0 8px 24px rgba(16, 24, 40, 0.12);
-  --font-size-body: 1rem;
-  --font-weight-semibold: 600;
-  --size-container-md: 48rem;
-  --motion-fast: 150ms;
-  --z-index-popover: 1200;
-  --opacity-muted: 0.64;
-  --breakpoint-lg: 1024px;
-}`;
-
-const SAMPLE_DOCUMENT = importCssDocument(SAMPLE_CSS);
+import { SAMPLE_CSS, SAMPLE_DOCUMENT } from "@/features/token-visualizer/sample-workspace";
 
 type TokenStoreState = {
   document: TokenDocument;

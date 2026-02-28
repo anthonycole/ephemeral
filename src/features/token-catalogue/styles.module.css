@@ -1,0 +1,282 @@
+.page {
+  min-height: 100vh;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+.frame {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 0.98), rgb(236 242 255 / 0.9)),
+    radial-gradient(circle at top right, rgb(37 99 235 / 0.12), transparent 36%);
+  box-shadow: 0 20px 60px rgb(20 32 51 / 0.08);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -4rem -4rem auto;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(37 99 235 / 0.18), transparent 68%);
+  pointer-events: none;
+}
+
+.eyebrow {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sectionGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.anchorRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.anchor {
+  text-decoration: none;
+}
+
+.sectionCard {
+  scroll-margin-top: 2rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255 255 / 0.82);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 40px rgb(20 32 51 / 0.06);
+}
+
+.tokenGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.875rem;
+}
+
+.tokenCard {
+  height: 100%;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(248 250 252 / 0.94));
+  box-shadow: 0 10px 30px rgb(20 32 51 / 0.05);
+}
+
+.previewWrap {
+  height: 7.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgb(20 32 51 / 0.08);
+  background:
+    linear-gradient(135deg, rgb(248 250 252 / 0.96), rgb(239 246 255 / 0.96)),
+    linear-gradient(90deg, rgb(20 32 51 / 0.03) 1px, transparent 1px),
+    linear-gradient(rgb(20 32 51 / 0.03) 1px, transparent 1px);
+  background-size: auto, 1rem 1rem, 1rem 1rem;
+}
+
+.metaStack {
+  min-width: 0;
+}
+
+.tokenName {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tokenValue {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scopeLabel {
+  color: var(--gray-10);
+}
+
+.swatch {
+  width: min(100%, 10rem);
+  height: 4.5rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+
+.measureTrack {
+  width: min(100%, 11rem);
+  height: 0.875rem;
+  background: rgb(20 32 51 / 0.08);
+}
+
+.measureBar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue-9), var(--cyan-9));
+}
+
+.typePreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8rem;
+  min-height: 4rem;
+  color: var(--gray-12);
+}
+
+.radiusPreview {
+  width: 5.5rem;
+  height: 5.5rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: linear-gradient(135deg, rgb(219 234 254), rgb(255 255 255));
+}
+
+.shadowPreview {
+  width: 6rem;
+  height: 4.5rem;
+  background: rgb(255 255 255 / 0.96);
+  border: 1px solid rgb(20 32 51 / 0.05);
+}
+
+.sizePreview {
+  width: min(100%, 11rem);
+}
+
+.sizeBlock {
+  height: 1rem;
+  background: linear-gradient(90deg, var(--blue-10), var(--cyan-9));
+}
+
+.motionPreview {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.motionOrb {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--blue-9), var(--cyan-8));
+  animation: orbit ease-in-out infinite alternate;
+}
+
+.stackPreview {
+  position: relative;
+  width: 6rem;
+  height: 4.75rem;
+}
+
+.stackLayerBack,
+.stackLayerMid,
+.stackLayerFront {
+  position: absolute;
+  inset: auto;
+  width: 4.5rem;
+  height: 2.5rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+}
+
+.stackLayerBack {
+  top: 1rem;
+  left: 0;
+  background: rgb(191 219 254 / 0.75);
+}
+
+.stackLayerMid {
+  top: 0.5rem;
+  left: 0.65rem;
+  background: rgb(147 197 253 / 0.82);
+}
+
+.stackLayerFront {
+  top: 0;
+  left: 1.3rem;
+  background: rgb(96 165 250 / 0.9);
+}
+
+.opacityPreview {
+  position: relative;
+  width: 6rem;
+  height: 4.5rem;
+}
+
+.opacityBase,
+.opacityOverlay {
+  position: absolute;
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.opacityBase {
+  top: 0.5rem;
+  left: 0.5rem;
+  background: rgb(37 99 235);
+}
+
+.opacityOverlay {
+  top: 0;
+  left: 1.75rem;
+  background: rgb(16 185 129);
+}
+
+.breakpointPreview {
+  width: min(100%, 11rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.breakpointFrame {
+  height: 1rem;
+  background: rgb(20 32 51 / 0.08);
+}
+
+.breakpointFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan-9), var(--blue-9));
+}
+
+.otherPreview {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255 255 / 0.86);
+  color: var(--gray-11);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+@keyframes orbit {
+  from {
+    transform: translateX(-1.8rem) scale(0.9);
+    opacity: 0.55;
+  }
+
+  to {
+    transform: translateX(1.8rem) scale(1.05);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding-inline: 0.875rem;
+  }
+
+  .hero {
+    padding: 1.125rem;
+  }
+
+  .tokenGrid {
+    grid-template-columns: 1fr;
+  }
+}
