@@ -1,4 +1,5 @@
-import { Button, Flex, Heading, Kbd, TextField } from "@radix-ui/themes";
+import Link from "next/link";
+import { Button, Flex, Heading, Kbd } from "@radix-ui/themes";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 export type PersistenceStatus = "loading" | "saving" | "saved" | "error";
@@ -6,8 +7,6 @@ export type PersistenceStatus = "loading" | "saving" | "saved" | "error";
 type WorkspaceHeaderProps = {
   onOpenCommandPalette: () => void;
   persistenceStatus: PersistenceStatus;
-  searchQuery: string;
-  onSearchQueryChange: (value: string) => void;
 };
 
 const persistenceLabels: Record<PersistenceStatus, string> = {
@@ -17,7 +16,7 @@ const persistenceLabels: Record<PersistenceStatus, string> = {
   error: "Save failed"
 };
 
-export function WorkspaceHeader({ onOpenCommandPalette, persistenceStatus, searchQuery, onSearchQueryChange }: WorkspaceHeaderProps) {
+export function WorkspaceHeader({ onOpenCommandPalette, persistenceStatus }: WorkspaceHeaderProps) {
   return (
     <header className={styles.appHeader}>
       <div className={styles.appHeaderGrid}>
@@ -27,16 +26,10 @@ export function WorkspaceHeader({ onOpenCommandPalette, persistenceStatus, searc
           </Heading>
           <span className={styles.appStatus}>{persistenceLabels[persistenceStatus]}</span>
         </Flex>
-        <Flex align="center" justify="center">
-          <TextField.Root
-            id="workspace-search"
-            value={searchQuery}
-            onChange={(event) => onSearchQueryChange(event.target.value)}
-            placeholder="Search tokens"
-            className="w-full min-w-[280px] max-w-[560px] md:min-w-[360px]"
-          />
-        </Flex>
-        <Flex align="center" justify="end" pr="3">
+        <Flex align="center" justify="end" gap="2" pr="3">
+          <Button asChild type="button" variant="soft" color="gray">
+            <Link href="/tokens">Tokens</Link>
+          </Button>
           <Button type="button" variant="soft" color="gray" onClick={onOpenCommandPalette} className={styles.commandTrigger}>
             Command
             <Kbd>⌘/Ctrl K</Kbd>

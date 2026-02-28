@@ -1,4 +1,4 @@
-import { Flex, Grid, Heading, ScrollArea, Text } from "@radix-ui/themes";
+import { Flex, Grid, Heading, ScrollArea, Text, TextField } from "@radix-ui/themes";
 import type { TokenCategory } from "@/lib/design-tokens";
 import { CATEGORY_DEFINITIONS } from "@/features/token-visualizer/config";
 import { CategoryPanel } from "@/features/token-visualizer/components/category-panel";
@@ -11,6 +11,8 @@ type CanvasPaneProps = {
   onActiveCategoryChange: (value: TokenCategory) => void;
   counts: TokenCounts;
   visibleCount: number;
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
   groupedVisibleTokens: TokenGroups;
   onSelectToken: (name: string) => void;
   supportsVirtualizedSingleCategory: boolean;
@@ -21,6 +23,8 @@ export function CanvasPane({
   onActiveCategoryChange,
   counts,
   visibleCount,
+  searchQuery,
+  onSearchQueryChange,
   groupedVisibleTokens,
   onSelectToken,
   supportsVirtualizedSingleCategory
@@ -36,6 +40,14 @@ export function CanvasPane({
             {visibleCount} visible
           </Text>
         </Flex>
+        <TextField.Root
+          id="workspace-search"
+          value={searchQuery}
+          onChange={(event) => onSearchQueryChange(event.target.value)}
+          placeholder="Search tokens"
+          size="3"
+          className={styles.canvasSearchField}
+        />
         <CategoryTabs activeCategory={activeCategory} onActiveCategoryChange={onActiveCategoryChange} counts={counts} />
         {activeCategory === "all" || !supportsVirtualizedSingleCategory ? (
           <ScrollArea type="auto" scrollbars="vertical" className={styles.paneScroll}>

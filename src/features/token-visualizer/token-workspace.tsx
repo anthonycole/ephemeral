@@ -191,7 +191,7 @@ export function TokenWorkspace() {
     {
       id: "focus-search",
       title: "Focus search",
-      subtitle: "Move focus to the header search field",
+      subtitle: "Move focus to the token search field",
       keywords: ["search", "find", "filter"],
       run: () => {
         window.setTimeout(() => {
@@ -242,8 +242,6 @@ export function TokenWorkspace() {
       <WorkspaceHeader
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         persistenceStatus={persistenceStatus}
-        searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
       />
       <Grid className={gridClassName} align="stretch">
         <EditorPane
@@ -259,6 +257,8 @@ export function TokenWorkspace() {
           onActiveCategoryChange={setActiveCategory}
           counts={counts}
           visibleCount={visibleTokens.length}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
           groupedVisibleTokens={groupedVisibleTokens}
           onSelectToken={setSelectedTokenId}
           supportsVirtualizedSingleCategory={supportsVirtualizedSingleCategory}
