@@ -1,0 +1,546 @@
+.workspaceRoot {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.appHeader {
+  border-bottom: 1px solid var(--gray-6);
+  padding: 0.625rem 0 0.75rem;
+}
+
+.appHeaderGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 560px) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.appTitle {
+  padding-left: 0.875rem;
+}
+
+.appStatus {
+  padding-left: 0.875rem;
+  color: var(--gray-10);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.commandTrigger {
+  min-width: 9.75rem;
+  justify-content: space-between;
+}
+
+.commandPaletteContent {
+  width: min(46rem, calc(100vw - 2rem));
+  padding: 0;
+  overflow: hidden;
+}
+
+.commandPaletteSearchRow {
+  padding: 0.875rem;
+}
+
+.commandPaletteInput {
+  width: 100%;
+}
+
+.commandPaletteList {
+  max-height: min(60vh, 34rem);
+}
+
+.commandPaletteGroupLabel {
+  color: var(--gray-10);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.commandPaletteItem {
+  width: 100%;
+  height: auto;
+  justify-content: flex-start;
+  padding: 0.75rem 0.875rem;
+  border-radius: 12px;
+}
+
+.commandPaletteItemActive {
+  background: var(--gray-a3);
+}
+
+.commandPaletteItemBody {
+  width: 100%;
+}
+
+.commandPaletteValue {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commandPaletteEmpty {
+  min-height: 10rem;
+}
+
+.commandPaletteFooter {
+  background: var(--gray-a2);
+}
+
+.workspaceGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.workspaceGridInspectorOpen {
+  grid-template-columns: 1fr;
+}
+
+.shellPane {
+  background: transparent;
+  padding: 0.625rem;
+  min-height: 0;
+}
+
+.leftPane {
+  border-right: 1px solid var(--gray-6);
+}
+
+.centerPane {
+  border-right: 1px solid var(--gray-6);
+}
+
+.paneStack {
+  height: 100%;
+  min-height: 0;
+}
+
+.paneScroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.virtualViewport {
+  overflow: auto;
+  max-height: min(68vh, 52rem);
+  min-height: 20rem;
+  padding-right: 0.5rem;
+}
+
+.virtualInner {
+  position: relative;
+  width: 100%;
+}
+
+.virtualItem {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  padding-bottom: 0.5rem;
+}
+
+.canvasContent {
+  padding: 0.75rem;
+}
+
+.editorPaneHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: transparent;
+}
+
+.codeEditorWrap {
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.codeEditorValid {
+  border: 1px solid var(--gray-6);
+}
+
+.codeEditorInvalid {
+  border: 1px solid var(--red-9);
+}
+
+.codeHighlight {
+  max-height: 340px;
+  overflow: auto;
+  width: 100%;
+}
+
+.codeHighlight pre,
+.codeHighlight code {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere;
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}
+
+.codeEditor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 12px;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--foreground);
+  overflow: auto;
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.codeEditor:focus {
+  outline: none;
+}
+
+.canvasCard {
+  cursor: pointer;
+}
+
+.colorSwatch {
+  height: 4.5rem;
+  border: 1px solid rgb(15 23 42 / 0.08);
+}
+
+.colorSwatchCompact {
+  height: 3rem;
+  border: 1px solid rgb(15 23 42 / 0.08);
+}
+
+.paintSwatchRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.paintSwatchCard {
+  appearance: none;
+  border: 1px solid rgb(15 23 42 / 0.08);
+  padding: 0;
+  min-width: 4.5rem;
+  height: 5rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  cursor: pointer;
+  margin-right: -0.9rem;
+  box-shadow: 0.35rem 0 0 rgb(255 255 255 / 0.6);
+}
+
+.paintSwatchCardMeta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.35rem;
+  background: rgb(255 255 255 / 0.82);
+  backdrop-filter: blur(2px);
+  max-width: 100%;
+}
+
+.comparisonRowButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.comparisonLabelBlock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comparisonTrack {
+  height: 1.1rem;
+  background: rgb(15 23 42 / 0.05);
+  position: relative;
+}
+
+.spacingComparisonBar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue-9), var(--cyan-9));
+}
+
+.scaleTable {
+  overflow-x: auto;
+}
+
+.scaleTableHeader,
+.scaleTableRow {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 7rem) minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.scaleTableHeader {
+  margin-bottom: 0.5rem;
+}
+
+.scaleTableHeaderLabel {
+  min-height: 1px;
+}
+
+.scaleTableHeaderSteps,
+.scaleTableCells {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(2rem, 1fr));
+  gap: 0.375rem;
+}
+
+.scaleTableStepLabel {
+  text-align: center;
+}
+
+.scaleTableFamily {
+  padding-top: 0.125rem;
+}
+
+.scaleTableSwatchButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.scaleTableSwatch,
+.scaleTableCellEmpty {
+  display: block;
+  width: 100%;
+  height: 1.75rem;
+  border: 1px solid rgb(15 23 42 / 0.08);
+}
+
+.scaleTableCellEmpty {
+  background: rgb(15 23 42 / 0.03);
+}
+
+.scaleTableExtras {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.scaleExtraChip {
+  appearance: none;
+  border: 1px solid var(--gray-6);
+  background: transparent;
+  padding: 0.2rem 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.scaleExtraDot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 1px solid rgb(15 23 42 / 0.08);
+  display: inline-block;
+}
+
+.radiusComparisonRail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.radiusSampleButton {
+  appearance: none;
+  border: 1px solid var(--gray-6);
+  background: transparent;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+  cursor: pointer;
+}
+
+.radiusSampleShape {
+  display: block;
+  width: 100%;
+  height: 3.75rem;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border: 1px solid rgb(15 23 42 / 0.08);
+}
+
+.radiusSampleMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  text-align: left;
+}
+
+.typographyComparisonRow {
+  appearance: none;
+  border: 1px solid var(--gray-6);
+  background: transparent;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+  text-align: left;
+  cursor: pointer;
+}
+
+.typographyComparisonMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.typographyComparisonSample {
+  line-height: 1.25;
+}
+
+.shadowComparisonRow {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr) minmax(10rem, auto);
+  gap: 0.75rem;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shadowComparisonMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shadowComparisonPreviewWrap {
+  min-height: 3.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.shadowComparisonPreview {
+  display: block;
+  width: 7rem;
+  height: 2.5rem;
+  background: white;
+  border: 1px solid rgb(15 23 42 / 0.08);
+}
+
+.opacityComparisonRow {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.opacityComparisonMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.opacityComparisonStrip {
+  height: 2.5rem;
+  background: linear-gradient(90deg, rgb(37 99 235 / 0.08), rgb(37 99 235 / 0.18));
+  border: 1px solid rgb(15 23 42 / 0.08);
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.opacityComparisonSwatch {
+  display: block;
+  width: 100%;
+  height: 1.5rem;
+  background: #2563eb;
+}
+
+.colorPickerWrap :global(.react-colorful) {
+  width: 100%;
+  height: auto;
+  gap: 0.625rem;
+  font-family: inherit;
+}
+
+.colorPickerWrap :global(.react-colorful__saturation) {
+  border-bottom-width: 0;
+  border-radius: 10px;
+}
+
+.colorPickerWrap :global(.react-colorful__hue),
+.colorPickerWrap :global(.react-colorful__alpha) {
+  height: 14px;
+  border-radius: 999px;
+}
+
+.colorPickerWrap :global(.react-colorful__pointer) {
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 0 0 2px white, 0 0 0 3px rgb(15 23 42 / 0.15);
+}
+
+.terrazzoColorPickerWrap :global(.tz-color-picker-code) {
+  display: none;
+}
+
+.colorHexField {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@media (min-width: 1024px) {
+  .workspaceGrid {
+    grid-template-columns: minmax(320px, 1fr) minmax(0, 2fr) 0;
+    align-items: stretch;
+  }
+
+  .workspaceGridInspectorOpen {
+    grid-template-columns: minmax(320px, 1fr) minmax(0, 2fr) minmax(300px, 1fr);
+  }
+
+  .inspectorColumn {
+    overflow: hidden;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: transform 260ms ease, opacity 220ms ease;
+    pointer-events: none;
+  }
+
+  .inspectorColumnOpen {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

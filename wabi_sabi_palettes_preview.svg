@@ -1,0 +1,32 @@
+<svg width="1600" height="920" viewBox="0 0 1600 920" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="920" fill="#f4f1ea"/>
+  <text x="50" y="60" font-family="Arial, sans-serif" font-size="44" fill="#2d2a26">Wabi-Sabi Palette Preview</text>
+
+  <text x="50" y="140" font-family="Arial, sans-serif" font-size="30" fill="#2d2a26">Earth + Ash</text>
+  <rect x="50" y="170" rx="16" ry="16" width="260" height="90" fill="#7A6A58"/><text x="68" y="225" font-family="Arial, sans-serif" font-size="24" fill="#fff">#7A6A58</text>
+  <rect x="330" y="170" rx="16" ry="16" width="260" height="90" fill="#A89F91"/><text x="348" y="225" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#A89F91</text>
+  <rect x="610" y="170" rx="16" ry="16" width="260" height="90" fill="#D6CFC3"/><text x="628" y="225" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#D6CFC3</text>
+  <rect x="890" y="170" rx="16" ry="16" width="260" height="90" fill="#4E4A45"/><text x="908" y="225" font-family="Arial, sans-serif" font-size="24" fill="#fff">#4E4A45</text>
+  <rect x="1170" y="170" rx="16" ry="16" width="260" height="90" fill="#8A735F"/><text x="1188" y="225" font-family="Arial, sans-serif" font-size="24" fill="#fff">#8A735F</text>
+
+  <text x="50" y="320" font-family="Arial, sans-serif" font-size="30" fill="#2d2a26">Moss + Stone</text>
+  <rect x="50" y="350" rx="16" ry="16" width="260" height="90" fill="#5F6B57"/><text x="68" y="405" font-family="Arial, sans-serif" font-size="24" fill="#fff">#5F6B57</text>
+  <rect x="330" y="350" rx="16" ry="16" width="260" height="90" fill="#8C927F"/><text x="348" y="405" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#8C927F</text>
+  <rect x="610" y="350" rx="16" ry="16" width="260" height="90" fill="#B7B3A5"/><text x="628" y="405" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#B7B3A5</text>
+  <rect x="890" y="350" rx="16" ry="16" width="260" height="90" fill="#DDD8CD"/><text x="908" y="405" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#DDD8CD</text>
+  <rect x="1170" y="350" rx="16" ry="16" width="260" height="90" fill="#3F463E"/><text x="1188" y="405" font-family="Arial, sans-serif" font-size="24" fill="#fff">#3F463E</text>
+
+  <text x="50" y="500" font-family="Arial, sans-serif" font-size="30" fill="#2d2a26">Ink + Rice Paper</text>
+  <rect x="50" y="530" rx="16" ry="16" width="260" height="90" fill="#2F3230"/><text x="68" y="585" font-family="Arial, sans-serif" font-size="24" fill="#fff">#2F3230</text>
+  <rect x="330" y="530" rx="16" ry="16" width="260" height="90" fill="#6C6A63"/><text x="348" y="585" font-family="Arial, sans-serif" font-size="24" fill="#fff">#6C6A63</text>
+  <rect x="610" y="530" rx="16" ry="16" width="260" height="90" fill="#9E9486"/><text x="628" y="585" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#9E9486</text>
+  <rect x="890" y="530" rx="16" ry="16" width="260" height="90" fill="#CFC6B8"/><text x="908" y="585" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#CFC6B8</text>
+  <rect x="1170" y="530" rx="16" ry="16" width="260" height="90" fill="#EFE9DD"/><text x="1188" y="585" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#EFE9DD</text>
+
+  <text x="50" y="680" font-family="Arial, sans-serif" font-size="30" fill="#2d2a26">Rust + Dust</text>
+  <rect x="50" y="710" rx="16" ry="16" width="260" height="90" fill="#8B5A44"/><text x="68" y="765" font-family="Arial, sans-serif" font-size="24" fill="#fff">#8B5A44</text>
+  <rect x="330" y="710" rx="16" ry="16" width="260" height="90" fill="#A8735C"/><text x="348" y="765" font-family="Arial, sans-serif" font-size="24" fill="#fff">#A8735C</text>
+  <rect x="610" y="710" rx="16" ry="16" width="260" height="90" fill="#B9A18E"/><text x="628" y="765" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#B9A18E</text>
+  <rect x="890" y="710" rx="16" ry="16" width="260" height="90" fill="#D9CCBC"/><text x="908" y="765" font-family="Arial, sans-serif" font-size="24" fill="#1f1f1f">#D9CCBC</text>
+  <rect x="1170" y="710" rx="16" ry="16" width="260" height="90" fill="#52463F"/><text x="1188" y="765" font-family="Arial, sans-serif" font-size="24" fill="#fff">#52463F</text>
+</svg>
