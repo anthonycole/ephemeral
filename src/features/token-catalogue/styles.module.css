@@ -46,6 +46,16 @@
   gap: 0.75rem;
 }
 
+.routeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.routeLink {
+  text-decoration: none;
+}
+
 .anchor {
   text-decoration: none;
 }
@@ -56,6 +66,12 @@
   background: rgb(255 255 255 / 0.82);
   backdrop-filter: blur(10px);
   box-shadow: 0 18px 40px rgb(20 32 51 / 0.06);
+}
+
+.sandboxHost {
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255 255 / 0.72);
+  min-height: 24rem;
 }
 
 .tokenGrid {
@@ -278,5 +294,9 @@
 
   .tokenGrid {
     grid-template-columns: 1fr;
+  }
+
+  .sandboxHost {
+    min-height: 28rem;
   }
 }

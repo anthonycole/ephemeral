@@ -214,11 +214,11 @@ function CssColorValueEditor({
     setPickerInteracted(false);
   }, [setColor, token.id, token.value]);
 
-  if (!color?.original?.space) {
-    return <RawColorValueEditor token={token} onUpdateToken={onUpdateToken} />;
-  }
-
   useEffect(() => {
+    if (!color?.original?.space) {
+      return;
+    }
+
     if (!pickerInteracted) {
       return;
     }
@@ -227,7 +227,11 @@ function CssColorValueEditor({
       onUpdateToken(token.id, { value: color.css });
       setDraftValue(color.css);
     }
-  }, [color.css, onUpdateToken, pickerInteracted, token.id, token.value]);
+  }, [color?.original?.space, color.css, onUpdateToken, pickerInteracted, token.id, token.value]);
+
+  if (!color?.original?.space) {
+    return <RawColorValueEditor token={token} onUpdateToken={onUpdateToken} />;
+  }
 
   const handleRawValueChange = (nextValue: string) => {
     setDraftValue(nextValue);

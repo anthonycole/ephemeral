@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-import { Badge, Box, Card, Flex, Grid, Text } from "@radix-ui/themes";
+import { Badge, Box, Card, Flex, Text } from "@radix-ui/themes";
 import { groupColorTokens, parseColorTokenMeta, resolveColorDisplayMode } from "@/features/token-visualizer/color-meta";
 import { VirtualizedCardList } from "@/features/token-visualizer/components/virtualized-card-list";
 import type { TokenRecord } from "@/features/token-visualizer/document";
 import styles from "@/features/token-visualizer/styles.module.css";
-import { formatScopeLabel, isDefaultScope, numericValue, toMilliseconds, tokenValueForWidth } from "@/features/token-visualizer/utils";
+import { numericValue, toMilliseconds, tokenValueForWidth } from "@/features/token-visualizer/utils";
 
 type CanvasProps = {
   tokens: TokenRecord[];
@@ -37,38 +37,6 @@ function renderStack(tokens: TokenRecord[], renderItem: (token: TokenRecord, ind
   }
 
   return <Flex direction="column" gap="2">{tokens.map((token, index) => renderItem(token, index))}</Flex>;
-}
-
-function CompactColorCard({ token, onSelect }: { token: TokenRecord; onSelect: (tokenId: string) => void }) {
-  const meta = parseColorTokenMeta(token);
-
-  return (
-    <Card key={token.id} onClick={() => onSelect(token.id)} className={styles.canvasCard}>
-      <Flex direction="column" gap="2">
-        <Box className={styles.colorSwatchCompact} style={{ background: token.value }} />
-        <Flex justify="between" align="center" gap="2">
-          <Text size="1" className="font-mono">
-            {token.name}
-          </Text>
-          {meta.step !== null ? (
-            <Badge variant="soft" color="gray">
-              {meta.step}
-            </Badge>
-          ) : null}
-        </Flex>
-        <Flex justify="between" align="center" gap="2">
-          <Text size="1" color="gray" className="font-mono">
-            {token.value}
-          </Text>
-          {!isDefaultScope(token.scope) ? (
-            <Text size="1" color="gray">
-              {formatScopeLabel(token.scope)}
-            </Text>
-          ) : null}
-        </Flex>
-      </Flex>
-    </Card>
-  );
 }
 
 function PaintSwatchGroup({
@@ -110,36 +78,6 @@ function PaintSwatchGroup({
           </button>
         ))}
       </div>
-    </Flex>
-  );
-}
-
-function ColorSwatchSection({
-  title,
-  subtitle,
-  tokens,
-  onSelect
-}: {
-  title: string;
-  subtitle: string;
-  tokens: TokenRecord[];
-  onSelect: (tokenId: string) => void;
-}) {
-  return (
-    <Flex direction="column" gap="3">
-      <Flex direction="column" gap="1">
-        <Text size="3" weight="medium">
-          {title}
-        </Text>
-        <Text size="1" color="gray">
-          {subtitle}
-        </Text>
-      </Flex>
-      <Grid columns={{ initial: "2", sm: "3", xl: "4" }} gap="2">
-        {tokens.map((token) => (
-          <CompactColorCard key={token.id} token={token} onSelect={onSelect} />
-        ))}
-      </Grid>
     </Flex>
   );
 }

@@ -1,12 +1,10 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import { Badge, Card, Code, Container, Flex, Heading, Section, Separator, Text } from "@radix-ui/themes";
 import type { TokenCategory } from "@/lib/design-tokens";
-import type { TokenRecord } from "@/features/token-visualizer/document";
-import { SAMPLE_DOCUMENT } from "@/features/token-visualizer/sample-workspace";
+import type { TokenDocument, TokenRecord } from "@/features/token-visualizer/document";
 import { formatScopeLabel, groupTokens, tokenValueForWidth } from "@/features/token-visualizer/utils";
 import styles from "@/features/token-catalogue/styles.module.css";
-
-const groupedTokens = groupTokens(SAMPLE_DOCUMENT.tokens);
 
 const categoryDefinitions: Array<{ key: Exclude<TokenCategory, "all">; label: string }> = [
   { key: "color", label: "Color" },
@@ -36,18 +34,36 @@ const categoryDescriptions: Record<(typeof categoryDefinitions)[number]["key"], 
   other: "Reference tokens that still belong in a package, even without a richer visual.",
 };
 
-const sections = categoryDefinitions.map((definition) => ({
-  ...definition,
-  tokens: groupedTokens[definition.key],
-})).filter((section) => section.tokens.length > 0);
+type TokenCataloguePageProps = {
+  document: TokenDocument;
+  source: "workspace" | "sample";
+  updatedAt: string | null;
+};
 
-export function TokenCataloguePage() {
+export async function TokenCataloguePage({ document, source, updatedAt }: TokenCataloguePageProps) {
+  const groupedTokens = groupTokens(document.tokens);
+  const sections = categoryDefinitions.map((definition) => ({
+    ...definition,
+    tokens: groupedTokens[definition.key],
+  })).filter((section) => section.tokens.length > 0);
+  const tokenValueMap = new Map(document.tokens.map((token) => [token.name, token.value]));
+
   return (
     <main className={styles.page}>
       <Container size="4" className={styles.frame}>
         <Flex direction="column" gap="6">
           <Card className={styles.hero}>
             <Flex direction="column" gap="4">
+              <Flex align="center" gap="2" wrap="wrap">
+                <Badge size="2" color={source === "workspace" ? "green" : "gray"} variant="soft">
+                  {source === "workspace" ? "Saved workspace" : "Sample fallback"}
+                </Badge>
+                {updatedAt ? (
+                  <Badge size="2" color="gray" variant="soft">
+                    Updated {new Date(updatedAt).toLocaleString()}
+                  </Badge>
+                ) : null}
+              </Flex>
               <div>
                 <Heading size="8" mt="2">
                   Token Catalogue
@@ -57,6 +73,18 @@ export function TokenCataloguePage() {
                 This route strips away editing, parsing, and inspector concerns so the token set reads like a documentation surface you could
                 later lift into Storybook or publish as a lightweight npm package.
               </Text>
+              <div className={styles.routeRow}>
+                <Link href="/tokens" className={styles.routeLink} aria-current="page">
+                  <Badge size="2" color="blue" variant="soft">
+                    Catalogue
+                  </Badge>
+                </Link>
+                <Link href="/tokens/sandbox" className={styles.routeLink}>
+                  <Badge size="2" color="gray" variant="surface">
+                    Sandbox
+                  </Badge>
+                </Link>
+              </div>
               <div className={styles.anchorRow}>
                 {sections.map((section) => (
                   <a key={section.key} href={`#${section.key}`} className={styles.anchor}>
@@ -90,7 +118,7 @@ export function TokenCataloguePage() {
                       {section.tokens.map((token) => (
                         <Card key={token.id} className={styles.tokenCard}>
                           <Flex direction="column" gap="3">
-                            <div className={styles.previewWrap}>{renderPreview(token)}</div>
+                            <div className={styles.previewWrap}>{renderPreview(token, tokenValueMap)}</div>
                             <Flex direction="column" gap="2" className={styles.metaStack}>
                               <div>
                                 <Text size="2" weight="medium" className={styles.tokenName}>
@@ -119,7 +147,7 @@ export function TokenCataloguePage() {
   );
 }
 
-function renderPreview(token: TokenRecord) {
+function renderPreview(token: TokenRecord, tokenValueMap: Map<string, string>) {
   switch (token.category) {
     case "color":
       return <div className={styles.swatch} style={{ background: token.value }} />;
@@ -166,7 +194,7 @@ function renderPreview(token: TokenRecord) {
       return (
         <div className={styles.breakpointPreview}>
           <div className={styles.breakpointFrame}>
-            <div className={styles.breakpointFill} style={{ width: tokenValueForWidth(token.value) }} />
+            <div className={styles.breakpointFill} style={{ width: breakpointWidth(tokenValueMap, token.name, token.value) }} />
           </div>
           <Text size="1" color="gray">
             min-width {token.value}
@@ -202,4 +230,24 @@ function TypographyPreview({ token }: { token: TokenRecord }) {
 function normalizeOpacity(value: string) {
   const parsed = Number.parseFloat(value);
   return Number.isNaN(parsed) ? 1 : Math.max(0.1, Math.min(1, parsed));
+}
+
+function breakpointWidth(tokenValueMap: Map<string, string>, name: string, fallback: string) {
+  const value = tokenValueMap.get(name) ?? fallback;
+  const parsed = Number.parseFloat(value);
+
+  if (Number.isNaN(parsed)) {
+    return "50%";
+  }
+
+  const maxBreakpoint = Math.max(
+    Number.parseFloat(tokenValueMap.get("--breakpoint-sm") ?? "640px") || 0,
+    Number.parseFloat(tokenValueMap.get("--breakpoint-lg") ?? "1024px") || 0,
+  );
+
+  if (maxBreakpoint <= 0) {
+    return "50%";
+  }
+
+  return `${Math.max(28, (parsed / maxBreakpoint) * 100)}%`;
 }

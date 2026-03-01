@@ -50,6 +50,7 @@ export function useCanvasPaneState() {
       setSelectedTokenId: state.setSelectedTokenId
     }))
   );
+  const { activeCategory, setActiveCategory } = canvasState;
   const deferredSearchQuery = useDeferredValue(canvasState.searchQuery);
   const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
 
@@ -93,24 +94,24 @@ export function useCanvasPaneState() {
   }, [groupedSearchedTokens, searchedTokens.length]);
 
   const activeCategoryDefinition =
-    canvasState.activeCategory === "all" ? null : getCategoryDefinition(canvasState.activeCategory as Exclude<TokenCategory, "all">);
+    activeCategory === "all" ? null : getCategoryDefinition(activeCategory as Exclude<TokenCategory, "all">);
 
   useEffect(() => {
-    if (canvasState.activeCategory === "all") {
+    if (activeCategory === "all") {
       return;
     }
 
-    if (counts[canvasState.activeCategory] === 0) {
-      canvasState.setActiveCategory("all");
+    if (counts[activeCategory] === 0) {
+      setActiveCategory("all");
     }
-  }, [canvasState.activeCategory, canvasState.setActiveCategory, counts]);
+  }, [activeCategory, counts, setActiveCategory]);
 
   return {
-    activeCategory: canvasState.activeCategory,
+    activeCategory,
     counts,
     visibleTokens,
     groupedVisibleTokens,
-    setActiveCategory: canvasState.setActiveCategory,
+    setActiveCategory,
     setSelectedTokenId: canvasState.setSelectedTokenId,
     supportsVirtualizedSingleCategory: activeCategoryDefinition?.supportsVirtualizedCanvas ?? false
   };

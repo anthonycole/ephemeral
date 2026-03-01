@@ -42,6 +42,7 @@ export type CssSyntaxError = {
 const COLOR_VALUE_REGEX = /(#([0-9a-f]{3,8})\b)|(rgba?\()|(hsla?\()|(oklch\()|(oklab\()|(color\()|(lab\()|(lch\()/i;
 const SIZE_VALUE_REGEX = /^-?\d*\.?\d+(px|rem|em|vh|vw|ch|%)?$/i;
 const CSS_COMMENT_REGEX = /\/\*[\s\S]*?\*\//g;
+const THEME_BLOCK_REGEX = /^@theme\b/i;
 
 function inferCategory(name: string, value: string): Exclude<TokenCategory, "all"> {
   const lowerName = name.toLowerCase();
@@ -74,7 +75,7 @@ function inferCategory(name: string, value: string): Exclude<TokenCategory, "all
     return "sizing";
   }
 
-  if (/(duration|timing|easing|transition|motion|animation)/.test(lowerName)) {
+  if (/(duration|timing|easing|transition|motion|animation|animate|ease)/.test(lowerName)) {
     return "motion";
   }
 
@@ -162,7 +163,7 @@ export function parseCssDocument(rawCss: string): ParsedCssDocument {
         continue;
       }
 
-      if (header.startsWith("@")) {
+      if (header.startsWith("@") && !THEME_BLOCK_REGEX.test(header)) {
         scanBlocks(body, [...inheritedAtRules, header]);
         continue;
       }
