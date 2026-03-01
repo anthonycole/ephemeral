@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Command as CommandIcon } from "@phosphor-icons/react";
+import { Code as CodeIcon, Command as CommandIcon } from "@phosphor-icons/react";
 import { Button, Flex, Heading } from "@radix-ui/themes";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 export type PersistenceStatus = "loading" | "saving" | "saved" | "error";
 
 type WorkspaceHeaderProps = {
+  onOpenEditor: () => void;
   onOpenCommandPalette: () => void;
   persistenceStatus: PersistenceStatus;
 };
@@ -17,7 +18,7 @@ const persistenceLabels: Record<PersistenceStatus, string> = {
   error: "Save failed"
 };
 
-export function WorkspaceHeader({ onOpenCommandPalette, persistenceStatus }: WorkspaceHeaderProps) {
+export function WorkspaceHeader({ onOpenEditor, onOpenCommandPalette, persistenceStatus }: WorkspaceHeaderProps) {
   return (
     <header className={styles.appHeader}>
       <div className={styles.appHeaderGrid}>
@@ -28,6 +29,18 @@ export function WorkspaceHeader({ onOpenCommandPalette, persistenceStatus }: Wor
           <span className={styles.appStatus}>{persistenceLabels[persistenceStatus]}</span>
         </Flex>
         <Flex align="center" justify="end" gap="2" pr="3">
+          <Button
+            type="button"
+            variant="soft"
+            color="gray"
+            onClick={onOpenEditor}
+            className={styles.headerActionButton}
+            aria-label="Open CSS import and export"
+            title="Open CSS import and export"
+          >
+            <CodeIcon size={16} weight="regular" />
+            <span className={styles.srOnly}>Open CSS import and export</span>
+          </Button>
           <Button asChild type="button" variant="soft" color="gray" className={styles.headerActionButton}>
             <Link href="/playground">Open Playground</Link>
           </Button>

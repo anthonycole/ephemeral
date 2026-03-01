@@ -132,10 +132,6 @@
   min-height: 0;
 }
 
-.leftPane {
-  border-right: 1px solid var(--gray-6);
-}
-
 .centerPane {
   border-right: 1px solid var(--gray-6);
 }
@@ -180,6 +176,56 @@
   background: transparent;
 }
 
+.editorOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(15 23 42 / 0.4);
+  backdrop-filter: blur(6px);
+}
+
+.editorOverlayPanel {
+  width: 100%;
+  height: 100dvh;
+  background: var(--color-background, white);
+}
+
+.editorOverlayPane {
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+}
+
+.editorWorkspace {
+  display: grid;
+  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.editorSidebar,
+.editorMain {
+  min-height: 0;
+}
+
+.editorSidebar {
+  border-right: 1px solid var(--gray-6);
+  padding-right: 1rem;
+}
+
+.editorCloseButton {
+  width: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0;
+}
+
+.headerActionButton:hover,
+.editorCloseButton:hover {
+  background: inherit;
+  color: inherit;
+}
+
 .codeEditorWrap {
   border-radius: 10px;
   overflow: hidden;
@@ -187,9 +233,9 @@
 }
 
 .fontFamilyInput {
-  flex: 1;
-  min-width: 12rem;
-  height: 2rem;
+  width: 100%;
+  min-width: 0;
+  height: 2.5rem;
   padding: 0 0.625rem;
   border: 1px solid var(--gray-7);
   background: var(--color-panel, white);
@@ -633,12 +679,12 @@
 
 @media (min-width: 1024px) {
   .workspaceGrid {
-    grid-template-columns: minmax(320px, 1fr) minmax(0, 2fr) 0;
+    grid-template-columns: minmax(0, 1fr) 0;
     align-items: stretch;
   }
 
   .workspaceGridInspectorOpen {
-    grid-template-columns: minmax(320px, 1fr) minmax(0, 2fr) minmax(300px, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 1fr);
   }
 
   .inspectorColumn {
@@ -653,5 +699,22 @@
     transform: translateX(0);
     opacity: 1;
     pointer-events: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .editorOverlayPane {
+    padding: 0.75rem;
+  }
+
+  .editorWorkspace {
+    grid-template-columns: 1fr;
+  }
+
+  .editorSidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--gray-6);
+    padding-right: 0;
+    padding-bottom: 1rem;
   }
 }

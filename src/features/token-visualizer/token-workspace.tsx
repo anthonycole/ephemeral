@@ -52,6 +52,7 @@ export function TokenWorkspace() {
   const [persistenceStatus, setPersistenceStatus] = useState<PersistenceStatus>("loading");
   const [hasLoadedWorkspace, setHasLoadedWorkspace] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
   const skipNextSaveRef = useRef(false);
   const saveSequenceRef = useRef(0);
   const initializedCategorySyncRef = useRef(false);
@@ -68,6 +69,12 @@ export function TokenWorkspace() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && editorOpen) {
+        event.preventDefault();
+        setEditorOpen(false);
+        return;
+      }
+
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setCommandPaletteOpen(true);
@@ -76,7 +83,20 @@ export function TokenWorkspace() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [editorOpen]);
+
+  useEffect(() => {
+    if (!editorOpen) {
+      return;
+    }
+
+    const previousOverflow = globalThis.document.body.style.overflow;
+    globalThis.document.body.style.overflow = "hidden";
+
+    return () => {
+      globalThis.document.body.style.overflow = previousOverflow;
+    };
+  }, [editorOpen]);
 
   useEffect(() => {
     const previousUrlCategory = previousUrlCategoryRef.current;
@@ -310,6 +330,13 @@ export function TokenWorkspace() {
 
   const commandActions: CommandAction[] = [
     {
+      id: "open-css-editor",
+      title: "Open CSS editor",
+      subtitle: "Open the full-screen CSS import and export view",
+      keywords: ["css", "editor", "import", "export"],
+      run: () => setEditorOpen(true)
+    },
+    {
       id: "open-playground",
       title: "Open playground",
       subtitle: "Open the isolated token playground route",
@@ -390,21 +417,11 @@ export function TokenWorkspace() {
     <main className={styles.workspaceRoot}>
       <GoogleFontLinks directives={document.directives} />
       <WorkspaceHeader
+        onOpenEditor={() => setEditorOpen(true)}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         persistenceStatus={persistenceStatus}
       />
       <Grid className={gridClassName} align="stretch">
-        <EditorPane
-          editorCss={editorCss}
-          importedGoogleFonts={importedGoogleFonts}
-          onEditorCssChange={setEditorCss}
-          onImportGoogleFont={addGoogleFontImport}
-          onImportCss={importEditorCss}
-          onLoadGeneratedCss={() => setEditorCss(generatedCss)}
-          onRemoveGoogleFont={removeGoogleFontImport}
-          onResetToSample={resetToSample}
-          syntaxErrors={syntaxErrors}
-        />
         <CanvasPane
           activeCategory={activeCategory}
           onActiveCategoryChange={setActiveCategory}
@@ -424,6 +441,25 @@ export function TokenWorkspace() {
           onClose={closeInspector}
         />
       </Grid>
+      {editorOpen ? (
+        <div className={styles.editorOverlay} role="dialog" aria-modal="true" aria-label="CSS import and export">
+          <div className={styles.editorOverlayPanel}>
+            <EditorPane
+              className={styles.editorOverlayPane}
+              editorCss={editorCss}
+              onClose={() => setEditorOpen(false)}
+              importedGoogleFonts={importedGoogleFonts}
+              onEditorCssChange={setEditorCss}
+              onImportGoogleFont={addGoogleFontImport}
+              onImportCss={importEditorCss}
+              onLoadGeneratedCss={() => setEditorCss(generatedCss)}
+              onRemoveGoogleFont={removeGoogleFontImport}
+              onResetToSample={resetToSample}
+              syntaxErrors={syntaxErrors}
+            />
+          </div>
+        </div>
+      ) : null}
       <CommandPalette
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
