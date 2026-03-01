@@ -1,9 +1,10 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useMemo } from "react";
 import { Badge, Box, Card, Flex, Text } from "@radix-ui/themes";
 import { groupColorTokens, parseColorTokenMeta, resolveColorDisplayMode } from "@/features/token-visualizer/color-meta";
 import { VirtualizedCardList } from "@/features/token-visualizer/components/virtualized-card-list";
 import type { TokenRecord } from "@/features/token-visualizer/document";
+import { getFontTokenDefinition } from "@/features/token-visualizer/font-utils";
 import styles from "@/features/token-visualizer/styles.module.css";
 import { numericValue, toMilliseconds, tokenValueForWidth } from "@/features/token-visualizer/utils";
 
@@ -423,36 +424,178 @@ export function SizingCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
 }
 
 export function TypographyCanvas({ tokens, onSelect, virtualize = false }: CanvasProps) {
-  const sorted = useMemo(() => [...tokens].sort(compareByNumericValue), [tokens]);
+  const { familyTokens, sizeTokens, weightTokens, utilityTokens } = useMemo(() => {
+    const sorted = [...tokens].sort(compareByNumericValue);
+    const familyTokens = sorted.filter((token) => getFontTokenDefinition(token.name));
+    const sizeTokens = sorted.filter((token) => isTypographySizeToken(token));
+    const weightTokens = sorted.filter((token) => isTypographyWeightToken(token));
+    const utilityTokens = sorted.filter((token) => !getFontTokenDefinition(token.name) && !isTypographySizeToken(token) && !isTypographyWeightToken(token));
 
-  return renderStack(
-    sorted,
-    (token) => (
+    return {
+      familyTokens,
+      sizeTokens,
+      weightTokens,
+      utilityTokens
+    };
+  }, [tokens]);
+
+  function renderTypographyToken(token: TokenRecord, sampleClassName?: string) {
+    const fontDefinition = getFontTokenDefinition(token.name);
+
+    return (
       <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.typographyComparisonRow}>
         <div className={styles.typographyComparisonMeta}>
-          <Text size="1" color="gray" className="font-mono">
-            {token.name}
-          </Text>
-          <Text size="1" color="gray" className="font-mono">
-            {token.value}
-          </Text>
+          <div className={styles.typographyTokenMetaStack}>
+            <Text size="1" color="gray" className="font-mono">
+              {token.name}
+            </Text>
+            <Text size="1" color="gray" className="font-mono">
+              {token.value}
+            </Text>
+          </div>
+          {fontDefinition ? (
+            <div className={styles.typographyBadgeRow}>
+              <Badge variant="soft">{fontDefinition.framework}</Badge>
+              <Badge variant="soft" color="gray">
+                {fontDefinition.role}
+              </Badge>
+            </div>
+          ) : null}
         </div>
-        <Text
-          size="3"
-          className={styles.typographyComparisonSample}
-          style={{
-            fontSize: token.name.includes("size") ? token.value : undefined,
-            fontWeight: token.name.includes("weight") ? Number.parseInt(token.value, 10) || undefined : undefined
-          }}
-        >
-          The quick brown fox jumps over the lazy dog.
+        <Text size="3" className={`${styles.typographyComparisonSample} ${sampleClassName ?? ""}`.trim()} style={typographySampleStyle(token)}>
+          {typographySampleCopy(token)}
         </Text>
       </button>
-    ),
-    96,
-    virtualize
+    );
+  }
+
+  return (
+    <Flex direction="column" gap="4">
+      {familyTokens.length > 0 ? (
+        <section className={styles.typographySection}>
+          <div className={styles.typographySectionHeader}>
+            <Text size="2" weight="medium">
+              Font families
+            </Text>
+          </div>
+          <div className={styles.typographyTokenGrid}>
+            {familyTokens.map((token) => renderTypographyToken(token, styles.typographyFamilySample))}
+          </div>
+        </section>
+      ) : null}
+
+      {sizeTokens.length > 0 ? (
+        <section className={styles.typographySection}>
+          <div className={styles.typographySectionHeader}>
+            <Text size="2" weight="medium">
+              Type scale
+            </Text>
+          </div>
+          <div className={styles.typographyTokenGrid}>
+            {sizeTokens.map((token) => renderTypographyToken(token, styles.typographyScaleSample))}
+          </div>
+        </section>
+      ) : null}
+
+      {weightTokens.length > 0 ? (
+        <section className={styles.typographySection}>
+          <div className={styles.typographySectionHeader}>
+            <Text size="2" weight="medium">
+              Weights
+            </Text>
+          </div>
+          <div className={styles.typographyTokenGrid}>
+            {weightTokens.map((token) => renderTypographyToken(token, styles.typographyWeightSample))}
+          </div>
+        </section>
+      ) : null}
+
+      {utilityTokens.length > 0 ? (
+        <section className={styles.typographySection}>
+          <div className={styles.typographySectionHeader}>
+            <Text size="2" weight="medium">
+              Supporting styles
+            </Text>
+          </div>
+          <div className={styles.typographyTokenGrid}>
+            {utilityTokens.map((token) => renderTypographyToken(token))}
+          </div>
+        </section>
+      ) : null}
+    </Flex>
   );
 }
+
+function isTypographyWeightToken(token: TokenRecord) {
+  return token.name.toLowerCase().includes("weight");
+}
+
+function isTypographySizeToken(token: TokenRecord) {
+  const lowerName = token.name.toLowerCase();
+  return (
+    !lowerName.includes("line-height") &&
+    !lowerName.includes("leading") &&
+    !lowerName.includes("tracking") &&
+    !lowerName.includes("letter-spacing") &&
+    !lowerName.includes("weight") &&
+    !getFontTokenDefinition(token.name) &&
+    (lowerName.includes("font-size") || lowerName.includes("text-") || lowerName.includes("size"))
+  );
+}
+
+function typographySampleStyle(token: TokenRecord): CSSProperties {
+  const lowerName = token.name.toLowerCase();
+  const fontToken = getFontTokenDefinition(token.name);
+
+  if (fontToken) {
+    return { fontFamily: token.value };
+  }
+
+  if (lowerName.includes("text-shadow")) {
+    return { textShadow: token.value };
+  }
+
+  if (lowerName.includes("line-height") || lowerName.includes("leading")) {
+    return { lineHeight: token.value };
+  }
+
+  if (lowerName.includes("tracking") || lowerName.includes("letter-spacing")) {
+    return { letterSpacing: token.value };
+  }
+
+  if (lowerName.includes("weight")) {
+    return { fontWeight: token.value as CSSProperties["fontWeight"] };
+  }
+
+  if (isTypographySizeToken(token)) {
+    return { fontSize: token.value };
+  }
+
+  return {};
+}
+
+function typographySampleCopy(token: TokenRecord) {
+  const lowerName = token.name.toLowerCase();
+
+  if (getFontTokenDefinition(token.name)) {
+    return "Sphinx of black quartz, judge my vow.";
+  }
+
+  if (lowerName.includes("tracking") || lowerName.includes("letter-spacing")) {
+    return "TRACKING SAMPLE";
+  }
+
+  if (lowerName.includes("line-height") || lowerName.includes("leading")) {
+    return "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
+  }
+
+  if (lowerName.includes("text-shadow")) {
+    return "Shadow sample";
+  }
+
+  return "The quick brown fox jumps over the lazy dog.";
+}
+
 
 export function RadiusCanvas({ tokens, onSelect }: CanvasProps) {
   const sorted = useMemo(() => [...tokens].sort(compareByNumericValue), [tokens]);

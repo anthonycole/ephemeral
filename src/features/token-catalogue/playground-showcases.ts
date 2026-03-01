@@ -146,6 +146,11 @@ function renderTypographySection(tokens: TokenRecord[]) {
         <h5 class="tw:playground-heading-5">Heading 5</h5>
         <h6 class="tw:playground-heading-6">Heading 6</h6>
         <p class="tw:playground-copy">Type samples stay intentionally plain so imported font, text, and tracking tokens are easy to judge.</p>
+        <p class="tw:playground-copy tw:playground-copy-strong"><strong>Strong sample</strong> for emphasis and callouts.</p>
+        <p class="tw:playground-copy tw:playground-copy-em"><em>Emphasis sample</em> for editorial rhythm and contrast.</p>
+        <p class="tw:playground-copy tw:playground-copy-serif">Editorial serif sample for long-form reading and contrast.</p>
+        <blockquote class="tw:playground-copy tw:playground-copy-quote">Quote sample with a dedicated reading voice.</blockquote>
+        <p class="tw:playground-copy tw:playground-copy-mono">Mono sample: Aa Bb Cc 0123456789</p>
       </div>
       ${weightSamples}
     ${renderSectionEnd()}
@@ -473,6 +478,7 @@ function renderThemeSection(tokens: TokenRecord[]) {
         <article class="tw:playground-card">
           <h3 class="tw:playground-heading-4">Simple card</h3>
           <p class="tw:playground-copy">Tailwind components stay inside the iframe so the parent Radix app never picks up this styling.</p>
+          <code class="tw:playground-copy tw:playground-copy-mono">font-sans / font-serif / font-mono</code>
         </article>
         <input type="text" class="tw:playground-input" placeholder="Text input" value="Text input" />
         <div class="tw:playground-actions">

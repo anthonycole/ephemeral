@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Grid } from "@radix-ui/themes";
 import { useShallow } from "zustand/react/shallow";
@@ -11,6 +11,8 @@ import { CanvasPane } from "@/features/token-visualizer/components/canvas-pane";
 import { EditorPane } from "@/features/token-visualizer/components/editor-pane";
 import { InspectorPane } from "@/features/token-visualizer/components/inspector-pane";
 import { type PersistenceStatus, WorkspaceHeader } from "@/features/token-visualizer/components/workspace-header";
+import { parseGoogleFontImports } from "@/features/token-visualizer/font-utils";
+import { GoogleFontLinks } from "@/features/token-visualizer/google-font-links";
 import { useCanvasPaneState, useEditorPaneState, useHeaderState, useInspectorPaneState } from "@/features/token-visualizer/use-token-workspace";
 import { useTokenStore } from "@/features/token-visualizer/store";
 import styles from "@/features/token-visualizer/styles.module.css";
@@ -31,12 +33,14 @@ export function TokenWorkspace() {
     generatedCss,
     syntaxErrors,
     setEditorCss,
+    addGoogleFontImport,
     importEditorCss,
+    removeGoogleFontImport,
     resetToSample
   } = useEditorPaneState();
   const { activeCategory, visibleTokens, groupedVisibleTokens, counts, setActiveCategory, setSelectedTokenId, supportsVirtualizedSingleCategory } =
     useCanvasPaneState();
-  const { selectedToken, updateToken, closeInspector } = useInspectorPaneState();
+  const { selectedToken, updateToken, addGoogleFontImport: addInspectorGoogleFontImport, closeInspector } = useInspectorPaneState();
   const { document, replaceWorkspace, selectedTokenId } = useTokenStore(
     useShallow((state) => ({
       document: state.document,
@@ -58,6 +62,7 @@ export function TokenWorkspace() {
   const skipNextTokenUrlWriteRef = useRef(false);
   const urlCategory = resolveCategoryFilter(searchParams.get("category"));
   const urlTokenId = searchParams.get("token");
+  const importedGoogleFonts = useMemo(() => parseGoogleFontImports(document.directives), [document.directives]);
 
   const gridClassName = selectedToken ? `${styles.workspaceGrid} ${styles.workspaceGridInspectorOpen}` : styles.workspaceGrid;
 
@@ -383,6 +388,7 @@ export function TokenWorkspace() {
 
   return (
     <main className={styles.workspaceRoot}>
+      <GoogleFontLinks directives={document.directives} />
       <WorkspaceHeader
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         persistenceStatus={persistenceStatus}
@@ -390,9 +396,12 @@ export function TokenWorkspace() {
       <Grid className={gridClassName} align="stretch">
         <EditorPane
           editorCss={editorCss}
+          importedGoogleFonts={importedGoogleFonts}
           onEditorCssChange={setEditorCss}
+          onImportGoogleFont={addGoogleFontImport}
           onImportCss={importEditorCss}
           onLoadGeneratedCss={() => setEditorCss(generatedCss)}
+          onRemoveGoogleFont={removeGoogleFontImport}
           onResetToSample={resetToSample}
           syntaxErrors={syntaxErrors}
         />
@@ -407,7 +416,13 @@ export function TokenWorkspace() {
           onSelectToken={setSelectedTokenId}
           supportsVirtualizedSingleCategory={supportsVirtualizedSingleCategory}
         />
-        <InspectorPane token={selectedToken} onUpdateToken={updateToken} onClose={closeInspector} />
+        <InspectorPane
+          importedGoogleFonts={importedGoogleFonts}
+          onImportGoogleFont={addInspectorGoogleFontImport}
+          token={selectedToken}
+          onUpdateToken={updateToken}
+          onClose={closeInspector}
+        />
       </Grid>
       <CommandPalette
         open={commandPaletteOpen}

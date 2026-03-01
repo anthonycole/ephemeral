@@ -23,6 +23,7 @@ export default async function PlaygroundRoute({
   return (
     <TokenPlaygroundPage
       document={workspace?.document ?? SAMPLE_DOCUMENT}
+      directives={(workspace?.document ?? SAMPLE_DOCUMENT).directives}
       source={workspace ? "workspace" : "sample"}
       updatedAt={workspace?.updatedAt.toISOString() ?? null}
       system={system}

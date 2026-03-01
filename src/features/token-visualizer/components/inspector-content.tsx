@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Badge, Box, Card, Flex, Select, Separator, Text, TextField } from "@radix-ui/themes";
+import { Badge, Box, Button, Card, Flex, Select, Separator, Text, TextField } from "@radix-ui/themes";
 import TerrazzoColorPicker from "@terrazzo/react-color-picker";
 import useColor, { parse as parseTerrazzoColor } from "@terrazzo/use-color";
 import { HexAlphaColorPicker } from "react-colorful";
 import { CATEGORY_DEFINITIONS } from "@/features/token-visualizer/config";
 import type { TokenRecord } from "@/features/token-visualizer/document";
+import {
+  buildFontFamilyValue,
+  extractPrimaryFontFamily,
+  getFontTokenDefinition,
+  type ImportedGoogleFont
+} from "@/features/token-visualizer/font-utils";
 import {
   categoryLabel,
   convertLengthUnit,
@@ -19,6 +25,8 @@ import {
 import styles from "@/features/token-visualizer/styles.module.css";
 
 type InspectorContentProps = {
+  importedGoogleFonts: ImportedGoogleFont[];
+  onImportGoogleFont: (family: string) => void;
   token: TokenRecord | null;
   onUpdateToken: (tokenId: string, updates: Partial<{ name: string; value: string; category: TokenRecord["category"] }>) => void;
 };
@@ -291,12 +299,94 @@ function RawColorValueEditor({
   );
 }
 
-export function InspectorContent({ token, onUpdateToken }: InspectorContentProps) {
+function FontFamilyValueEditor({
+  importedGoogleFonts,
+  onImportGoogleFont,
+  token,
+  onUpdateToken
+}: {
+  importedGoogleFonts: ImportedGoogleFont[];
+  onImportGoogleFont: InspectorContentProps["onImportGoogleFont"];
+  token: TokenRecord;
+  onUpdateToken: InspectorContentProps["onUpdateToken"];
+}) {
+  const fontToken = getFontTokenDefinition(token.name);
+  const [fontFamilyDraft, setFontFamilyDraft] = useState(extractPrimaryFontFamily(token.value) ?? "");
+  const currentFamily = extractPrimaryFontFamily(token.value);
+  const importedFamilies = importedGoogleFonts.map((font) => font.family);
+  const selectedFamily = currentFamily && importedFamilies.includes(currentFamily) ? currentFamily : "__custom";
+
+  useEffect(() => {
+    setFontFamilyDraft(extractPrimaryFontFamily(token.value) ?? "");
+  }, [token.id, token.value]);
+
+  if (!fontToken) {
+    return <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token.id, { value: event.target.value })} />;
+  }
+
+  return (
+    <Flex direction="column" gap="2">
+      <Flex align="center" gap="2" wrap="wrap">
+        <Badge>{fontToken.framework}</Badge>
+        <Badge color="gray">{fontToken.role}</Badge>
+      </Flex>
+      {importedFamilies.length > 0 ? (
+        <Select.Root
+          value={selectedFamily}
+          onValueChange={(value) => {
+            if (value === "__custom") {
+              return;
+            }
+
+            onUpdateToken(token.id, { value: buildFontFamilyValue(value, token.name) });
+          }}
+        >
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item value="__custom">Current stack</Select.Item>
+            {importedFamilies.map((family) => (
+              <Select.Item key={family} value={family}>
+                {family}
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Root>
+      ) : null}
+      <Flex gap="2">
+        <TextField.Root
+          value={fontFamilyDraft}
+          onChange={(event) => setFontFamilyDraft(event.target.value)}
+          placeholder="Import Google Font"
+        />
+        <Button
+          size="1"
+          onClick={() => {
+            if (!fontFamilyDraft.trim()) {
+              return;
+            }
+
+            onImportGoogleFont(fontFamilyDraft);
+            onUpdateToken(token.id, { value: buildFontFamilyValue(fontFamilyDraft, token.name) });
+          }}
+        >
+          Import
+        </Button>
+      </Flex>
+      <Text size="1" color="gray">
+        Font stack
+      </Text>
+      <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token.id, { value: event.target.value })} />
+    </Flex>
+  );
+}
+
+export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, token, onUpdateToken }: InspectorContentProps) {
   const supportsLengthUnit = token ? tokenSupportsLengthUnit(token) : false;
   const tokenAtRules = token?.atRules ?? [];
   const parsedLength = useMemo(() => (token && supportsLengthUnit ? parseEditableLength(token.value) : null), [supportsLengthUnit, token]);
   const [lengthAmountInput, setLengthAmountInput] = useState(parsedLength ? String(parsedLength.amount) : "");
   const [lengthUnit, setLengthUnit] = useState<"px" | "rem">(parsedLength?.unit ?? (token ? preferredLengthUnit(token) : "rem"));
+  const fontToken = token ? getFontTokenDefinition(token.name) : null;
 
   useEffect(() => {
     if (!token || !supportsLengthUnit) {
@@ -377,6 +467,8 @@ export function InspectorContent({ token, onUpdateToken }: InspectorContentProps
         </Text>
         {token.category === "color" ? (
           <ColorValueEditor token={token} onUpdateToken={onUpdateToken} />
+        ) : fontToken ? (
+          <FontFamilyValueEditor importedGoogleFonts={importedGoogleFonts} onImportGoogleFont={onImportGoogleFont} token={token} onUpdateToken={onUpdateToken} />
         ) : supportsLengthUnit ? (
           <Flex gap="2">
             <TextField.Root
@@ -430,7 +522,14 @@ export function InspectorContent({ token, onUpdateToken }: InspectorContentProps
       ) : token.category === "spacing" || token.category === "sizing" ? (
         <Box height="16px" style={{ borderRadius: 999, width: tokenValueForWidth(token.value), background: "var(--amber-9)" }} />
       ) : token.category === "typography" ? (
-        <Text size="4" style={{ fontSize: token.name.includes("size") ? token.value : undefined, fontWeight: token.name.includes("weight") ? Number.parseInt(token.value, 10) || undefined : undefined }}>
+        <Text
+          size="4"
+          style={{
+            fontFamily: fontToken ? token.value : undefined,
+            fontSize: token.name.includes("size") ? token.value : undefined,
+            fontWeight: token.name.includes("weight") ? Number.parseInt(token.value, 10) || undefined : undefined
+          }}
+        >
           The quick brown fox jumps over the lazy dog.
         </Text>
       ) : token.category === "motion" ? (

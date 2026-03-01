@@ -82,10 +82,6 @@ function splitTopLevelCss(source: string): CssChunk[] {
   return chunks;
 }
 
-function extractAtRuleStatements(source: string) {
-  return [...source.matchAll(STATEMENT_AT_RULE_REGEX)].map((match) => match[0].trim()).filter(Boolean);
-}
-
 function rewriteSelectors(selector: string, hostSelector: string) {
   return selector.replace(ROOT_SELECTOR_REGEX, hostSelector);
 }
@@ -127,7 +123,6 @@ function transformStylesheet(source: string, hostSelector: string): string[] {
 
   for (const chunk of splitTopLevelCss(source)) {
     if (chunk.type === "text") {
-      output.push(...extractAtRuleStatements(chunk.value));
       continue;
     }
 

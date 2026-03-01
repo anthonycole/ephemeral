@@ -62,37 +62,63 @@ const PLAYGROUND_TAILWIND_SOURCE = `
 
   .tw\\:playground-heading-1 {
     @apply tw:m-0 tw:text-5xl tw:font-semibold tw:leading-none;
+    font-family: var(--playground-font-heading);
     color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-2 {
     @apply tw:m-0 tw:text-4xl tw:font-semibold tw:leading-tight;
+    font-family: var(--playground-font-heading);
     color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-3 {
     @apply tw:m-0 tw:text-3xl tw:font-semibold tw:leading-tight;
+    font-family: var(--playground-font-heading);
     color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-4 {
     @apply tw:m-0 tw:text-2xl tw:font-medium tw:leading-tight;
+    font-family: var(--playground-font-heading);
     color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-5 {
     @apply tw:m-0 tw:text-xl tw:font-medium tw:leading-tight;
+    font-family: var(--playground-font-heading);
     color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-6 {
     @apply tw:m-0 tw:text-lg tw:font-medium tw:leading-tight;
+    font-family: var(--playground-font-heading);
     color: var(--playground-color-fg);
   }
 
   .tw\\:playground-copy {
     @apply tw:m-0 tw:text-sm tw:leading-6;
     color: var(--playground-color-muted);
+  }
+
+  .tw\\:playground-copy-serif {
+    font-family: var(--playground-font-serif);
+  }
+
+  .tw\\:playground-copy-mono {
+    font-family: var(--playground-font-mono);
+  }
+
+  .tw\\:playground-copy-strong {
+    font-family: var(--playground-font-strong);
+  }
+
+  .tw\\:playground-copy-em {
+    font-family: var(--playground-font-em);
+  }
+
+  .tw\\:playground-copy-quote {
+    font-family: var(--playground-font-quote);
   }
 
   .tw\\:playground-wheelWrap {
@@ -363,6 +389,11 @@ const PLAYGROUND_TAILWIND_CANDIDATES = [
   "tw:playground-heading-5",
   "tw:playground-heading-6",
   "tw:playground-copy",
+  "tw:playground-copy-serif",
+  "tw:playground-copy-mono",
+  "tw:playground-copy-strong",
+  "tw:playground-copy-em",
+  "tw:playground-copy-quote",
   "tw:playground-wheelWrap",
   "tw:playground-wheel",
   "tw:playground-tokenList",

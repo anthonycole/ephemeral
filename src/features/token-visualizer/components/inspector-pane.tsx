@@ -1,15 +1,18 @@
 import { Button, Flex, Heading, ScrollArea } from "@radix-ui/themes";
 import type { TokenRecord } from "@/features/token-visualizer/document";
 import { InspectorContent } from "@/features/token-visualizer/components/inspector-content";
+import type { ImportedGoogleFont } from "@/features/token-visualizer/font-utils";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 type InspectorPaneProps = {
+  importedGoogleFonts: ImportedGoogleFont[];
+  onImportGoogleFont: (family: string) => void;
   token: TokenRecord | null;
   onUpdateToken: (tokenId: string, updates: Partial<{ name: string; value: string; category: TokenRecord["category"] }>) => void;
   onClose: () => void;
 };
 
-export function InspectorPane({ token, onUpdateToken, onClose }: InspectorPaneProps) {
+export function InspectorPane({ importedGoogleFonts, onImportGoogleFont, token, onUpdateToken, onClose }: InspectorPaneProps) {
   const className = token
     ? `${styles.shellPane} ${styles.inspectorColumn} ${styles.inspectorColumnOpen} ${styles.paneStack}`
     : `${styles.shellPane} ${styles.inspectorColumn} ${styles.paneStack}`;
@@ -25,7 +28,12 @@ export function InspectorPane({ token, onUpdateToken, onClose }: InspectorPanePr
         </Flex>
         <ScrollArea type="auto" scrollbars="vertical" className={styles.paneScroll}>
           <Flex direction="column" gap="3" pr="2">
-            <InspectorContent token={token} onUpdateToken={onUpdateToken} />
+            <InspectorContent
+              importedGoogleFonts={importedGoogleFonts}
+              onImportGoogleFont={onImportGoogleFont}
+              token={token}
+              onUpdateToken={onUpdateToken}
+            />
           </Flex>
         </ScrollArea>
       </Flex>

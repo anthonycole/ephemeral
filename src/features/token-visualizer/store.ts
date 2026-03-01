@@ -4,6 +4,13 @@ import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import type { TokenCategory } from "@/lib/design-tokens";
 import { importCssDocument, normalizeTokenDocument, serializeDocumentToCss, updateDocumentToken, type TokenDocument } from "@/features/token-visualizer/document";
+import {
+  addGoogleFontImportToDocument,
+  normalizeGoogleFontFamily,
+  removeGoogleFontImportFromDocument,
+  removeGoogleFontImportFromCss,
+  upsertGoogleFontImportInCss
+} from "@/features/token-visualizer/font-utils";
 import { SAMPLE_CSS, SAMPLE_DOCUMENT } from "@/features/token-visualizer/sample-workspace";
 
 type TokenStoreState = {
@@ -20,6 +27,8 @@ type TokenStoreState = {
   setSearchQuery: (value: string) => void;
   setSelectedTokenId: (value: string | null) => void;
   updateToken: (tokenId: string, updates: Partial<{ name: string; value: string; category: Exclude<TokenCategory, "all"> }>) => void;
+  addGoogleFontImport: (family: string) => void;
+  removeGoogleFontImport: (family: string) => void;
   resetToSample: () => void;
 };
 
@@ -71,6 +80,38 @@ export const useTokenStore = create<TokenStoreState>()(
         const document = updateDocumentToken(get().document, tokenId, updates);
         set({
           document,
+          generatedCss: serializeDocumentToCss(document)
+        });
+      },
+      addGoogleFontImport: (family) => {
+        const normalizedFamily = normalizeGoogleFontFamily(family);
+
+        if (!normalizedFamily) {
+          return;
+        }
+
+        const document = addGoogleFontImportToDocument(get().document, normalizedFamily);
+        const editorCss = upsertGoogleFontImportInCss(get().editorCss, normalizedFamily);
+
+        set({
+          document,
+          editorCss,
+          generatedCss: serializeDocumentToCss(document)
+        });
+      },
+      removeGoogleFontImport: (family) => {
+        const normalizedFamily = normalizeGoogleFontFamily(family);
+
+        if (!normalizedFamily) {
+          return;
+        }
+
+        const document = removeGoogleFontImportFromDocument(get().document, normalizedFamily);
+        const editorCss = removeGoogleFontImportFromCss(get().editorCss, normalizedFamily);
+
+        set({
+          document,
+          editorCss,
           generatedCss: serializeDocumentToCss(document)
         });
       },

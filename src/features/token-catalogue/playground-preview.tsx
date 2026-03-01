@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { TokenRecord } from "@/features/token-visualizer/document";
+import { parseGoogleFontImports } from "@/features/token-visualizer/font-utils";
 import { transformImportedCssForPlayground } from "@/features/token-catalogue/playground-runtime-css";
 import { renderPlaygroundShowcases } from "@/features/token-catalogue/playground-showcases";
 import styles from "@/features/token-catalogue/styles.module.css";
 
 type PlaygroundPreviewProps = {
+  directives: string[];
   tokens: TokenRecord[];
   importedCss: string;
   runtimeCss: string;
@@ -48,7 +50,29 @@ function tokenReference(tokenName: string | null, fallbackValue: string) {
 
 function createSemanticDeclarations(tokens: TokenRecord[]) {
   const tokenNameMap = new Map(tokens.map((token) => [normalizeTokenName(token.name), token.name]));
-  const fontSans = pickTokenName(tokenNameMap, ["--font-sans", "--font-body"], [["font", "sans"], ["font", "body"]]);
+  const fontSans = pickTokenName(
+    tokenNameMap,
+    ["--font-sans", "--font-body", "--chakra-fonts-body", "--mantine-font-family", "--default-font-family", "--font-family"],
+    [["font", "sans"], ["font", "body"], ["chakra", "fonts", "body"], ["mantine", "font", "family"], ["default", "font", "family"]]
+  );
+  const fontHeading = pickTokenName(
+    tokenNameMap,
+    ["--font-heading", "--chakra-fonts-heading", "--mantine-font-family-headings", "--heading-font-family"],
+    [["font", "heading"], ["chakra", "fonts", "heading"], ["mantine", "font", "family", "headings"], ["heading", "font", "family"]]
+  );
+  const fontStrong = pickTokenName(tokenNameMap, ["--strong-font-family"], [["strong", "font", "family"]]);
+  const fontSerif = pickTokenName(
+    tokenNameMap,
+    ["--font-serif", "--em-font-family", "--quote-font-family"],
+    [["font", "serif"], ["em", "font", "family"], ["quote", "font", "family"]]
+  );
+  const fontEm = pickTokenName(tokenNameMap, ["--em-font-family"], [["em", "font", "family"]]);
+  const fontQuote = pickTokenName(tokenNameMap, ["--quote-font-family"], [["quote", "font", "family"]]);
+  const fontMono = pickTokenName(
+    tokenNameMap,
+    ["--font-mono", "--chakra-fonts-mono", "--mantine-font-family-monospace", "--code-font-family"],
+    [["font", "mono"], ["chakra", "fonts", "mono"], ["mantine", "font", "family", "monospace"], ["code", "font", "family"]]
+  );
   const colorBackground = pickTokenName(
     tokenNameMap,
     [
@@ -122,6 +146,12 @@ function createSemanticDeclarations(tokens: TokenRecord[]) {
   const shadowPopover = pickTokenName(tokenNameMap, ["--shadow-xl", "--shadow-lg", "--shadow-md"], [["shadow", "xl"], ["shadow", "lg"], ["shadow", "md"]]);
   const declarations = [
     `  --playground-font-sans: ${tokenReference(fontSans, "ui-sans-serif, system-ui, sans-serif")};`,
+    `  --playground-font-heading: ${tokenReference(fontHeading ?? fontSans, "ui-sans-serif, system-ui, sans-serif")};`,
+    `  --playground-font-strong: ${tokenReference(fontStrong ?? fontHeading ?? fontSans, "ui-sans-serif, system-ui, sans-serif")};`,
+    `  --playground-font-serif: ${tokenReference(fontSerif, "ui-serif, Georgia, serif")};`,
+    `  --playground-font-em: ${tokenReference(fontEm ?? fontSerif, "ui-serif, Georgia, serif")};`,
+    `  --playground-font-quote: ${tokenReference(fontQuote ?? fontSerif, "ui-serif, Georgia, serif")};`,
+    `  --playground-font-mono: ${tokenReference(fontMono, 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace')};`,
     `  --playground-color-bg: ${tokenReference(colorBackground, "oklch(0.15 0.02 255)")};`,
     `  --playground-color-fg: ${tokenReference(colorForeground, "oklch(0.97 0.01 255)")};`,
     `  --playground-color-muted: ${tokenReference(colorMuted, "oklch(0.76 0.02 255)")};`,
@@ -155,6 +185,11 @@ body {
   font-family: var(--playground-font-sans);
 }
 
+code,
+pre {
+  font-family: var(--playground-font-mono);
+}
+
 *,
 *::before,
 *::after {
@@ -166,12 +201,17 @@ function escapeStyleTagContent(value: string) {
   return value.replace(/<\/style/gi, "<\\/style");
 }
 
-function buildPlaygroundDocument({ body, stylesheet }: { body: string; stylesheet: string }) {
+function escapeHtmlAttribute(value: string) {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+}
+
+function buildPlaygroundDocument({ body, stylesheet, googleFontHrefs }: { body: string; stylesheet: string; googleFontHrefs: string[] }) {
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    ${googleFontHrefs.map((href) => `<link rel="stylesheet" href="${escapeHtmlAttribute(href)}" />`).join("\n    ")}
     <style>${escapeStyleTagContent(stylesheet)}</style>
   </head>
   <body>
@@ -180,19 +220,22 @@ function buildPlaygroundDocument({ body, stylesheet }: { body: string; styleshee
 </html>`;
 }
 
-export function PlaygroundPreview({ tokens, importedCss, runtimeCss }: PlaygroundPreviewProps) {
+export function PlaygroundPreview({ directives, tokens, importedCss, runtimeCss }: PlaygroundPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [frameHeight, setFrameHeight] = useState(1);
   const tokenDeclarations = useMemo(() => {
     return tokens.map((token) => `  ${token.name}: ${token.value};`).join("\n");
   }, [tokens]);
   const semanticDeclarations = useMemo(() => createSemanticDeclarations(tokens), [tokens]);
+  const googleFontHrefs = useMemo(() => parseGoogleFontImports(directives).map((font) => font.href), [directives]);
+  const nonGoogleDirectives = useMemo(() => directives.filter((directive) => parseGoogleFontImports([directive]).length === 0), [directives]);
   const importedRuntimeCss = useMemo(() => transformImportedCssForPlayground(importedCss, ":root"), [importedCss]);
   const stylesheet = useMemo(() => {
-    return `:root {\n${tokenDeclarations}\n${semanticDeclarations ? `\n${semanticDeclarations}` : ""}\n}\n\n${importedRuntimeCss}\n\n${runtimeCss}\n\n${PLAYGROUND_RECIPE_CSS}`;
-  }, [importedRuntimeCss, runtimeCss, semanticDeclarations, tokenDeclarations]);
+    const directiveSource = nonGoogleDirectives.join("\n");
+    return `${directiveSource ? `${directiveSource}\n\n` : ""}:root {\n${tokenDeclarations}\n${semanticDeclarations ? `\n${semanticDeclarations}` : ""}\n}\n\n${importedRuntimeCss}\n\n${runtimeCss}\n\n${PLAYGROUND_RECIPE_CSS}`;
+  }, [importedRuntimeCss, nonGoogleDirectives, runtimeCss, semanticDeclarations, tokenDeclarations]);
   const body = useMemo(() => renderPlaygroundShowcases(tokens), [tokens]);
-  const previewDocument = useMemo(() => buildPlaygroundDocument({ body, stylesheet }), [body, stylesheet]);
+  const previewDocument = useMemo(() => buildPlaygroundDocument({ body, stylesheet, googleFontHrefs }), [body, googleFontHrefs, stylesheet]);
 
   useEffect(() => {
     const iframe = iframeRef.current;

@@ -1,11 +1,18 @@
 import { importCssDocument } from "@/features/token-visualizer/document";
 
-export const SAMPLE_CSS = `:root {
+export const SAMPLE_CSS = `@import url("https://fonts.googleapis.com/css2?family=Inter&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Serif+4&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap");
+
+:root {
   --color-primary-500: #2563eb;
   --color-surface: #ffffff;
   --color-text: #101828;
   --space-1: 0.25rem;
   --space-4: 1rem;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-size-body: 1rem;
   --font-weight-semibold: 600;
   --radius-sm: 0.25rem;

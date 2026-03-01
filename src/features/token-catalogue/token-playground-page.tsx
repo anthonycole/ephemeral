@@ -10,12 +10,13 @@ import styles from "@/features/token-catalogue/styles.module.css";
 
 type TokenPlaygroundPageProps = {
   document: TokenDocument;
+  directives: string[];
   source: "workspace" | "sample";
   updatedAt: string | null;
   system: PlaygroundAdapterKey;
 };
 
-export async function TokenPlaygroundPage({ document, source: _source, updatedAt, system }: TokenPlaygroundPageProps) {
+export async function TokenPlaygroundPage({ document, directives, source: _source, updatedAt, system }: TokenPlaygroundPageProps) {
   const runtimeCss = await getPlaygroundAdapterDefinition(system).getRuntimeCss();
 
   return (
@@ -41,6 +42,7 @@ export async function TokenPlaygroundPage({ document, source: _source, updatedAt
 
         <section className={styles.playgroundCanvas}>
           <PlaygroundPreview
+            directives={directives}
             tokens={document.tokens}
             importedCss={document.importedCss}
             runtimeCss={runtimeCss}

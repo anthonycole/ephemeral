@@ -27,6 +27,8 @@ export function useEditorPaneState() {
       generatedCss: state.generatedCss,
       setEditorCss: state.setEditorCss,
       importEditorCss: state.importEditorCss,
+      addGoogleFontImport: state.addGoogleFontImport,
+      removeGoogleFontImport: state.removeGoogleFontImport,
       resetToSample: state.resetToSample
     }))
   );
@@ -123,6 +125,7 @@ export function useInspectorPaneState() {
       document: state.document,
       selectedTokenId: state.selectedTokenId,
       updateToken: state.updateToken,
+      addGoogleFontImport: state.addGoogleFontImport,
       setSelectedTokenId: state.setSelectedTokenId
     }))
   );
@@ -138,6 +141,7 @@ export function useInspectorPaneState() {
   return {
     selectedToken,
     updateToken: inspectorState.updateToken,
+    addGoogleFontImport: inspectorState.addGoogleFontImport,
     closeInspector: () => inspectorState.setSelectedTokenId(null)
   };
 }

@@ -1,8 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import { Badge, Button, Flex, Heading, ScrollArea, Text } from "@radix-ui/themes";
 import type { CssSyntaxError } from "@/lib/design-tokens";
+import type { ImportedGoogleFont } from "@/features/token-visualizer/font-utils";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 const CodeEditor = dynamic(
@@ -15,22 +17,29 @@ const CodeEditor = dynamic(
 
 type EditorPaneProps = {
   editorCss: string;
+  importedGoogleFonts: ImportedGoogleFont[];
   onEditorCssChange: (value: string) => void;
+  onImportGoogleFont: (family: string) => void;
   onImportCss: () => void;
   onLoadGeneratedCss: () => void;
+  onRemoveGoogleFont: (family: string) => void;
   onResetToSample: () => void;
   syntaxErrors: CssSyntaxError[];
 };
 
 export function EditorPane({
   editorCss,
+  importedGoogleFonts,
   onEditorCssChange,
+  onImportGoogleFont,
   onImportCss,
   onLoadGeneratedCss,
+  onRemoveGoogleFont,
   onResetToSample,
   syntaxErrors
 }: EditorPaneProps) {
   const hasErrors = syntaxErrors.length > 0;
+  const [fontFamilyDraft, setFontFamilyDraft] = useState("");
 
   return (
     <section className={`${styles.shellPane} ${styles.leftPane}`}>
@@ -57,6 +66,54 @@ export function EditorPane({
                   Reset sample
                 </Button>
               </Flex>
+            </Flex>
+
+            <Flex direction="column" gap="2">
+              <Flex justify="between" align="center" wrap="wrap" gap="2">
+                <Heading size="4">Google Fonts</Heading>
+                <Text size="2" color="gray">
+                  {importedGoogleFonts.length} imported
+                </Text>
+              </Flex>
+              <Flex gap="2" wrap="wrap">
+                <input
+                  value={fontFamilyDraft}
+                  onChange={(event) => setFontFamilyDraft(event.target.value)}
+                  placeholder="Inter"
+                  className={styles.fontFamilyInput}
+                />
+                <Button
+                  size="1"
+                  onClick={() => {
+                    if (!fontFamilyDraft.trim()) {
+                      return;
+                    }
+
+                    onImportGoogleFont(fontFamilyDraft);
+                    setFontFamilyDraft("");
+                  }}
+                >
+                  Import font
+                </Button>
+              </Flex>
+              {importedGoogleFonts.length > 0 ? (
+                <div className={styles.fontImportList}>
+                  {importedGoogleFonts.map((font) => (
+                    <div key={font.family} className={styles.fontImportRow}>
+                      <div>
+                        <Text size="2">{font.family}</Text>
+                      </div>
+                      <Button size="1" variant="soft" color="gray" onClick={() => onRemoveGoogleFont(font.family)}>
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Text size="2" color="gray">
+                  No Google Fonts imported yet.
+                </Text>
+              )}
             </Flex>
 
             <CodeEditor value={editorCss} onChange={onEditorCssChange} hasErrors={hasErrors} />
