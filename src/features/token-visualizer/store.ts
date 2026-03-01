@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import type { TokenCategory } from "@/lib/design-tokens";
-import { importCssDocument, normalizeTokenDocument, serializeDocumentToCss, updateDocumentToken, type TokenDocument } from "@/features/token-visualizer/document";
+import { addDocumentToken, importCssDocument, normalizeTokenDocument, serializeDocumentToCss, updateDocumentToken, type TokenDocument } from "@/features/token-visualizer/document";
 import {
   addGoogleFontImportToDocument,
   normalizeGoogleFontFamily,
@@ -27,6 +27,7 @@ type TokenStoreState = {
   setSearchQuery: (value: string) => void;
   setSelectedTokenId: (value: string | null) => void;
   updateToken: (tokenId: string, updates: Partial<{ name: string; value: string; category: Exclude<TokenCategory, "all"> }>) => void;
+  createToken: (token?: Partial<{ name: string; value: string; category: Exclude<TokenCategory, "all"> }>) => string;
   addGoogleFontImport: (family: string) => void;
   removeGoogleFontImport: (family: string) => void;
   resetToSample: () => void;
@@ -82,6 +83,24 @@ export const useTokenStore = create<TokenStoreState>()(
           document,
           generatedCss: serializeDocumentToCss(document)
         });
+      },
+      createToken: (tokenInput) => {
+        const currentDocument = get().document;
+        const currentEditorCss = get().editorCss;
+        const currentGeneratedCss = get().generatedCss;
+        const { document, token } = addDocumentToken(currentDocument, tokenInput);
+        const nextCss = serializeDocumentToCss(document);
+        const shouldSyncEditor = currentEditorCss.trim() === currentGeneratedCss.trim();
+
+        set({
+          document,
+          editorCss: shouldSyncEditor ? nextCss : currentEditorCss,
+          generatedCss: nextCss,
+          activeCategory: token.category,
+          selectedTokenId: token.sourceId
+        });
+
+        return token.sourceId;
       },
       addGoogleFontImport: (family) => {
         const normalizedFamily = normalizeGoogleFontFamily(family);

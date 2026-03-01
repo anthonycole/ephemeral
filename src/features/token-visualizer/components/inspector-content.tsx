@@ -13,12 +13,17 @@ import {
 } from "@/features/token-visualizer/font-utils";
 import {
   categoryLabel,
+  convertDurationUnit,
   convertLengthUnit,
+  formatDurationValue,
   formatScopeLabel,
   formatLengthValue,
+  parseEditableDuration,
   parseEditableLength,
+  preferredDurationUnit,
   preferredLengthUnit,
   toMilliseconds,
+  tokenSupportsDurationUnit,
   tokenSupportsLengthUnit,
   tokenValueForWidth
 } from "@/features/token-visualizer/utils";
@@ -382,10 +387,14 @@ function FontFamilyValueEditor({
 
 export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, token, onUpdateToken }: InspectorContentProps) {
   const supportsLengthUnit = token ? tokenSupportsLengthUnit(token) : false;
+  const supportsDurationUnit = token ? tokenSupportsDurationUnit(token) : false;
   const tokenAtRules = token?.atRules ?? [];
   const parsedLength = useMemo(() => (token && supportsLengthUnit ? parseEditableLength(token.value) : null), [supportsLengthUnit, token]);
   const [lengthAmountInput, setLengthAmountInput] = useState(parsedLength ? String(parsedLength.amount) : "");
   const [lengthUnit, setLengthUnit] = useState<"px" | "rem">(parsedLength?.unit ?? (token ? preferredLengthUnit(token) : "rem"));
+  const parsedDuration = useMemo(() => (token && supportsDurationUnit ? parseEditableDuration(token.value) : null), [supportsDurationUnit, token]);
+  const [durationAmountInput, setDurationAmountInput] = useState(parsedDuration ? String(parsedDuration.amount) : "");
+  const [durationUnit, setDurationUnit] = useState<"ms" | "s">(parsedDuration?.unit ?? (token ? preferredDurationUnit(token) : "ms"));
   const fontToken = token ? getFontTokenDefinition(token.name) : null;
 
   useEffect(() => {
@@ -397,6 +406,16 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
     setLengthAmountInput(nextParsedLength ? String(nextParsedLength.amount) : "");
     setLengthUnit(nextParsedLength?.unit ?? preferredLengthUnit(token));
   }, [supportsLengthUnit, token]);
+
+  useEffect(() => {
+    if (!token || !supportsDurationUnit) {
+      return;
+    }
+
+    const nextParsedDuration = parseEditableDuration(token.value);
+    setDurationAmountInput(nextParsedDuration ? String(nextParsedDuration.amount) : "");
+    setDurationUnit(nextParsedDuration?.unit ?? preferredDurationUnit(token));
+  }, [supportsDurationUnit, token]);
 
   if (!token) {
     return <Text color="gray">Select a token to inspect.</Text>;
@@ -432,6 +451,39 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
     const nextValue = formatLengthValue(convertedAmount, nextUnit);
 
     setLengthAmountInput(String(convertedAmount));
+    onUpdateToken(token.id, { value: nextValue });
+  };
+
+  const handleDurationAmountChange = (value: string) => {
+    setDurationAmountInput(value);
+
+    if (value.trim() === "" || value === "-" || value === "." || value === "-.") {
+      return;
+    }
+
+    const numeric = Number.parseFloat(value);
+
+    if (Number.isNaN(numeric)) {
+      return;
+    }
+
+    onUpdateToken(token.id, { value: formatDurationValue(numeric, durationUnit) });
+  };
+
+  const handleDurationUnitChange = (nextUnit: "ms" | "s") => {
+    setDurationUnit(nextUnit);
+
+    const parsed = parseEditableDuration(token.value);
+
+    if (!parsed) {
+      return;
+    }
+
+    const currentUnit = parsed.unit ?? preferredDurationUnit(token);
+    const convertedAmount = convertDurationUnit(parsed.amount, currentUnit, nextUnit);
+    const nextValue = formatDurationValue(convertedAmount, nextUnit);
+
+    setDurationAmountInput(String(convertedAmount));
     onUpdateToken(token.id, { value: nextValue });
   };
 
@@ -482,6 +534,17 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
               <Select.Content>
                 <Select.Item value="rem">rem</Select.Item>
                 <Select.Item value="px">px</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Flex>
+        ) : supportsDurationUnit ? (
+          <Flex gap="2">
+            <TextField.Root type="number" step="0.05" value={durationAmountInput} onChange={(event) => handleDurationAmountChange(event.target.value)} />
+            <Select.Root value={durationUnit} onValueChange={(value) => handleDurationUnitChange(value as "ms" | "s")}>
+              <Select.Trigger style={{ minWidth: 84 }} />
+              <Select.Content>
+                <Select.Item value="ms">ms</Select.Item>
+                <Select.Item value="s">s</Select.Item>
               </Select.Content>
             </Select.Root>
           </Flex>

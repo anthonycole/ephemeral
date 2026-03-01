@@ -3,9 +3,11 @@ import type { TokenRecord } from "@/features/token-visualizer/document";
 import type { TokenGroups } from "@/features/token-visualizer/types";
 
 export type EditableLengthUnit = "px" | "rem";
+export type EditableDurationUnit = "ms" | "s";
 
 const ROOT_FONT_SIZE_PX = 16;
 const LENGTH_VALUE_REGEX = /^(-?\d*\.?\d+)(px|rem)?$/i;
+const DURATION_VALUE_REGEX = /^(-?\d*\.?\d+)(ms|s)?$/i;
 
 export function createEmptyGroups(): TokenGroups {
   return {
@@ -95,6 +97,25 @@ export function parseEditableLength(value: string) {
   };
 }
 
+export function parseEditableDuration(value: string) {
+  const match = value.trim().match(DURATION_VALUE_REGEX);
+
+  if (!match) {
+    return null;
+  }
+
+  const amount = Number.parseFloat(match[1]);
+
+  if (Number.isNaN(amount)) {
+    return null;
+  }
+
+  return {
+    amount,
+    unit: (match[2]?.toLowerCase() as EditableDurationUnit | undefined) ?? null
+  };
+}
+
 export function tokenSupportsLengthUnit(token: TokenRecord) {
   const parsed = parseEditableLength(token.value);
 
@@ -119,7 +140,39 @@ export function preferredLengthUnit(token: TokenRecord): EditableLengthUnit {
   return token.category === "breakpoint" ? "px" : "rem";
 }
 
+export function tokenSupportsDurationUnit(token: TokenRecord) {
+  const parsed = parseEditableDuration(token.value);
+
+  if (!parsed) {
+    return false;
+  }
+
+  if (parsed.unit === "ms" || parsed.unit === "s") {
+    return true;
+  }
+
+  return token.category === "motion";
+}
+
+export function preferredDurationUnit(token: TokenRecord): EditableDurationUnit {
+  const parsed = parseEditableDuration(token.value);
+
+  if (parsed?.unit === "ms" || parsed?.unit === "s") {
+    return parsed.unit;
+  }
+
+  return "ms";
+}
+
 function formatLengthAmount(value: number) {
+  if (Number.isInteger(value)) {
+    return `${value}`;
+  }
+
+  return value.toFixed(4).replace(/\.?0+$/, "");
+}
+
+function formatUnitAmount(value: number) {
   if (Number.isInteger(value)) {
     return `${value}`;
   }
@@ -137,4 +190,16 @@ export function convertLengthUnit(amount: number, fromUnit: EditableLengthUnit, 
 
 export function formatLengthValue(amount: number, unit: EditableLengthUnit) {
   return `${formatLengthAmount(amount)}${unit}`;
+}
+
+export function convertDurationUnit(amount: number, fromUnit: EditableDurationUnit, toUnit: EditableDurationUnit) {
+  if (fromUnit === toUnit) {
+    return amount;
+  }
+
+  return fromUnit === "s" ? amount * 1000 : amount / 1000;
+}
+
+export function formatDurationValue(amount: number, unit: EditableDurationUnit) {
+  return `${formatUnitAmount(amount)}${unit}`;
 }

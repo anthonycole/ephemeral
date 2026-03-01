@@ -41,8 +41,9 @@ export function TokenWorkspace() {
   const { activeCategory, visibleTokens, groupedVisibleTokens, counts, setActiveCategory, setSelectedTokenId, supportsVirtualizedSingleCategory } =
     useCanvasPaneState();
   const { selectedToken, updateToken, addGoogleFontImport: addInspectorGoogleFontImport, closeInspector } = useInspectorPaneState();
-  const { document, replaceWorkspace, selectedTokenId } = useTokenStore(
+  const { createToken, document, replaceWorkspace, selectedTokenId } = useTokenStore(
     useShallow((state) => ({
+      createToken: state.createToken,
       document: state.document,
       replaceWorkspace: state.replaceWorkspace,
       selectedTokenId: state.selectedTokenId
@@ -53,6 +54,7 @@ export function TokenWorkspace() {
   const [hasLoadedWorkspace, setHasLoadedWorkspace] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [tokenComposerOpen, setTokenComposerOpen] = useState(false);
   const skipNextSaveRef = useRef(false);
   const saveSequenceRef = useRef(0);
   const initializedCategorySyncRef = useRef(false);
@@ -337,6 +339,13 @@ export function TokenWorkspace() {
       run: () => setEditorOpen(true)
     },
     {
+      id: "create-token",
+      title: "Create token",
+      subtitle: "Open the add-token form",
+      keywords: ["token", "create", "new"],
+      run: () => setTokenComposerOpen(true)
+    },
+    {
       id: "open-playground",
       title: "Open playground",
       subtitle: "Open the isolated token playground route",
@@ -417,9 +426,12 @@ export function TokenWorkspace() {
     <main className={styles.workspaceRoot}>
       <GoogleFontLinks directives={document.directives} />
       <WorkspaceHeader
+        onCreateToken={createToken}
         onOpenEditor={() => setEditorOpen(true)}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+        onTokenComposerOpenChange={setTokenComposerOpen}
         persistenceStatus={persistenceStatus}
+        tokenComposerOpen={tokenComposerOpen}
       />
       <Grid className={gridClassName} align="stretch">
         <CanvasPane

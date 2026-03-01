@@ -150,6 +150,47 @@ export function updateDocumentToken(
   };
 }
 
+export function addDocumentToken(
+  document: TokenDocument,
+  token?: Partial<Pick<TokenRecord, "name" | "value" | "category" | "scope" | "atRules">>
+) {
+  const normalizedDocument = normalizeTokenDocument(document);
+  const existingNames = new Set(normalizedDocument.tokens.map((entry) => entry.name.toLowerCase()));
+  const categoryKey = token?.category && token.category !== "other" ? token.category : "token";
+  let tokenNumber = normalizedDocument.tokens.length + 1;
+  let defaultName = `--${categoryKey}-${tokenNumber}`;
+
+  while (existingNames.has(defaultName.toLowerCase())) {
+    tokenNumber += 1;
+    defaultName = `--${categoryKey}-${tokenNumber}`;
+  }
+
+  const scope = sanitizeScope(token?.scope ?? ":root");
+  const atRules = Array.isArray(token?.atRules) ? token.atRules : [];
+  const originalIndex = normalizedDocument.tokens.length === 0 ? 0 : Math.max(...normalizedDocument.tokens.map((entry) => entry.originalIndex)) + 1;
+  const createdToken = normalizeTokenRecord(
+    {
+      name: token?.name ?? defaultName,
+      value: token?.value ?? "initial",
+      category: token?.category ?? "other",
+      scope,
+      atRules,
+      originalIndex
+    },
+    originalIndex
+  );
+  const blockExists = normalizedDocument.blockOrder.some((block) => block.scope === scope && JSON.stringify(block.atRules) === JSON.stringify(atRules));
+
+  return {
+    document: {
+      ...normalizedDocument,
+      blockOrder: blockExists ? normalizedDocument.blockOrder : [...normalizedDocument.blockOrder, { scope, atRules }],
+      tokens: [...normalizedDocument.tokens, createdToken]
+    },
+    token: createdToken
+  };
+}
+
 export function findTokenById(document: TokenDocument, tokenId: string | null) {
   if (!tokenId) {
     return null;

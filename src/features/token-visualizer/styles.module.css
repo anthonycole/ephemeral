@@ -37,10 +37,48 @@
   gap: 0.35rem;
 }
 
+.headerIconButton {
+  width: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0;
+}
+
 .commandTriggerKey {
   font-size: 0.75rem;
   line-height: 1;
   font-weight: 600;
+}
+
+.tokenComposerContent {
+  width: min(22rem, calc(100vw - 2rem));
+}
+
+.tokenComposerContentWide {
+  width: min(25rem, calc(100vw - 2rem));
+}
+
+.tokenComposerField {
+  width: 100%;
+}
+
+.tokenComposerColorPreview {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.625rem;
+  align-items: stretch;
+}
+
+.tokenComposerColorSwatch {
+  min-height: 3rem;
+  border: 1px solid rgb(15 23 42 / 0.08);
+}
+
+.tokenComposerColorMeta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 .srOnly {
@@ -221,6 +259,7 @@
 }
 
 .headerActionButton:hover,
+.headerIconButton:hover,
 .editorCloseButton:hover {
   background: inherit;
   color: inherit;
@@ -671,6 +710,18 @@
 
 .terrazzoColorPickerWrap :global(.tz-color-picker-code) {
   display: none;
+}
+
+.tokenComposerTerrazzoWrap :global(.tz-color-picker) {
+  gap: 0.5rem;
+}
+
+.tokenComposerTerrazzoWrap :global(.tz-color-picker-preview) {
+  display: none;
+}
+
+.tokenComposerTerrazzoWrap :global(.tz-color-picker-sliders) {
+  gap: 0.35rem;
 }
 
 .colorHexField {
