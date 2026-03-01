@@ -1,6 +1,7 @@
 import type { TokenRecord } from "@/features/token-visualizer/document";
 import { groupTokens, parseEditableLength, tokenValueForWidth, toMilliseconds } from "@/features/token-visualizer/utils";
 import { tokenCategoryDefinitions, tokenCategoryDescriptions } from "@/features/token-catalogue/categories";
+import { analyzePlaygroundColorLayout } from "@/features/token-catalogue/playground-color-layout";
 
 function escapeHtml(value: string) {
   return value
@@ -11,35 +12,8 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#39;");
 }
 
-const WHEEL_SAFE_COLOR_VALUE_REGEX = /^(#([0-9a-f]{3,8})\b|rgba?\([^)]*\)|hsla?\([^)]*\)|oklch\([^)]*\)|oklab\([^)]*\)|color\([^)]*\)|lab\([^)]*\)|lch\([^)]*\)|var\(--[^)]+\))$/i;
-const MOSAIC_LAYOUT = [
-  { column: "span 2", row: "span 2", aspectRatio: "1 / 1" },
-  { column: "span 1", row: "span 1", aspectRatio: "4 / 5" },
-  { column: "span 1", row: "span 1", aspectRatio: "3 / 4" },
-  { column: "span 1", row: "span 1", aspectRatio: "5 / 4" },
-  { column: "span 1", row: "span 2", aspectRatio: "3 / 5" },
-  { column: "span 2", row: "span 1", aspectRatio: "16 / 7" }
-] as const;
-
-function isWheelSafeColorValue(value: string) {
-  return WHEEL_SAFE_COLOR_VALUE_REGEX.test(value.trim());
-}
-
-function createColorMosaicTokens(colorTokens: TokenRecord[]) {
-  const mosaicTokens = colorTokens.filter((token) => isWheelSafeColorValue(token.value)).slice(0, MOSAIC_LAYOUT.length);
-
-  if (mosaicTokens.length > 0) {
-    return mosaicTokens;
-  }
-
-  return [
-    { name: "--playground-color-accent", value: "var(--playground-color-accent)" },
-    { name: "--playground-color-accent-strong", value: "var(--playground-color-accent-strong)" },
-    { name: "--playground-color-fg", value: "var(--playground-color-fg)" },
-    { name: "--playground-color-bg", value: "var(--playground-color-bg)" },
-    { name: "--playground-color-panel-strong", value: "var(--playground-color-panel-strong)" },
-    { name: "--playground-color-border-strong", value: "var(--playground-color-border-strong)" }
-  ];
+function colorScaleTextColor(step: number) {
+  return step >= 500 ? "rgb(255 255 255 / 0.92)" : "rgb(15 23 42 / 0.88)";
 }
 
 function pickSpacingToken(tokens: TokenRecord[]) {
@@ -132,17 +106,44 @@ function renderColorSection(tokens: TokenRecord[]) {
     return "";
   }
 
-  const mosaicTiles = createColorMosaicTokens(displayTokens)
-    .map((token, index) => {
-      const layout = MOSAIC_LAYOUT[index % MOSAIC_LAYOUT.length];
-      const tileStyle = escapeHtml(
-        `background: ${token.value}; grid-column: ${layout.column}; grid-row: ${layout.row}; aspect-ratio: ${layout.aspectRatio};`
-      );
+  const layout = analyzePlaygroundColorLayout(displayTokens);
+  const sectionCopy =
+    layout.mode === "scale"
+      ? "Palette families shown as tonal steps for quick comparison."
+      : layout.mode === "mixed"
+        ? "Scale colors and semantic roles shown together so sparse themes still read clearly."
+        : layout.mode === "semantic-grid"
+          ? "Role colors shown as surfaces, text, borders, and accents."
+          : "Available color tokens shown directly without inferred scales.";
 
-      return `<div class="tw:playground-mosaicTile" style="${tileStyle}" aria-label="${escapeHtml(`${token.name} ${token.value}`)}"></div>`;
+  const scaleRows = layout.scaleFamilies
+    .map((family) => {
+      const tiles = family.steps
+        .map(
+          ({ step, token }) => `
+            <div class="tw:playground-colorScaleTile">
+              <div class="tw:playground-colorScaleSwatch" style="${escapeHtml(`background: ${token.value};`)}">
+                <span class="tw:playground-colorScaleStep" style="${escapeHtml(`color: ${colorScaleTextColor(step)};`)}">${step}</span>
+              </div>
+            </div>
+          `
+        )
+        .join("");
+
+      return `
+        <div class="tw:playground-colorScaleRow">
+          <div class="tw:playground-colorScaleHeader">
+            <span class="tw:playground-tokenName">${escapeHtml(family.label)}</span>
+            <span class="tw:playground-tokenValue">${family.coverage} mapped steps</span>
+          </div>
+          <div class="tw:playground-colorScaleTrack" style="${escapeHtml(`--playground-scale-columns: ${family.steps.length};`)}">${tiles}</div>
+        </div>
+      `;
     })
     .join("");
-  const rows = displayTokens
+
+  const semanticRows = layout.looseTokens
+    .slice(0, layout.mode === "minimal" ? 6 : 4)
     .map((token) => {
       const swatchStyle = escapeHtml(`background: ${token.value};`);
       return `
@@ -156,15 +157,33 @@ function renderColorSection(tokens: TokenRecord[]) {
       `;
     })
     .join("");
+  const semanticGrid = layout.semanticTokens
+    .map(({ label, token }) => {
+      const swatchStyle = escapeHtml(`background: ${token.value};`);
+      return `
+        <div class="tw:playground-semanticCard">
+          <span class="tw:playground-semanticSwatch" style="${swatchStyle}"></span>
+          <div class="tw:playground-semanticMeta">
+            <span class="tw:playground-tokenName">${escapeHtml(label)}</span>
+            <span class="tw:playground-tokenValue">${escapeHtml(token.name)}</span>
+            <span class="tw:playground-tokenValue">${escapeHtml(token.value)}</span>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
 
   return `
     ${renderSectionStart("color", displayTokens.length)}
-      <div class="tw:playground-sectionBody tw:playground-sectionBody-grid">
-        <div class="tw:playground-mosaicWrap">
-          <div class="tw:playground-mosaic">${mosaicTiles}</div>
-          <p class="tw:playground-copy">Use this mosaic to judge balance, temperature, and how the palette distributes weight across a layout.</p>
-        </div>
-        <div class="tw:playground-tokenList">${rows}</div>
+      <div class="tw:playground-sectionBody">
+        ${scaleRows ? `<div class="tw:playground-colorScaleGroup">${scaleRows}</div>` : ""}
+        ${layout.mode !== "scale" && semanticGrid ? `<div class="tw:playground-semanticGrid">${semanticGrid}</div>` : ""}
+        ${layout.mode !== "scale" && semanticRows ? `<div class="tw:playground-colorListCompact">${semanticRows}</div>` : ""}
+        ${
+          layout.mode !== "scale" && sectionCopy
+            ? `<div class="tw:playground-colorNote"><span class="tw:playground-tokenValue">${escapeHtml(sectionCopy)}</span></div>`
+            : ""
+        }
       </div>
     ${renderSectionEnd()}
   `;

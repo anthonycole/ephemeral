@@ -28,6 +28,35 @@ type ScaleGroup = {
   tokens: TokenRecord[];
 };
 
+function tokenOriginBadgeLabel(token: TokenRecord) {
+  if (token.readOnly !== true) {
+    return null;
+  }
+
+  return token.origin === "inherited" ? "Inherited" : "Tailwind";
+}
+
+function tokenOriginBadgeColor(token: TokenRecord): "gray" | "blue" {
+  return token.origin === "inherited" ? "blue" : "gray";
+}
+
+function TokenName({ token, size = "2" }: { token: TokenRecord; size?: "1" | "2" }) {
+  const originBadge = tokenOriginBadgeLabel(token);
+
+  return (
+    <Flex align="center" gap="2" wrap="wrap" className={styles.tokenNameRow}>
+      <Text size={size} className="font-mono">
+        {token.name}
+      </Text>
+      {originBadge ? (
+        <Badge variant="soft" color={tokenOriginBadgeColor(token)} className={styles.tokenOriginBadge}>
+          {originBadge}
+        </Badge>
+      ) : null}
+    </Flex>
+  );
+}
+
 function compareByNumericValue(a: TokenRecord, b: TokenRecord) {
   return (numericValue(a.value) ?? Number.MAX_SAFE_INTEGER) - (numericValue(b.value) ?? Number.MAX_SAFE_INTEGER) || a.name.localeCompare(b.name);
 }
@@ -71,11 +100,9 @@ function PaintSwatchGroup({
             style={{ background: token.value, zIndex: tokens.length - index }}
             title={`${token.name}: ${token.value}`}
           >
-            <span className={styles.paintSwatchCardMeta}>
-              <Text size="1" className="font-mono">
-                {token.name}
-              </Text>
-            </span>
+            <div className={styles.paintSwatchCardMeta}>
+              <TokenName token={token} size="1" />
+            </div>
           </button>
         ))}
       </div>
@@ -172,9 +199,7 @@ function ScaleTableRow({
           {row.extras.map((token) => (
             <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.scaleExtraChip} title={`${token.name}: ${token.value}`}>
               <span className={styles.scaleExtraDot} style={{ background: token.value }} />
-              <Text size="1" className="font-mono">
-                {token.name}
-              </Text>
+              <TokenName token={token} size="1" />
             </button>
           ))}
         </div>
@@ -382,9 +407,7 @@ export function SpacingCanvas({ tokens, onSelect, virtualize = false }: CanvasPr
             <Text size="1" color="gray" className="font-mono">
               {index + 1}
             </Text>
-            <Text size="2" className="font-mono">
-              {token.name}
-            </Text>
+            <TokenName token={token} />
           </div>
           <div className={styles.comparisonTrack}>
             <div className={styles.spacingComparisonBar} style={{ width }} />
@@ -407,9 +430,7 @@ export function SizingCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
       <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
         <Flex direction="column" gap="2">
           <Flex justify="between" align="center">
-            <Text size="1" className="font-mono">
-              {token.name}
-            </Text>
+            <TokenName token={token} size="1" />
             <Text size="1" color="gray" className="font-mono">
               {token.value}
             </Text>
@@ -432,7 +453,6 @@ type TypographyCanvasProps = CanvasProps & {
 export function TypographyCanvas({
   tokens,
   onSelect,
-  virtualize = false,
   importedGoogleFonts = [],
   onImportGoogleFont,
   onRemoveGoogleFont
@@ -485,18 +505,27 @@ export function TypographyCanvas({
       <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.typographyComparisonRow}>
         <div className={styles.typographyComparisonMeta}>
           <div className={styles.typographyTokenMetaStack}>
-            <Text size="1" color="gray" className="font-mono">
-              {token.name}
-            </Text>
+            <TokenName token={token} size="1" />
             <Text size="1" color="gray" className="font-mono">
               {token.value}
             </Text>
           </div>
           {fontDefinition ? (
             <div className={styles.typographyBadgeRow}>
+              {tokenOriginBadgeLabel(token) ? (
+                <Badge variant="soft" color={tokenOriginBadgeColor(token)} className={styles.tokenOriginBadge}>
+                  {tokenOriginBadgeLabel(token)}
+                </Badge>
+              ) : null}
               <Badge variant="soft">{fontDefinition.framework}</Badge>
               <Badge variant="soft" color="gray">
                 {fontDefinition.role}
+              </Badge>
+            </div>
+          ) : tokenOriginBadgeLabel(token) ? (
+            <div className={styles.typographyBadgeRow}>
+              <Badge variant="soft" color={tokenOriginBadgeColor(token)} className={styles.tokenOriginBadge}>
+                {tokenOriginBadgeLabel(token)}
               </Badge>
             </div>
           ) : null}
@@ -748,14 +777,12 @@ export function RadiusCanvas({ tokens, onSelect }: CanvasProps) {
         {sorted.map((token) => (
           <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.radiusSampleButton} title={`${token.name}: ${token.value}`}>
             <span className={styles.radiusSampleShape} style={{ borderRadius: token.value }} />
-            <span className={styles.radiusSampleMeta}>
-              <Text size="1" className="font-mono">
-                {token.name}
-              </Text>
+            <div className={styles.radiusSampleMeta}>
+              <TokenName token={token} size="1" />
               <Text size="1" color="gray" className="font-mono">
                 {token.value}
               </Text>
-            </span>
+            </div>
           </button>
         ))}
       </div>
@@ -774,9 +801,7 @@ export function ShadowCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
           <Text size="1" color="gray" className="font-mono">
             {index + 1}
           </Text>
-          <Text size="2" className="font-mono">
-            {token.name}
-          </Text>
+          <TokenName token={token} />
         </div>
         <div className={styles.shadowComparisonPreviewWrap}>
           <span className={styles.shadowComparisonPreview} style={{ boxShadow: token.value }} />
@@ -801,9 +826,7 @@ export function OpacityCanvas({ tokens, onSelect, virtualize = false }: CanvasPr
       return (
         <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.opacityComparisonRow}>
           <div className={styles.opacityComparisonMeta}>
-            <Text size="2" className="font-mono">
-              {token.name}
-            </Text>
+            <TokenName token={token} />
             <Text size="1" color="gray" className="font-mono">
               {token.value}
             </Text>
@@ -830,9 +853,7 @@ export function MotionCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
           <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
             <Flex direction="column" gap="2">
               <Flex justify="between" align="center">
-                <Text size="1" className="font-mono">
-                  {token.name}
-                </Text>
+                <TokenName token={token} size="1" />
                 <Text size="1" color="gray" className="font-mono">
                   {token.value}
                 </Text>
@@ -861,9 +882,7 @@ export function ZIndexCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
           <Flex align="center" justify="between" gap="3">
             <Flex align="center" gap="2">
               <Box width="22px" height="22px" style={{ borderRadius: 6, background: "var(--iris-9)", opacity: Math.max(0.25, 1 - itemIndex * 0.08) }} />
-              <Text size="1" className="font-mono">
-                {token.name}
-              </Text>
+              <TokenName token={token} size="1" />
             </Flex>
             <Badge variant="solid">{token.value}</Badge>
           </Flex>
@@ -888,9 +907,7 @@ export function BreakpointCanvas({ tokens, onSelect, virtualize = false }: Canva
           <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
             <Flex direction="column" gap="2">
               <Flex justify="between" align="center">
-                <Text size="1" className="font-mono">
-                  {token.name}
-                </Text>
+                <TokenName token={token} size="1" />
                 <Text size="1" color="gray" className="font-mono">
                   {token.value}
                 </Text>
@@ -911,9 +928,7 @@ export function GenericCanvas({ tokens, onSelect, virtualize = false }: CanvasPr
     (token) => (
       <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
         <Flex justify="between" align="center" gap="3">
-          <Text size="2" className="font-mono">
-            {token.name}
-          </Text>
+          <TokenName token={token} />
           <Text size="1" color="gray" className="font-mono">
             {token.value}
           </Text>

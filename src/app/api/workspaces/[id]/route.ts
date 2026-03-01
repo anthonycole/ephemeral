@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { normalizeTokenDocument, type TokenDocument } from "@/features/token-visualizer/document";
+import { normalizeWorkspaceMeta, type WorkspaceMeta } from "@/features/token-catalogue/workspace-meta";
 import { getWorkspace, saveWorkspace } from "@/features/token-visualizer/workspace-repo";
 
 export const runtime = "nodejs";
@@ -16,6 +17,7 @@ function serializeWorkspace(workspace: Awaited<ReturnType<typeof saveWorkspace>>
     id: workspace.id,
     editorCss: workspace.editorCss,
     document: workspace.document,
+    meta: workspace.meta,
     createdAt: workspace.createdAt.toISOString(),
     updatedAt: workspace.updatedAt.toISOString()
   };
@@ -38,6 +40,7 @@ export async function PUT(request: Request, context: RouteContext) {
   let payload: {
     editorCss?: unknown;
     document?: Partial<TokenDocument>;
+    meta?: Partial<WorkspaceMeta>;
   };
 
   try {
@@ -57,7 +60,8 @@ export async function PUT(request: Request, context: RouteContext) {
   const workspace = await saveWorkspace({
     id,
     editorCss: payload.editorCss,
-    document: normalizeTokenDocument(payload.document)
+    document: normalizeTokenDocument(payload.document),
+    meta: normalizeWorkspaceMeta(payload.meta, { legacy: false })
   });
 
   return NextResponse.json({ workspace: serializeWorkspace(workspace) });

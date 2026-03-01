@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { importCssDocument, normalizeTokenDocument, type TokenDocument } from "@/features/token-visualizer/document";
+import { normalizeWorkspaceMeta, type WorkspaceMeta } from "@/features/token-catalogue/workspace-meta";
 import { ensureDatabase, db } from "@/lib/db";
 import { workspaces } from "@/lib/db/schema";
 
@@ -7,6 +8,7 @@ export type WorkspaceRecord = {
   id: string;
   editorCss: string;
   document: TokenDocument;
+  meta: WorkspaceMeta;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -15,17 +17,21 @@ type WorkspaceSaveInput = {
   id: string;
   editorCss: string;
   document: TokenDocument;
+  meta?: WorkspaceMeta;
 };
 
 function parseWorkspaceRecord(row: typeof workspaces.$inferSelect): WorkspaceRecord {
   const normalizedDocument = normalizeTokenDocument(JSON.parse(row.documentJson) as Partial<TokenDocument>);
   const recoveredDocument =
     normalizedDocument.tokens.length === 0 && row.editorCss.trim().length > 0 ? importCssDocument(row.editorCss, normalizedDocument) : normalizedDocument;
+  const rawMeta =
+    typeof row.metaJson === "string" && row.metaJson.length > 0 ? (JSON.parse(row.metaJson) as Partial<WorkspaceMeta>) : null;
 
   return {
     id: row.id,
     editorCss: row.editorCss,
     document: recoveredDocument,
+    meta: normalizeWorkspaceMeta(rawMeta, { legacy: !row.metaJson }),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   };
@@ -44,6 +50,7 @@ export async function saveWorkspace(input: WorkspaceSaveInput) {
   const now = new Date();
   const document = normalizeTokenDocument(input.document);
   const documentJson = JSON.stringify(document);
+  const metaJson = JSON.stringify(normalizeWorkspaceMeta(input.meta, { legacy: false }));
 
   await db
     .insert(workspaces)
@@ -51,6 +58,7 @@ export async function saveWorkspace(input: WorkspaceSaveInput) {
       id: input.id,
       editorCss: input.editorCss,
       documentJson,
+      metaJson,
       createdAt: now,
       updatedAt: now
     })
@@ -59,6 +67,7 @@ export async function saveWorkspace(input: WorkspaceSaveInput) {
       set: {
         editorCss: input.editorCss,
         documentJson,
+        metaJson,
         updatedAt: now
       }
     });

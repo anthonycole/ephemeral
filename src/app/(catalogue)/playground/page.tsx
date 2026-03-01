@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { isPlaygroundAdapterKey } from "@/features/token-catalogue/playground-adapters";
+import { materializeResolvedTheme } from "@/features/token-catalogue/token-materialization";
+import { buildDiffIndex, resolveTheme } from "@/features/token-catalogue/token-resolution";
+import {
+  getPrimaryPlaygroundSource,
+  getTailwindDefaultSource
+} from "@/features/token-catalogue/playground-comparison-sources";
 import { TokenPlaygroundPage } from "@/features/token-catalogue/token-playground-page";
-import { SAMPLE_DOCUMENT } from "@/features/token-visualizer/sample-workspace";
-import { getWorkspace } from "@/features/token-visualizer/workspace-repo";
 
 export const metadata: Metadata = {
   title: "ephemeral playground",
@@ -14,18 +18,53 @@ export const dynamic = "force-dynamic";
 export default async function PlaygroundRoute({
   searchParams
 }: {
-  searchParams?: Promise<{ system?: string }>;
+  searchParams?: Promise<{ system?: string; compare?: string }>;
 }) {
-  const workspace = await getWorkspace("default");
   const params = await searchParams;
   const system = isPlaygroundAdapterKey(params?.system) ? params?.system : "tailwind";
+  const primaryPane = await getPrimaryPlaygroundSource();
+  const compareTarget = params?.compare === "tailwind-default" ? "tailwind-default" : null;
+
+  if (compareTarget === "tailwind-default") {
+    const baselinePane = await getTailwindDefaultSource();
+
+    if (!baselinePane) {
+      return (
+        <TokenPlaygroundPage
+          panes={[primaryPane]}
+          compareTarget={null}
+          baselineUnavailable={true}
+          system={system}
+        />
+      );
+    }
+
+    const diffTheme = resolveTheme({
+      authored: primaryPane.document,
+      baseline: baselinePane.document,
+      meta: primaryPane.meta
+    });
+    const primaryCompareDocument = materializeResolvedTheme(diffTheme);
+    const comparePrimaryPane = {
+      ...primaryPane,
+      document: primaryCompareDocument,
+      directives: primaryCompareDocument.directives
+    };
+
+    return (
+      <TokenPlaygroundPage
+        panes={[comparePrimaryPane, baselinePane]}
+        compareTarget={compareTarget}
+        diffIndex={buildDiffIndex(diffTheme)}
+        system={system}
+      />
+    );
+  }
 
   return (
     <TokenPlaygroundPage
-      document={workspace?.document ?? SAMPLE_DOCUMENT}
-      directives={(workspace?.document ?? SAMPLE_DOCUMENT).directives}
-      source={workspace ? "workspace" : "sample"}
-      updatedAt={workspace?.updatedAt.toISOString() ?? null}
+      panes={[primaryPane]}
+      compareTarget={null}
       system={system}
     />
   );

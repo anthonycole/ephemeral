@@ -5,7 +5,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Grid } from "@radix-ui/themes";
 import { useShallow } from "zustand/react/shallow";
 import { isTokenCategoryFilter, type TokenCategoryFilter } from "@/features/token-catalogue/categories";
-import type { TokenDocument } from "@/features/token-visualizer/document";
+import { materializeResolvedTheme } from "@/features/token-catalogue/token-materialization";
+import { createEffectiveTokenRecord, resolveTheme } from "@/features/token-catalogue/token-resolution";
+import type { WorkspaceMeta } from "@/features/token-catalogue/workspace-meta";
+import { serializeDocumentToCss, type TokenDocument, type TokenRecord } from "@/features/token-visualizer/document";
 import { CommandPalette, type CommandAction } from "@/features/token-visualizer/components/command-palette";
 import { CanvasPane } from "@/features/token-visualizer/components/canvas-pane";
 import { EditorPane } from "@/features/token-visualizer/components/editor-pane";
@@ -13,7 +16,7 @@ import { InspectorPane } from "@/features/token-visualizer/components/inspector-
 import { type PersistenceStatus, WorkspaceHeader } from "@/features/token-visualizer/components/workspace-header";
 import { parseGoogleFontImports } from "@/features/token-visualizer/font-utils";
 import { GoogleFontLinks } from "@/features/token-visualizer/google-font-links";
-import { useCanvasPaneState, useEditorPaneState, useHeaderState, useInspectorPaneState } from "@/features/token-visualizer/use-token-workspace";
+import { useCanvasPaneStateFromTokens, useEditorPaneState, useHeaderState, useInspectorPaneStateFromTokens, type TokenSourceFilter } from "@/features/token-visualizer/use-token-workspace";
 import { useTokenStore } from "@/features/token-visualizer/store";
 import styles from "@/features/token-visualizer/styles.module.css";
 
@@ -30,22 +33,36 @@ export function TokenWorkspace() {
   const { searchQuery, setSearchQuery } = useHeaderState();
   const {
     editorCss,
+    meta,
     syntaxErrors,
     setEditorCss,
     addGoogleFontImport,
     importEditorCss,
     removeGoogleFontImport,
-    resetToSample
+    resetToSample,
+    startInheritedTheme
   } = useEditorPaneState();
-  const { activeCategory, visibleTokens, groupedVisibleTokens, counts, setActiveCategory, setSelectedTokenId, supportsVirtualizedSingleCategory } =
-    useCanvasPaneState();
-  const { selectedToken, updateToken, addGoogleFontImport: addInspectorGoogleFontImport, closeInspector } = useInspectorPaneState();
-  const { createToken, document, replaceWorkspace, selectedTokenId } = useTokenStore(
+  const {
+    activeCategory,
+    createToken,
+    document,
+    replaceWorkspace,
+    searchQuery: storeSearchQuery,
+    selectedTokenId,
+    setActiveCategory,
+    setSelectedTokenId,
+    updateToken
+  } = useTokenStore(
     useShallow((state) => ({
+      activeCategory: state.activeCategory,
       createToken: state.createToken,
       document: state.document,
       replaceWorkspace: state.replaceWorkspace,
-      selectedTokenId: state.selectedTokenId
+      searchQuery: state.searchQuery,
+      selectedTokenId: state.selectedTokenId,
+      setActiveCategory: state.setActiveCategory,
+      setSelectedTokenId: state.setSelectedTokenId,
+      updateToken: state.updateToken
     }))
   );
   const editorCssDraft = useTokenStore((state) => state.editorCss);
@@ -55,6 +72,8 @@ export function TokenWorkspace() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [tokenComposerOpen, setTokenComposerOpen] = useState(false);
+  const [sourceFilter, setSourceFilter] = useState<TokenSourceFilter>("all");
+  const [baselineDocument, setBaselineDocument] = useState<TokenDocument | null>(null);
   const skipNextSaveRef = useRef(false);
   const saveSequenceRef = useRef(0);
   const initializedCategorySyncRef = useRef(false);
@@ -65,7 +84,44 @@ export function TokenWorkspace() {
   const skipNextTokenUrlWriteRef = useRef(false);
   const urlCategory = resolveCategoryFilter(searchParams.get("category"));
   const urlTokenId = searchParams.get("token");
-  const importedGoogleFonts = useMemo(() => parseGoogleFontImports(document.directives), [document.directives]);
+  const resolvedTheme = useMemo(
+    () =>
+      resolveTheme({
+        authored: document,
+        baseline: meta.baselineKey && baselineDocument ? baselineDocument : null,
+        meta
+      }),
+    [baselineDocument, document, meta]
+  );
+  const effectiveTokens = useMemo(() => resolvedTheme.tokens.map((token, index) => createEffectiveTokenRecord(token, index)), [resolvedTheme.tokens]);
+  const effectiveDocument = useMemo(() => {
+    if (meta.hydrationMode === "inherit" && baselineDocument) {
+      return materializeResolvedTheme(resolvedTheme);
+    }
+
+    return {
+      ...document,
+      tokens: effectiveTokens
+    };
+  }, [baselineDocument, document, effectiveTokens, meta.hydrationMode, resolvedTheme]);
+  const importedGoogleFonts = useMemo(() => parseGoogleFontImports(effectiveDocument.directives), [effectiveDocument.directives]);
+  const canvasState = useCanvasPaneStateFromTokens({
+    tokens: effectiveTokens,
+    activeCategory,
+    sourceFilter,
+    searchQuery: storeSearchQuery,
+    setActiveCategory,
+    setSelectedTokenId
+  });
+  const inspectorState = useInspectorPaneStateFromTokens({
+    tokens: effectiveTokens,
+    selectedTokenId,
+    updateToken,
+    addGoogleFontImport,
+    setSelectedTokenId
+  });
+  const { visibleTokens, groupedVisibleTokens, counts, supportsVirtualizedSingleCategory } = canvasState;
+  const { selectedToken, addGoogleFontImport: addInspectorGoogleFontImport, closeInspector } = inspectorState;
 
   const gridClassName = selectedToken ? `${styles.workspaceGrid} ${styles.workspaceGridInspectorOpen}` : styles.workspaceGrid;
 
@@ -99,6 +155,49 @@ export function TokenWorkspace() {
       globalThis.document.body.style.overflow = previousOverflow;
     };
   }, [editorOpen]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadBaseline(nextMeta: WorkspaceMeta) {
+      if (!nextMeta.baselineKey) {
+        setBaselineDocument(null);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/baselines/${nextMeta.baselineKey}`, {
+          cache: "force-cache"
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load baseline: ${response.status}`);
+        }
+
+        const payload = (await response.json()) as {
+          baseline: {
+            document: TokenDocument;
+          };
+        };
+
+        if (isActive) {
+          setBaselineDocument(payload.baseline.document);
+        }
+      } catch (error) {
+        console.error(error);
+
+        if (isActive) {
+          setBaselineDocument(null);
+        }
+      }
+    }
+
+    void loadBaseline(meta);
+
+    return () => {
+      isActive = false;
+    };
+  }, [meta]);
 
   useEffect(() => {
     const previousUrlCategory = previousUrlCategoryRef.current;
@@ -155,7 +254,7 @@ export function TokenWorkspace() {
     const previousUrlToken = previousUrlTokenRef.current;
     previousUrlTokenRef.current = urlTokenId;
 
-    const routeToken = urlTokenId ? document.tokens.find((token) => token.sourceId === urlTokenId) ?? null : null;
+    const routeToken = urlTokenId ? effectiveTokens.find((token) => token.sourceId === urlTokenId) ?? null : null;
 
     if (!initializedTokenSyncRef.current) {
       initializedTokenSyncRef.current = true;
@@ -192,7 +291,7 @@ export function TokenWorkspace() {
       skipNextTokenUrlWriteRef.current = true;
       setSelectedTokenId(null);
     }
-  }, [activeCategory, document.tokens, hasLoadedWorkspace, selectedTokenId, setActiveCategory, setSelectedTokenId, urlTokenId]);
+  }, [activeCategory, effectiveTokens, hasLoadedWorkspace, selectedTokenId, setActiveCategory, setSelectedTokenId, urlTokenId]);
 
   useEffect(() => {
     if (!hasLoadedWorkspace || !initializedTokenSyncRef.current) {
@@ -248,6 +347,7 @@ export function TokenWorkspace() {
           workspace: {
             document: TokenDocument;
             editorCss: string;
+            meta: WorkspaceMeta;
           };
         };
 
@@ -258,7 +358,8 @@ export function TokenWorkspace() {
         skipNextSaveRef.current = true;
         replaceWorkspace({
           document: payload.workspace.document,
-          editorCss: payload.workspace.editorCss
+          editorCss: payload.workspace.editorCss,
+          meta: payload.workspace.meta
         });
         setPersistenceStatus("saved");
         setLastSavedAt(null);
@@ -306,7 +407,8 @@ export function TokenWorkspace() {
             },
             body: JSON.stringify({
               editorCss: editorCssDraft,
-              document
+              document,
+              meta
             })
           });
 
@@ -331,7 +433,25 @@ export function TokenWorkspace() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [document, editorCssDraft, hasLoadedWorkspace]);
+  }, [document, editorCssDraft, hasLoadedWorkspace, meta]);
+
+  function handleMaterializeDefaults() {
+    if (!baselineDocument) {
+      return;
+    }
+
+    const materializedDocument = materializeResolvedTheme(resolvedTheme);
+
+    skipNextSaveRef.current = true;
+    replaceWorkspace({
+      document: materializedDocument,
+      editorCss: serializeDocumentToCss(materializedDocument),
+      meta: {
+        ...meta,
+        hydrationMode: "materialized"
+      }
+    });
+  }
 
   const commandActions: CommandAction[] = [
     {
@@ -362,6 +482,21 @@ export function TokenWorkspace() {
       keywords: ["parse", "sync", "tokens"],
       disabled: syntaxErrors.length > 0,
       run: () => importEditorCss()
+    },
+    {
+      id: "start-inherited-theme",
+      title: "Start inherited theme",
+      subtitle: "Begin with Tailwind defaults applied as the baseline",
+      keywords: ["baseline", "inherit", "defaults", "tailwind"],
+      run: () => startInheritedTheme()
+    },
+    {
+      id: "materialize-defaults",
+      title: "Materialize defaults",
+      subtitle: "Copy inherited baseline tokens into the authored document",
+      keywords: ["hydrate", "materialize", "baseline", "defaults"],
+      disabled: meta.hydrationMode !== "inherit" || !baselineDocument,
+      run: () => handleMaterializeDefaults()
     },
     {
       id: "reset-sample",
@@ -407,7 +542,7 @@ export function TokenWorkspace() {
     }
   ];
 
-  function handleSelectToken(token: (typeof document.tokens)[number]) {
+  function handleSelectToken(token: TokenRecord) {
     setActiveCategory(token.category);
     setSearchQuery("");
     setSelectedTokenId(token.sourceId);
@@ -420,7 +555,7 @@ export function TokenWorkspace() {
 
   return (
     <main className={styles.workspaceRoot}>
-      <GoogleFontLinks directives={document.directives} />
+      <GoogleFontLinks directives={effectiveDocument.directives} />
       <WorkspaceHeader
         importedGoogleFonts={importedGoogleFonts}
         onCreateToken={createToken}
@@ -436,6 +571,8 @@ export function TokenWorkspace() {
           onActiveCategoryChange={setActiveCategory}
           counts={counts}
           visibleCount={visibleTokens.length}
+          sourceFilter={sourceFilter}
+          onSourceFilterChange={setSourceFilter}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
           importedGoogleFonts={importedGoogleFonts}
@@ -447,6 +584,7 @@ export function TokenWorkspace() {
         />
         <InspectorPane
           importedGoogleFonts={importedGoogleFonts}
+          onCreateOverride={(token) => updateToken(token, {})}
           onImportGoogleFont={addInspectorGoogleFontImport}
           token={selectedToken}
           onUpdateToken={updateToken}
@@ -461,11 +599,14 @@ export function TokenWorkspace() {
               editorCss={editorCss}
               lastSavedAt={lastSavedAt}
               onClose={() => setEditorOpen(false)}
+              onMaterializeDefaults={handleMaterializeDefaults}
               persistenceStatus={persistenceStatus}
               onEditorCssChange={setEditorCss}
               onImportCss={importEditorCss}
               onResetToSample={resetToSample}
+              onStartInheritedTheme={startInheritedTheme}
               syntaxErrors={syntaxErrors}
+              workspaceMeta={meta}
             />
           </div>
         </div>
@@ -473,7 +614,7 @@ export function TokenWorkspace() {
       <CommandPalette
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
-        tokens={document.tokens}
+        tokens={effectiveTokens}
         actions={commandActions}
         onSelectToken={handleSelectToken}
         onSelectCategory={handleSelectCategory}

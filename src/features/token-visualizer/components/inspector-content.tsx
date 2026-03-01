@@ -31,9 +31,10 @@ import styles from "@/features/token-visualizer/styles.module.css";
 
 type InspectorContentProps = {
   importedGoogleFonts: ImportedGoogleFont[];
+  onCreateOverride: (token: TokenRecord) => void;
   onImportGoogleFont: (family: string) => void;
   token: TokenRecord | null;
-  onUpdateToken: (tokenId: string, updates: Partial<{ name: string; value: string; category: TokenRecord["category"] }>) => void;
+  onUpdateToken: (token: TokenRecord, updates: Partial<{ name: string; value: string; category: TokenRecord["category"] }>) => void;
 };
 
 const HEX_LITERAL_REGEX = /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i;
@@ -167,7 +168,7 @@ function HexColorValueEditor({
     }
 
     setDraftHex(nextHex);
-    onUpdateToken(token.id, { value: nextHex });
+    onUpdateToken(token, { value: nextHex });
     return true;
   };
 
@@ -237,10 +238,10 @@ function CssColorValueEditor({
     }
 
     if (color.css !== token.value) {
-      onUpdateToken(token.id, { value: color.css });
+      onUpdateToken(token, { value: color.css });
       setDraftValue(color.css);
     }
-  }, [color?.original?.space, color.css, onUpdateToken, pickerInteracted, token.id, token.value]);
+  }, [color?.original?.space, color.css, onUpdateToken, pickerInteracted, token]);
 
   if (!color?.original?.space) {
     return <RawColorValueEditor token={token} onUpdateToken={onUpdateToken} />;
@@ -252,7 +253,7 @@ function CssColorValueEditor({
     try {
       setColor(nextValue);
       setPickerInteracted(false);
-      onUpdateToken(token.id, { value: nextValue });
+      onUpdateToken(token, { value: nextValue });
     } catch {
       // Keep the draft visible while the user is typing an incomplete color string.
     }
@@ -296,7 +297,7 @@ function RawColorValueEditor({
 }) {
   return (
     <Flex direction="column" gap="2">
-      <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token.id, { value: event.target.value })} className={styles.colorHexField} />
+      <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} className={styles.colorHexField} />
       <Text size="1" color="gray">
         Picker unavailable for this color format. Edit the raw CSS color directly.
       </Text>
@@ -326,7 +327,7 @@ function FontFamilyValueEditor({
   }, [token.id, token.value]);
 
   if (!fontToken) {
-    return <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token.id, { value: event.target.value })} />;
+    return <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} />;
   }
 
   return (
@@ -343,7 +344,7 @@ function FontFamilyValueEditor({
               return;
             }
 
-            onUpdateToken(token.id, { value: buildFontFamilyValue(value, token.name) });
+            onUpdateToken(token, { value: buildFontFamilyValue(value, token.name) });
           }}
         >
           <Select.Trigger />
@@ -371,7 +372,7 @@ function FontFamilyValueEditor({
             }
 
             onImportGoogleFont(fontFamilyDraft);
-            onUpdateToken(token.id, { value: buildFontFamilyValue(fontFamilyDraft, token.name) });
+            onUpdateToken(token, { value: buildFontFamilyValue(fontFamilyDraft, token.name) });
           }}
         >
           Import
@@ -380,12 +381,34 @@ function FontFamilyValueEditor({
       <Text size="1" color="gray">
         Font stack
       </Text>
-      <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token.id, { value: event.target.value })} />
+      <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} />
     </Flex>
   );
 }
 
-export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, token, onUpdateToken }: InspectorContentProps) {
+function sourceLabel(token: TokenRecord) {
+  if (token.origin === "inherited") {
+    return "Inherited Tailwind default";
+  }
+
+  if (token.origin === "baseline") {
+    return "Tailwind default";
+  }
+
+  return "Workspace token";
+}
+
+function ReadOnlyValue({ value }: { value: string }) {
+  return (
+    <Card>
+      <Text size="2" className="font-mono">
+        {value}
+      </Text>
+    </Card>
+  );
+}
+
+export function InspectorContent({ importedGoogleFonts, onCreateOverride, onImportGoogleFont, token, onUpdateToken }: InspectorContentProps) {
   const supportsLengthUnit = token ? tokenSupportsLengthUnit(token) : false;
   const supportsDurationUnit = token ? tokenSupportsDurationUnit(token) : false;
   const tokenAtRules = token?.atRules ?? [];
@@ -421,6 +444,8 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
     return <Text color="gray">Select a token to inspect.</Text>;
   }
 
+  const isReadOnly = token.readOnly === true;
+
   const handleLengthAmountChange = (value: string) => {
     setLengthAmountInput(value);
 
@@ -434,7 +459,7 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
       return;
     }
 
-    onUpdateToken(token.id, { value: formatLengthValue(numeric, lengthUnit) });
+    onUpdateToken(token, { value: formatLengthValue(numeric, lengthUnit) });
   };
 
   const handleLengthUnitChange = (nextUnit: "px" | "rem") => {
@@ -451,7 +476,7 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
     const nextValue = formatLengthValue(convertedAmount, nextUnit);
 
     setLengthAmountInput(String(convertedAmount));
-    onUpdateToken(token.id, { value: nextValue });
+    onUpdateToken(token, { value: nextValue });
   };
 
   const handleDurationAmountChange = (value: string) => {
@@ -467,7 +492,7 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
       return;
     }
 
-    onUpdateToken(token.id, { value: formatDurationValue(numeric, durationUnit) });
+    onUpdateToken(token, { value: formatDurationValue(numeric, durationUnit) });
   };
 
   const handleDurationUnitChange = (nextUnit: "ms" | "s") => {
@@ -484,11 +509,17 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
     const nextValue = formatDurationValue(convertedAmount, nextUnit);
 
     setDurationAmountInput(String(convertedAmount));
-    onUpdateToken(token.id, { value: nextValue });
+    onUpdateToken(token, { value: nextValue });
   };
 
   return (
     <>
+      <Flex direction="column" gap="1">
+        <Text size="1" color="gray">
+          Source
+        </Text>
+        <Text size="2">{sourceLabel(token)}</Text>
+      </Flex>
       <Flex direction="column" gap="1">
         <Text size="1" color="gray">
           Scope
@@ -511,13 +542,15 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
         <Text size="1" color="gray">
           Name
         </Text>
-        <TextField.Root value={token.name} onChange={(event) => onUpdateToken(token.id, { name: event.target.value })} />
+        {isReadOnly ? <ReadOnlyValue value={token.name} /> : <TextField.Root value={token.name} onChange={(event) => onUpdateToken(token, { name: event.target.value })} />}
       </Flex>
       <Flex direction="column" gap="1">
         <Text size="1" color="gray">
           Value
         </Text>
-        {token.category === "color" ? (
+        {isReadOnly ? (
+          <ReadOnlyValue value={token.value} />
+        ) : token.category === "color" ? (
           <ColorValueEditor token={token} onUpdateToken={onUpdateToken} />
         ) : fontToken ? (
           <FontFamilyValueEditor importedGoogleFonts={importedGoogleFonts} onImportGoogleFont={onImportGoogleFont} token={token} onUpdateToken={onUpdateToken} />
@@ -549,27 +582,50 @@ export function InspectorContent({ importedGoogleFonts, onImportGoogleFont, toke
             </Select.Root>
           </Flex>
         ) : (
-          <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token.id, { value: event.target.value })} />
+          <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} />
         )}
       </Flex>
       <Flex direction="column" gap="1">
         <Text size="1" color="gray">
           Category
         </Text>
-        <Select.Root value={token.category} onValueChange={(value) => onUpdateToken(token.id, { category: value as TokenRecord["category"] })}>
-          <Select.Trigger />
-          <Select.Content>
-            {CATEGORY_DEFINITIONS.map((definition) => (
-              <Select.Item key={definition.key} value={definition.key}>
-                {definition.label}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        {isReadOnly ? (
+          <ReadOnlyValue value={categoryLabel(token.category)} />
+        ) : (
+          <Select.Root value={token.category} onValueChange={(value) => onUpdateToken(token, { category: value as TokenRecord["category"] })}>
+            <Select.Trigger />
+            <Select.Content>
+              {CATEGORY_DEFINITIONS.map((definition) => (
+                <Select.Item key={definition.key} value={definition.key}>
+                  {definition.label}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+        )}
       </Flex>
       <Flex align="center" gap="2">
         <Badge>{categoryLabel(token.category)}</Badge>
+        {isReadOnly ? <Badge color="gray">Read-only</Badge> : null}
       </Flex>
+      {isReadOnly ? (
+        <Card>
+          <Flex direction="column" gap="3">
+            <Text size="2" color="gray">
+              This token comes from the predefined Tailwind baseline. Create an override to copy it into the workspace and edit it there.
+            </Text>
+            <Button onClick={() => onCreateOverride(token)}>Create override</Button>
+          </Flex>
+        </Card>
+      ) : null}
+      {token.baselineValue !== null && token.baselineValue !== undefined && token.baselineValue !== token.value ? (
+        <Flex direction="column" gap="1">
+          <Text size="1" color="gray">
+            Baseline value
+          </Text>
+          <ReadOnlyValue value={token.baselineValue} />
+        </Flex>
+      ) : null}
       {token.category !== "color" && (
         <>
           <Separator size="4" />

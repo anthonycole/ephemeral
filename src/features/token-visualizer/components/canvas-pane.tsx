@@ -5,6 +5,7 @@ import { CategoryPanel } from "@/features/token-visualizer/components/category-p
 import { CategoryTabs } from "@/features/token-visualizer/components/category-tabs";
 import type { ImportedGoogleFont } from "@/features/token-visualizer/font-utils";
 import type { TokenCounts, TokenGroups } from "@/features/token-visualizer/types";
+import type { TokenSourceFilter } from "@/features/token-visualizer/use-token-workspace";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 type CanvasPaneProps = {
@@ -12,6 +13,8 @@ type CanvasPaneProps = {
   onActiveCategoryChange: (value: TokenCategory) => void;
   counts: TokenCounts;
   visibleCount: number;
+  sourceFilter: TokenSourceFilter;
+  onSourceFilterChange: (value: TokenSourceFilter) => void;
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
   importedGoogleFonts: ImportedGoogleFont[];
@@ -27,6 +30,8 @@ export function CanvasPane({
   onActiveCategoryChange,
   counts,
   visibleCount,
+  sourceFilter,
+  onSourceFilterChange,
   searchQuery,
   onSearchQueryChange,
   importedGoogleFonts,
@@ -41,11 +46,28 @@ export function CanvasPane({
   return (
     <section className={`${styles.shellPane} ${styles.centerPane} ${styles.paneStack}`}>
       <Flex direction="column" gap="4" className={`${styles.canvasContent} ${styles.paneStack}`}>
-        <Flex align="center" justify="between">
-          <Heading size="6">Token Canvas</Heading>
-          <Text size="2" color="gray">
-            {visibleCount} visible
-          </Text>
+        <Flex align="center" justify="between" gap="3" wrap="wrap">
+          <Flex direction="column" gap="1">
+            <Heading size="6">Token Canvas</Heading>
+            <Text size="2" color="gray">
+              {visibleCount} visible
+            </Text>
+          </Flex>
+          <div>
+            <label className={styles.srOnly} htmlFor="token-source-filter">
+              Filter token source
+            </label>
+            <select
+              id="token-source-filter"
+              value={sourceFilter}
+              onChange={(event) => onSourceFilterChange(event.target.value as TokenSourceFilter)}
+              className={styles.sourceFilterSelect}
+            >
+              <option value="all">All tokens</option>
+              <option value="authored">Editable only</option>
+              <option value="defaults">Tailwind defaults</option>
+            </select>
+          </div>
         </Flex>
         <div data-workspace-search-field="">
           <TextField.Root

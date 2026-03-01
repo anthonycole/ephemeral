@@ -41,6 +41,547 @@
   box-shadow: 0 18px 44px rgb(20 32 51 / 0.08);
 }
 
+.compareSummary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.875rem;
+}
+
+.compareSummaryStack {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.compareSummaryCompact {
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.compareSummaryCard {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255 255 / 0.78);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 36px rgb(20 32 51 / 0.06);
+}
+
+.compareStatusGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.875rem;
+}
+
+.compareStatusGridCompact {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.compareStatusCard {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.95), rgb(244 248 252 / 0.92));
+  box-shadow: 0 12px 30px rgb(20 32 51 / 0.05);
+}
+
+.compareStatusEyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(84 101 128);
+}
+
+.compareStatusMetricRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.compareStatusMetric {
+  font-size: 1.65rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: rgb(20 32 51);
+}
+
+.compareStatusBadge {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  background: rgb(148 163 184);
+  box-shadow: 0 0 0 6px rgb(148 163 184 / 0.12);
+}
+
+.compareStatusBadge[data-tone="amber"] {
+  background: rgb(217 119 6);
+  box-shadow: 0 0 0 6px rgb(217 119 6 / 0.12);
+}
+
+.compareStatusBadge[data-tone="blue"] {
+  background: rgb(37 99 235);
+  box-shadow: 0 0 0 6px rgb(37 99 235 / 0.12);
+}
+
+.compareStatusBadge[data-tone="green"] {
+  background: rgb(22 163 74);
+  box-shadow: 0 0 0 6px rgb(22 163 74 / 0.12);
+}
+
+.compareStatusBadge[data-tone="red"] {
+  background: rgb(220 38 38);
+  box-shadow: 0 0 0 6px rgb(220 38 38 / 0.12);
+}
+
+.compareHighlightsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.875rem;
+}
+
+.compareHighlightsGridCompact {
+  grid-template-columns: 1fr;
+}
+
+.compareHighlightCard {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background:
+    radial-gradient(circle at top right, rgb(59 130 246 / 0.08), transparent 30%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(246 249 252 / 0.93));
+  box-shadow: 0 14px 36px rgb(20 32 51 / 0.06);
+}
+
+.compareHighlightHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 0.75rem;
+}
+
+.compareHighlightMeta {
+  flex-shrink: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(84 101 128);
+}
+
+.compareHighlightEmpty {
+  margin: 0;
+  color: rgb(84 101 128);
+}
+
+.compareCategoryList,
+.compareMetricList {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.compareCategoryRow,
+.compareMetricRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.compareCategoryText {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.compareCategoryName,
+.compareMetricLabel {
+  font-size: 0.85rem;
+  color: rgb(20 32 51);
+  text-transform: capitalize;
+}
+
+.compareCategorySummary {
+  font-size: 0.75rem;
+  color: rgb(84 101 128);
+}
+
+.compareCategoryCount,
+.compareMetricValue {
+  flex-shrink: 0;
+  min-width: 3rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgb(239 246 255);
+  color: rgb(30 64 175);
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.compareSummaryHeader {
+  min-width: 0;
+}
+
+.compareSummaryLabel {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  color: rgb(20 32 51);
+}
+
+.compareSummaryColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.compareDifferenceColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.compareDifferenceValue {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.compareDifferenceValueLabel {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(84 101 128);
+}
+
+.compareDifferenceState {
+  flex-shrink: 0;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: rgb(241 245 249);
+  color: rgb(71 85 105);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.compareDifferenceState[data-changed="true"] {
+  background: rgb(255 247 237);
+  color: rgb(154 52 18);
+}
+
+.compareSummaryColumn {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.compareSummaryColumnLabel {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(84 101 128);
+}
+
+.compareSummaryValue {
+  display: flex;
+  align-items: start;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.compareSummaryFontSample {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.1rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(248 250 252 / 0.92));
+  font-size: 0.86rem;
+  color: rgb(20 32 51);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45);
+}
+
+.compareSummaryText {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.compareSummaryPrimary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.86rem;
+  color: rgb(20 32 51);
+}
+
+.compareSummarySecondary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: rgb(84 101 128);
+}
+
+.compareSummarySwatch {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid rgb(20 32 51 / 0.1);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+
+.comparePaneGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.comparePaneCard {
+  display: grid;
+  gap: 0.75rem;
+  align-self: start;
+}
+
+.comparePaneHeader {
+  display: grid;
+  align-content: start;
+  min-height: 8.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255 255 / 0.82);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 36px rgb(20 32 51 / 0.06);
+}
+
+.comparePaneCanvas {
+  padding: 1rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255 255 / 0.76);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 44px rgb(20 32 51 / 0.08);
+  align-self: start;
+}
+
+.comparisonShell {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.comparisonTabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255 255 / 0.78);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 30px rgb(20 32 51 / 0.05);
+}
+
+.comparisonTab {
+  min-width: 8.25rem;
+}
+
+.diffPane {
+  padding: 1rem 1.1rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255 255 / 0.82);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 36px rgb(20 32 51 / 0.06);
+}
+
+.diffStatusGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+}
+
+.diffStatusButton {
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.diffSearchField {
+  flex: 1;
+  min-width: min(20rem, 100%);
+}
+
+.diffSelect {
+  min-width: 12rem;
+}
+
+.diffBody {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+
+.diffList {
+  min-width: 0;
+}
+
+.colorScaleSection {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.94), rgb(248 250 252 / 0.9));
+}
+
+.colorScaleGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.colorScaleRow {
+  display: grid;
+  gap: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+
+.colorScaleHeader {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.colorScaleTrack {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(5.5rem, 1fr));
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.colorScaleTile,
+.colorScaleTilePlaceholder {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  text-align: left;
+}
+
+.colorScaleTile {
+  border: 0;
+  background: transparent;
+}
+
+.colorScaleSwatch,
+.colorScaleSwatchEmpty {
+  display: flex;
+  align-items: end;
+  justify-content: start;
+  min-height: 5.25rem;
+  padding: 0.75rem;
+  border-radius: 18px;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.24);
+}
+
+.colorScaleSwatchEmpty {
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgb(248 250 252), rgb(241 245 249));
+  color: rgb(148 163 184);
+  border-style: dashed;
+}
+
+.colorScaleTileActive .colorScaleSwatch {
+  outline: 2px solid rgb(37 99 235 / 0.5);
+  outline-offset: 2px;
+}
+
+.colorScaleStep {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.colorScaleMeta {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.colorScaleTokenName,
+.colorScaleValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.colorScaleTokenName {
+  font-size: 0.82rem;
+  color: rgb(20 32 51);
+}
+
+.colorScaleValue {
+  font-size: 0.72rem;
+  color: rgb(84 101 128);
+}
+
+.diffRow {
+  width: 100%;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  border-radius: 16px;
+  background: rgb(248 250 252 / 0.9);
+  text-align: left;
+}
+
+.diffRowActive {
+  border-color: rgb(37 99 235 / 0.25);
+  background: rgb(239 246 255 / 0.92);
+  box-shadow: 0 10px 28px rgb(37 99 235 / 0.08);
+}
+
+.diffRowMeta {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.diffRowValues {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.diffInspector {
+  padding: 1rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(248 250 252 / 0.94));
+}
+
+.diffInspectorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+
+.diffInspectorCard {
+  padding: 0.85rem 0.9rem;
+  border: 1px solid rgb(20 32 51 / 0.06);
+  background: rgb(255 255 255 / 0.92);
+}
+
+.diffEmptyState {
+  padding: 1rem;
+  border: 1px dashed rgb(20 32 51 / 0.12);
+  background: rgb(248 250 252 / 0.72);
+}
+
 .playgroundHost {
   border: 1px solid rgb(20 32 51 / 0.08);
   overflow: hidden;
@@ -279,11 +820,31 @@
     padding: 0.75rem;
   }
 
+  .comparePaneCanvas {
+    padding: 0.75rem;
+  }
+
   .tokenGrid {
     grid-template-columns: 1fr;
   }
 
   .playgroundHost {
     min-height: 32rem;
+  }
+
+  .compareHighlightsGrid,
+  .compareDifferenceColumns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .comparePaneGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .diffBody {
+    grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.8fr);
+    align-items: start;
   }
 }

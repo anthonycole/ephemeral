@@ -1,10 +1,19 @@
 import { parseCssDocument } from "@/lib/design-tokens";
 import type { ParsedScopeBlock, ParsedToken, TokenCategory } from "@/lib/design-tokens";
+import { createTokenIdentityKeyFromToken } from "@/features/token-catalogue/token-identity";
+
+export type TokenOrigin = "authored" | "baseline" | "inherited";
+export type DiffStatus = "unchanged" | "overridden" | "authored-only" | "baseline-only" | "conflict";
 
 export type TokenRecord = ParsedToken & {
   id: string;
   sourceId: string;
   originalIndex: number;
+  origin?: TokenOrigin;
+  status?: DiffStatus;
+  readOnly?: boolean;
+  authoredValue?: string | null;
+  baselineValue?: string | null;
 };
 
 export type TokenDocument = {
@@ -21,10 +30,6 @@ function sanitizeScope(scope: string) {
 
 function createTokenId(token: ParsedToken, index: number) {
   return `${(token.atRules ?? []).join("||")}::${token.scope}::${token.name}-${index}`;
-}
-
-function createTokenImportKey(token: Pick<ParsedToken, "name" | "scope" | "atRules">) {
-  return `${(token.atRules ?? []).join("||")}::${token.scope}::${token.name}`;
 }
 
 function createSourceId() {
@@ -71,7 +76,7 @@ export function importCssDocument(rawCss: string, existingDocument?: Partial<Tok
   const existingSourceIdsByKey = new Map<string, string[]>();
 
   for (const token of existingTokens) {
-    const key = createTokenImportKey(token);
+    const key = createTokenIdentityKeyFromToken(token);
     const matchingSourceIds = existingSourceIdsByKey.get(key) ?? [];
     matchingSourceIds.push(token.sourceId);
     existingSourceIdsByKey.set(key, matchingSourceIds);
@@ -84,7 +89,7 @@ export function importCssDocument(rawCss: string, existingDocument?: Partial<Tok
     tokens: parsedDocument.tokens.map((token, index) => ({
       ...token,
       id: createTokenId(token, index),
-      sourceId: existingSourceIdsByKey.get(createTokenImportKey(token))?.shift() ?? createSourceId(),
+      sourceId: existingSourceIdsByKey.get(createTokenIdentityKeyFromToken(token))?.shift() ?? createSourceId(),
       originalIndex: index
     }))
   };
@@ -147,6 +152,47 @@ export function updateDocumentToken(
   return {
     ...normalizedDocument,
     tokens: normalizedDocument.tokens.map((token) => (token.sourceId === tokenId || token.id === tokenId ? { ...token, ...updates } : token))
+  };
+}
+
+export function upsertDocumentToken(
+  document: TokenDocument,
+  tokenInput: Pick<TokenRecord, "id" | "sourceId" | "name" | "value" | "category" | "scope" | "atRules">,
+  updates: Partial<Pick<TokenRecord, "name" | "value" | "category">>
+) {
+  const normalizedDocument = normalizeTokenDocument(document);
+  const existingToken = normalizedDocument.tokens.find((token) => token.sourceId === tokenInput.sourceId || token.id === tokenInput.id);
+
+  if (existingToken) {
+    return updateDocumentToken(normalizedDocument, tokenInput.sourceId, updates);
+  }
+
+  const nextCategory = updates.category ?? tokenInput.category;
+  const nextName = updates.name ?? tokenInput.name;
+  const nextValue = updates.value ?? tokenInput.value;
+  const scope = sanitizeScope(tokenInput.scope);
+  const atRules = Array.isArray(tokenInput.atRules) ? tokenInput.atRules : [];
+  const originalIndex = normalizedDocument.tokens.length === 0 ? 0 : Math.max(...normalizedDocument.tokens.map((entry) => entry.originalIndex)) + 1;
+  const createdToken = normalizeTokenRecord(
+    {
+      ...tokenInput,
+      id: tokenInput.id,
+      sourceId: tokenInput.sourceId,
+      name: nextName,
+      value: nextValue,
+      category: nextCategory,
+      scope,
+      atRules,
+      originalIndex
+    },
+    originalIndex
+  );
+  const blockExists = normalizedDocument.blockOrder.some((block) => block.scope === scope && JSON.stringify(block.atRules) === JSON.stringify(atRules));
+
+  return {
+    ...normalizedDocument,
+    blockOrder: blockExists ? normalizedDocument.blockOrder : [...normalizedDocument.blockOrder, { scope, atRules }],
+    tokens: [...normalizedDocument.tokens, createdToken]
   };
 }
 

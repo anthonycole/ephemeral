@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { CheckCircle, Palette, SpinnerGap, UploadSimple, WarningCircle, X as CloseIcon } from "@phosphor-icons/react";
 import { Button, Flex, Heading, Select, Text } from "@radix-ui/themes";
 import type { CssSyntaxError } from "@/lib/design-tokens";
+import type { WorkspaceMeta } from "@/features/token-catalogue/workspace-meta";
 import type { PersistenceStatus } from "@/features/token-visualizer/components/workspace-header";
 import { CODE_EDITOR_THEME_OPTIONS, type CodeEditorTheme } from "@/features/token-visualizer/components/code-editor";
 import styles from "@/features/token-visualizer/styles.module.css";
@@ -25,6 +26,9 @@ type EditorPaneProps = {
   onEditorCssChange: (value: string) => void;
   onImportCss: () => void;
   onResetToSample: () => void;
+  onStartInheritedTheme: () => void;
+  onMaterializeDefaults?: () => void;
+  workspaceMeta: WorkspaceMeta;
   lastSavedAt: number | null;
   syntaxErrors: CssSyntaxError[];
 };
@@ -40,6 +44,9 @@ export function EditorPane({
   onEditorCssChange,
   onImportCss,
   onResetToSample,
+  onStartInheritedTheme,
+  onMaterializeDefaults,
+  workspaceMeta,
   lastSavedAt,
   syntaxErrors
 }: EditorPaneProps) {
@@ -124,6 +131,14 @@ export function EditorPane({
                     <UploadSimple size={16} weight="bold" />
                     Import CSS
                   </Button>
+                  <Button size="1" variant="soft" color="gray" onClick={onStartInheritedTheme} className={styles.editorToolbarButton}>
+                    Start inherited theme
+                  </Button>
+                  {workspaceMeta.hydrationMode === "inherit" && onMaterializeDefaults ? (
+                    <Button size="1" variant="soft" onClick={onMaterializeDefaults} className={styles.editorToolbarButton}>
+                      Materialize defaults
+                    </Button>
+                  ) : null}
                   <Button size="1" variant="soft" color="gray" onClick={onResetToSample} className={styles.editorToolbarButton}>
                     Start over
                   </Button>

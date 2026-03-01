@@ -4,12 +4,14 @@ import { useDeferredValue, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { TokenCategory } from "@/lib/design-tokens";
 import { validateCssSyntax } from "@/lib/design-tokens";
-import { findTokenById } from "@/features/token-visualizer/document";
+import type { TokenRecord } from "@/features/token-visualizer/document";
 import { getCategoryDefinition } from "@/features/token-visualizer/config";
 import { useTokenStore } from "@/features/token-visualizer/store";
 import type { TokenCounts } from "@/features/token-visualizer/types";
 import { groupTokens } from "@/features/token-visualizer/utils";
 import { useDebouncedValue } from "@/features/token-visualizer/use-debounced-value";
+
+export type TokenSourceFilter = "all" | "authored" | "defaults";
 
 export function useHeaderState() {
   return useTokenStore(
@@ -25,11 +27,13 @@ export function useEditorPaneState() {
     useShallow((state) => ({
       editorCss: state.editorCss,
       generatedCss: state.generatedCss,
+      meta: state.meta,
       setEditorCss: state.setEditorCss,
       importEditorCss: state.importEditorCss,
       addGoogleFontImport: state.addGoogleFontImport,
       removeGoogleFontImport: state.removeGoogleFontImport,
-      resetToSample: state.resetToSample
+      resetToSample: state.resetToSample,
+      startInheritedTheme: state.startInheritedTheme
     }))
   );
   const deferredEditorCss = useDeferredValue(editorState.editorCss);
@@ -52,16 +56,33 @@ export function useCanvasPaneState() {
       setSelectedTokenId: state.setSelectedTokenId
     }))
   );
-  const { activeCategory, setActiveCategory } = canvasState;
-  const deferredSearchQuery = useDeferredValue(canvasState.searchQuery);
+  return useCanvasPaneStateFromTokens({ ...canvasState, sourceFilter: "all" });
+}
+
+export function useCanvasPaneStateFromTokens({
+  tokens,
+  activeCategory,
+  sourceFilter,
+  searchQuery,
+  setActiveCategory,
+  setSelectedTokenId
+}: {
+  tokens: TokenRecord[];
+  activeCategory: TokenCategory;
+  sourceFilter: TokenSourceFilter;
+  searchQuery: string;
+  setActiveCategory: (value: TokenCategory) => void;
+  setSelectedTokenId: (value: string | null) => void;
+}) {
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
 
   const searchedTokens = useMemo(() => {
     if (normalizedQuery.length === 0) {
-      return canvasState.tokens;
+      return tokens;
     }
 
-    return canvasState.tokens.filter((token) => {
+    return tokens.filter((token) => {
       return (
         token.name.toLowerCase().includes(normalizedQuery) ||
         token.value.toLowerCase().includes(normalizedQuery) ||
@@ -69,31 +90,41 @@ export function useCanvasPaneState() {
         token.atRules.some((atRule) => atRule.toLowerCase().includes(normalizedQuery))
       );
     });
-  }, [canvasState.tokens, normalizedQuery]);
+  }, [normalizedQuery, tokens]);
+  const filteredTokens = useMemo(() => {
+    if (sourceFilter === "all") {
+      return searchedTokens;
+    }
+
+    return searchedTokens.filter((token) => {
+      const isReadOnly = token.readOnly === true;
+      return sourceFilter === "defaults" ? isReadOnly : !isReadOnly;
+    });
+  }, [searchedTokens, sourceFilter]);
 
   const visibleTokens = useMemo(() => {
-    return searchedTokens.filter((token) => canvasState.activeCategory === "all" || token.category === canvasState.activeCategory);
-  }, [canvasState.activeCategory, searchedTokens]);
+    return filteredTokens.filter((token) => activeCategory === "all" || token.category === activeCategory);
+  }, [activeCategory, filteredTokens]);
 
   const groupedVisibleTokens = useMemo(() => groupTokens(visibleTokens), [visibleTokens]);
-  const groupedSearchedTokens = useMemo(() => groupTokens(searchedTokens), [searchedTokens]);
+  const groupedFilteredTokens = useMemo(() => groupTokens(filteredTokens), [filteredTokens]);
 
   const counts = useMemo<TokenCounts>(() => {
     return {
-      all: searchedTokens.length,
-      color: groupedSearchedTokens.color.length,
-      spacing: groupedSearchedTokens.spacing.length,
-      typography: groupedSearchedTokens.typography.length,
-      radius: groupedSearchedTokens.radius.length,
-      shadow: groupedSearchedTokens.shadow.length,
-      sizing: groupedSearchedTokens.sizing.length,
-      motion: groupedSearchedTokens.motion.length,
-      "z-index": groupedSearchedTokens["z-index"].length,
-      opacity: groupedSearchedTokens.opacity.length,
-      breakpoint: groupedSearchedTokens.breakpoint.length,
-      other: groupedSearchedTokens.other.length
+      all: filteredTokens.length,
+      color: groupedFilteredTokens.color.length,
+      spacing: groupedFilteredTokens.spacing.length,
+      typography: groupedFilteredTokens.typography.length,
+      radius: groupedFilteredTokens.radius.length,
+      shadow: groupedFilteredTokens.shadow.length,
+      sizing: groupedFilteredTokens.sizing.length,
+      motion: groupedFilteredTokens.motion.length,
+      "z-index": groupedFilteredTokens["z-index"].length,
+      opacity: groupedFilteredTokens.opacity.length,
+      breakpoint: groupedFilteredTokens.breakpoint.length,
+      other: groupedFilteredTokens.other.length
     };
-  }, [groupedSearchedTokens, searchedTokens.length]);
+  }, [filteredTokens.length, groupedFilteredTokens]);
 
   const activeCategoryDefinition =
     activeCategory === "all" ? null : getCategoryDefinition(activeCategory as Exclude<TokenCategory, "all">);
@@ -114,7 +145,7 @@ export function useCanvasPaneState() {
     visibleTokens,
     groupedVisibleTokens,
     setActiveCategory,
-    setSelectedTokenId: canvasState.setSelectedTokenId,
+    setSelectedTokenId,
     supportsVirtualizedSingleCategory: activeCategoryDefinition?.supportsVirtualizedCanvas ?? false
   };
 }
@@ -122,26 +153,47 @@ export function useCanvasPaneState() {
 export function useInspectorPaneState() {
   const inspectorState = useTokenStore(
     useShallow((state) => ({
-      document: state.document,
+      tokens: state.document.tokens,
       selectedTokenId: state.selectedTokenId,
       updateToken: state.updateToken,
       addGoogleFontImport: state.addGoogleFontImport,
       setSelectedTokenId: state.setSelectedTokenId
     }))
   );
+  return useInspectorPaneStateFromTokens(inspectorState);
+}
 
-  const selectedToken = useMemo(() => findTokenById(inspectorState.document, inspectorState.selectedTokenId), [inspectorState.document, inspectorState.selectedTokenId]);
+export function useInspectorPaneStateFromTokens({
+  tokens,
+  selectedTokenId,
+  updateToken,
+  addGoogleFontImport,
+  setSelectedTokenId
+}: {
+  tokens: TokenRecord[];
+  selectedTokenId: string | null;
+  updateToken: ReturnType<typeof useTokenStore.getState>["updateToken"];
+  addGoogleFontImport: (family: string) => void;
+  setSelectedTokenId: (value: string | null) => void;
+}) {
+  const selectedToken = useMemo(
+    () =>
+      selectedTokenId
+        ? tokens.find((token) => token.sourceId === selectedTokenId || token.id === selectedTokenId) ?? null
+        : null,
+    [selectedTokenId, tokens]
+  );
 
   useEffect(() => {
-    if (!selectedToken && inspectorState.selectedTokenId) {
-      inspectorState.setSelectedTokenId(null);
+    if (!selectedToken && selectedTokenId) {
+      setSelectedTokenId(null);
     }
-  }, [inspectorState, selectedToken]);
+  }, [selectedToken, selectedTokenId, setSelectedTokenId]);
 
   return {
     selectedToken,
-    updateToken: inspectorState.updateToken,
-    addGoogleFontImport: inspectorState.addGoogleFontImport,
-    closeInspector: () => inspectorState.setSelectedTokenId(null)
+    updateToken,
+    addGoogleFontImport,
+    closeInspector: () => setSelectedTokenId(null)
   };
 }
