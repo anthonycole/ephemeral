@@ -1,5 +1,5 @@
 import { TokenWorkspace } from "@/features/token-visualizer";
 
-export default function Home() {
+export default function WorkspacePage() {
   return <TokenWorkspace />;
 }

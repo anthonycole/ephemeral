@@ -305,6 +305,20 @@ export function TokenWorkspace() {
 
   const commandActions: CommandAction[] = [
     {
+      id: "view-tokens",
+      title: "View tokens",
+      subtitle: "Open the token catalogue route",
+      keywords: ["tokens", "catalogue", "docs"],
+      run: () => router.push("/tokens")
+    },
+    {
+      id: "open-sandbox",
+      title: "Open sandbox",
+      subtitle: "Open the isolated token sandbox route",
+      keywords: ["sandbox", "preview", "tokens"],
+      run: () => router.push("/tokens/sandbox")
+    },
+    {
       id: "import-css",
       title: "Import CSS",
       subtitle: syntaxErrors.length > 0 ? "Disabled while the editor has CSS syntax errors" : "Parse the editor CSS into the workspace",
