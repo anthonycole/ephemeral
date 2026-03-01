@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import type { TokenRecord } from "@/features/token-visualizer/document";
 import { transformImportedCssForSandbox } from "@/features/token-catalogue/sandbox-runtime-css";
+import { renderSandboxShowcases } from "@/features/token-catalogue/sandbox-showcases";
 import styles from "@/features/token-catalogue/styles.module.css";
 
 type SandboxPreviewProps = {
   tokens: TokenRecord[];
   importedCss: string;
-  tailwindCss: string;
+  runtimeCss: string;
 };
 
 function normalizeTokenName(name: string) {
@@ -147,196 +147,91 @@ function createSemanticDeclarations(tokens: TokenRecord[]) {
 }
 
 const SANDBOX_RECIPE_CSS = `
-:host {
-  display: block;
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: transparent;
+}
+
+body {
+  font-family: var(--sandbox-font-sans);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 `;
 
-const WHEEL_SAFE_COLOR_VALUE_REGEX = /^(#([0-9a-f]{3,8})\b|rgba?\([^)]*\)|hsla?\([^)]*\)|oklch\([^)]*\)|oklab\([^)]*\)|color\([^)]*\)|lab\([^)]*\)|lch\([^)]*\)|var\(--[^)]+\))$/i;
-
-function isWheelSafeColorValue(value: string) {
-  return WHEEL_SAFE_COLOR_VALUE_REGEX.test(value.trim());
+function escapeStyleTagContent(value: string) {
+  return value.replace(/<\/style/gi, "<\\/style");
 }
 
-function createColorWheelStops(colorTokens: TokenRecord[]) {
-  const wheelTokens = colorTokens.filter((token) => isWheelSafeColorValue(token.value));
-
-  if (wheelTokens.length === 0) {
-    return [
-      "var(--sandbox-color-accent) 0% 33.33%",
-      "var(--sandbox-color-fg) 33.33% 66.66%",
-      "var(--sandbox-color-bg) 66.66% 100%"
-    ];
-  }
-
-  const step = 100 / wheelTokens.length;
-  return wheelTokens.map((token, index) => {
-    const start = (index * step).toFixed(2);
-    const end = ((index + 1) * step).toFixed(2);
-    return `${token.value} ${start}% ${end}%`;
-  });
+function buildSandboxDocument({ body, stylesheet }: { body: string; stylesheet: string }) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>${escapeStyleTagContent(stylesheet)}</style>
+  </head>
+  <body>
+    ${body}
+  </body>
+</html>`;
 }
 
-function pickSpacingToken(tokens: TokenRecord[]) {
-  const spacingTokens = tokens.filter((token) => token.category === "spacing");
-
-  if (spacingTokens.length === 0) {
-    return null;
-  }
-
-  return (
-    spacingTokens.find((token) => /^--(spacing|space)(-|$)/i.test(token.name)) ??
-    spacingTokens.find((token) => /-(1|xs|sm)$/i.test(token.name)) ??
-    spacingTokens[0]
-  );
-}
-
-export function SandboxPreview({ tokens, importedCss, tailwindCss }: SandboxPreviewProps) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
+export function SandboxPreview({ tokens, importedCss, runtimeCss }: SandboxPreviewProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [frameHeight, setFrameHeight] = useState(720);
   const tokenDeclarations = useMemo(() => {
     return tokens.map((token) => `  ${token.name}: ${token.value};`).join("\n");
   }, [tokens]);
-  const colorTokens = useMemo(() => tokens.filter((token) => token.category === "color"), [tokens]);
-  const colorWheelStops = useMemo(() => createColorWheelStops(colorTokens), [colorTokens]);
-  const spacingToken = useMemo(() => pickSpacingToken(tokens), [tokens]);
   const semanticDeclarations = useMemo(() => createSemanticDeclarations(tokens), [tokens]);
-  const importedRuntimeCss = useMemo(() => transformImportedCssForSandbox(importedCss), [importedCss]);
+  const importedRuntimeCss = useMemo(() => transformImportedCssForSandbox(importedCss, ":root"), [importedCss]);
   const stylesheet = useMemo(() => {
-    return `:host {\n${tokenDeclarations}\n${semanticDeclarations ? `\n${semanticDeclarations}` : ""}\n}\n\n${importedRuntimeCss}\n\n${tailwindCss}\n\n${SANDBOX_RECIPE_CSS}`;
-  }, [importedRuntimeCss, semanticDeclarations, tailwindCss, tokenDeclarations]);
+    return `:root {\n${tokenDeclarations}\n${semanticDeclarations ? `\n${semanticDeclarations}` : ""}\n}\n\n${importedRuntimeCss}\n\n${runtimeCss}\n\n${SANDBOX_RECIPE_CSS}`;
+  }, [importedRuntimeCss, runtimeCss, semanticDeclarations, tokenDeclarations]);
+  const body = useMemo(() => renderSandboxShowcases(tokens), [tokens]);
+  const previewDocument = useMemo(() => buildSandboxDocument({ body, stylesheet }), [body, stylesheet]);
 
   useEffect(() => {
-    if (!hostRef.current) {
+    const iframe = iframeRef.current;
+    const documentElement = iframe?.contentDocument?.documentElement;
+    const body = iframe?.contentDocument?.body;
+
+    if (!iframe || !documentElement || !body) {
       return;
     }
 
-    const root = hostRef.current.shadowRoot ?? hostRef.current.attachShadow({ mode: "open" });
-    setShadowRoot(root);
-  }, []);
+    const syncHeight = () => {
+      const nextHeight = Math.max(documentElement.scrollHeight, body.scrollHeight, 520);
+      setFrameHeight(nextHeight);
+    };
 
-  useEffect(() => {
-    if (!shadowRoot) {
-      return;
-    }
+    syncHeight();
+    const timer = window.setTimeout(syncHeight, 48);
+    const observer = new ResizeObserver(syncHeight);
+    observer.observe(documentElement);
+    observer.observe(body);
 
-    let styleElement = shadowRoot.querySelector("style[data-sandbox-styles]") as HTMLStyleElement | null;
-
-    if (!styleElement) {
-      styleElement = document.createElement("style");
-      styleElement.setAttribute("data-sandbox-styles", "true");
-      shadowRoot.prepend(styleElement);
-    }
-
-    styleElement.textContent = stylesheet;
-  }, [shadowRoot, stylesheet]);
+    return () => {
+      window.clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [previewDocument]);
 
   return (
     <div className={styles.sandboxHost}>
-      <div ref={hostRef} />
-      {shadowRoot
-        ? createPortal(
-            <div className="preview sandbox-preview tw:sandbox-shell" data-sandbox-root="">
-              <section className="sandbox-card tw:sandbox-panel" data-sandbox-card="">
-                <div className="sandbox-grid tw:sandbox-grid" data-sandbox-grid="">
-                  <div className="sandbox-column tw:sandbox-stack" data-sandbox-column="colors">
-                    <div className="sandbox-wheelWrap tw:sandbox-wheelWrap" data-sandbox-wheel="">
-                      <div
-                        className="sandbox-wheel tw:sandbox-wheel"
-                        style={{
-                          backgroundColor: "var(--sandbox-color-panel)",
-                          backgroundImage: `conic-gradient(${colorWheelStops.join(", ")})`
-                        }}
-                      />
-                      <p className="sandbox-copy tw:sandbox-copy" data-sandbox-copy="">
-                        Imported color tokens shown as a simple wheel and labeled swatch list.
-                      </p>
-                    </div>
-                    <div className="sandbox-tokenList tw:sandbox-tokenList" data-sandbox-token-list="">
-                      {colorTokens.map((token) => (
-                        <div key={token.id} className="sandbox-tokenRow tw:sandbox-tokenRow" data-sandbox-token="">
-                          <span className="sandbox-swatch tw:sandbox-swatch" style={{ background: token.value }} />
-                          <div className="sandbox-tokenMeta tw:sandbox-tokenMeta">
-                            <span className="sandbox-tokenName tw:sandbox-tokenName">{token.name}</span>
-                            <span className="sandbox-tokenValue tw:sandbox-tokenValue">{token.value}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="sandbox-column tw:sandbox-stack" data-sandbox-column="components">
-                    <h1 className="sandbox-heading tw:sandbox-heading-1" data-sandbox-title="">
-                      Heading 1
-                    </h1>
-                    <h2 className="sandbox-heading tw:sandbox-heading-2">
-                      Heading 2
-                    </h2>
-                    <h3 className="sandbox-heading tw:sandbox-heading-3">
-                      Heading 3
-                    </h3>
-                    <h4 className="sandbox-heading tw:sandbox-heading-4">
-                      Heading 4
-                    </h4>
-                    <h5 className="sandbox-heading tw:sandbox-heading-5">
-                      Heading 5
-                    </h5>
-                    <h6 className="sandbox-heading tw:sandbox-heading-6">
-                      Heading 6
-                    </h6>
-                    <p className="sandbox-copy tw:sandbox-copy" data-sandbox-copy="">
-                      Simple type scale preview with one input field.
-                    </p>
-                    <div className="sandbox-spacing tw:sandbox-spacing" data-sandbox-spacing="">
-                      <span className="sandbox-tokenName tw:sandbox-tokenName">
-                        {spacingToken?.name ?? "No spacing token"}
-                      </span>
-                      <div className="sandbox-spacingRail tw:sandbox-spacingRail" data-sandbox-spacing-rail="">
-                        <div
-                          className="sandbox-spacingBar tw:sandbox-spacingBar"
-                          data-sandbox-spacing-bar=""
-                          style={{ width: spacingToken?.value ?? "1rem" }}
-                        />
-                      </div>
-                      <span className="sandbox-tokenValue tw:sandbox-tokenValue">
-                        {spacingToken?.value ?? "1rem"}
-                      </span>
-                    </div>
-                    <article className="sandbox-card-surface tw:sandbox-card" data-sandbox-card-surface="">
-                      <h4 className="sandbox-heading tw:sandbox-heading-4">
-                        Simple card
-                      </h4>
-                      <p className="sandbox-copy tw:sandbox-copy">
-                        Flat container using the imported tokens for radius, fill, and text color.
-                      </p>
-                    </article>
-                    <input
-                      type="text"
-                      className="sandbox-input tw:sandbox-input"
-                      data-sandbox-input=""
-                      placeholder="Text input"
-                      defaultValue="Text input"
-                    />
-                    <div className="sandbox-actions tw:sandbox-actions" data-sandbox-actions="">
-                      <button type="button" className="sandbox-button tw:sandbox-button" data-sandbox-button="">
-                        Secondary
-                      </button>
-                      <button
-                        type="button"
-                        className="sandbox-button tw:sandbox-button tw:sandbox-button-primary"
-                        data-sandbox-button=""
-                        data-variant="primary"
-                      >
-                        Primary
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </div>,
-            shadowRoot
-          )
-        : null}
+      <iframe
+        ref={iframeRef}
+        title="Token sandbox preview"
+        className={styles.sandboxFrame}
+        srcDoc={previewDocument}
+        style={{ height: `${frameHeight}px` }}
+      />
     </div>
   );
 }

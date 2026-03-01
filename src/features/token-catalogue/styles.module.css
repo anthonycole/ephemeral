@@ -56,6 +56,17 @@
   text-decoration: none;
 }
 
+.systemSwitch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.systemStub {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .anchor {
   text-decoration: none;
 }
@@ -72,6 +83,13 @@
   border: 1px solid rgb(20 32 51 / 0.08);
   background: rgb(255 255 255 / 0.72);
   min-height: 24rem;
+}
+
+.sandboxFrame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
 }
 
 .tokenGrid {
