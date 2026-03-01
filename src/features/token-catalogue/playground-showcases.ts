@@ -202,7 +202,7 @@ function renderRadiusSection(tokens: TokenRecord[]) {
           .map(
             (token) => `
               <div class="tw:playground-chipCard">
-                <div class="tw:playground-radiusDemo" style="${escapeHtml(`border-radius: ${token.value};`)}"></div>
+                <div class="tw:playground-radiusDemo"></div>
                 <span class="tw:playground-tokenName">${escapeHtml(token.name)}</span>
                 <span class="tw:playground-tokenValue">${escapeHtml(token.value)}</span>
               </div>

@@ -143,7 +143,7 @@ const PLAYGROUND_TAILWIND_SOURCE = `
 
   .tw\\:playground-spacingRail {
     @apply tw:h-2 tw:w-full;
-    border-radius: 999px;
+    border-radius: 0;
     background: color-mix(in oklab, var(--playground-color-bg) 90%, var(--playground-color-fg) 10%);
   }
 
@@ -151,7 +151,7 @@ const PLAYGROUND_TAILWIND_SOURCE = `
     @apply tw:h-full;
     min-width: 0.25rem;
     max-width: 100%;
-    border-radius: 999px;
+    border-radius: 0;
     background: var(--playground-color-accent);
   }
 
@@ -293,7 +293,7 @@ const PLAYGROUND_TAILWIND_SOURCE = `
 
   .tw\\:playground-breakpointBar {
     @apply tw:h-2;
-    border-radius: 999px;
+    border-radius: 0;
     background: var(--playground-color-accent);
   }
 

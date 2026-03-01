@@ -29,7 +29,7 @@ export function WorkspaceHeader({ onOpenCommandPalette, persistenceStatus }: Wor
         </Flex>
         <Flex align="center" justify="end" gap="2" pr="3">
           <Button asChild type="button" variant="soft" color="gray" className={styles.headerActionButton}>
-            <Link href="/tokens">View Tokens</Link>
+            <Link href="/playground">Open Playground</Link>
           </Button>
           <Button
             type="button"

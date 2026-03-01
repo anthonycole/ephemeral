@@ -6,12 +6,12 @@ import { getWorkspace } from "@/features/token-visualizer/workspace-repo";
 
 export const metadata: Metadata = {
   title: "ephemeral playground",
-  description: "Isolated iframe playground for the current token workspace."
+  description: "Visual preview for the current token workspace."
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function TokensPlaygroundRoute({
+export default async function PlaygroundRoute({
   searchParams
 }: {
   searchParams?: Promise<{ system?: string }>;

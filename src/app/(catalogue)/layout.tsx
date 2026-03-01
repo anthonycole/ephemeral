@@ -1,6 +1,6 @@
 import { Theme } from "@radix-ui/themes";
 
-export default function TokensLayout({
+export default function PlaygroundLayout({
   children
 }: Readonly<{
   children: React.ReactNode;

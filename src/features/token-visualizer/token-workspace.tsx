@@ -305,18 +305,11 @@ export function TokenWorkspace() {
 
   const commandActions: CommandAction[] = [
     {
-      id: "view-tokens",
-      title: "View tokens",
-      subtitle: "Open the token catalogue route",
-      keywords: ["tokens", "catalogue", "docs"],
-      run: () => router.push("/tokens")
-    },
-    {
       id: "open-playground",
       title: "Open playground",
       subtitle: "Open the isolated token playground route",
       keywords: ["playground", "preview", "tokens"],
-      run: () => router.push("/tokens/playground")
+      run: () => router.push("/playground")
     },
     {
       id: "import-css",

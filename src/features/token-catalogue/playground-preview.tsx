@@ -118,8 +118,6 @@ function createSemanticDeclarations(tokens: TokenRecord[]) {
     ["--color-border", "--color-outline", "--color-line", "--color-slate-700", "--color-gray-700", "--color-zinc-700", "--color-neutral-700"],
     [["border"], ["outline"], ["line"], ["slate", "700"], ["gray", "700"], ["zinc", "700"], ["neutral", "700"]]
   );
-  const radiusMd = pickTokenName(tokenNameMap, ["--radius-md", "--radius-lg", "--radius-xl"], [["radius", "md"], ["radius", "lg"], ["radius", "xl"]]);
-  const radiusXl = pickTokenName(tokenNameMap, ["--radius-xl", "--radius-lg", "--radius-md"], [["radius", "xl"], ["radius", "lg"], ["radius", "md"]]);
   const shadowPanel = pickTokenName(tokenNameMap, ["--shadow-lg", "--shadow-md", "--shadow-sm"], [["shadow", "lg"], ["shadow", "md"], ["shadow", "sm"]]);
   const shadowPopover = pickTokenName(tokenNameMap, ["--shadow-xl", "--shadow-lg", "--shadow-md"], [["shadow", "xl"], ["shadow", "lg"], ["shadow", "md"]]);
   const declarations = [
@@ -130,8 +128,8 @@ function createSemanticDeclarations(tokens: TokenRecord[]) {
     `  --playground-color-accent: ${tokenReference(colorAccent, "oklch(0.67 0.18 255)")};`,
     `  --playground-color-accent-strong: ${tokenReference(colorAccentStrong ?? colorAccent, "oklch(0.6 0.18 255)")};`,
     `  --playground-color-border: ${tokenReference(colorBorder, "oklch(0.35 0.03 255)")};`,
-    `  --playground-radius-md: ${tokenReference(radiusMd, "1rem")};`,
-    `  --playground-radius-xl: ${tokenReference(radiusXl ?? radiusMd, "1.5rem")};`,
+    "  --playground-radius-md: 0;",
+    "  --playground-radius-xl: 0;",
     `  --playground-shadow-panel: ${tokenReference(shadowPanel, "0 24px 60px rgb(2 6 23 / 0.45)")};`,
     `  --playground-shadow-popover: ${tokenReference(shadowPopover ?? shadowPanel, "0 18px 42px rgb(2 6 23 / 0.32)")};`,
     "  --playground-color-shell-end: color-mix(in oklab, var(--playground-color-bg) 74%, var(--playground-color-accent) 26%);",
@@ -150,7 +148,6 @@ const PLAYGROUND_RECIPE_CSS = `
 html,
 body {
   margin: 0;
-  min-height: 100%;
   background: transparent;
 }
 
@@ -185,7 +182,7 @@ function buildPlaygroundDocument({ body, stylesheet }: { body: string; styleshee
 
 export function PlaygroundPreview({ tokens, importedCss, runtimeCss }: PlaygroundPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [frameHeight, setFrameHeight] = useState(720);
+  const [frameHeight, setFrameHeight] = useState(1);
   const tokenDeclarations = useMemo(() => {
     return tokens.map((token) => `  ${token.name}: ${token.value};`).join("\n");
   }, [tokens]);
@@ -207,7 +204,7 @@ export function PlaygroundPreview({ tokens, importedCss, runtimeCss }: Playgroun
     }
 
     const syncHeight = () => {
-      const nextHeight = Math.max(documentElement.scrollHeight, body.scrollHeight, 520);
+      const nextHeight = Math.max(documentElement.scrollHeight, body.scrollHeight, 1);
       setFrameHeight(nextHeight);
     };
 
