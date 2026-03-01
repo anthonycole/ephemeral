@@ -3,6 +3,7 @@ import type { ParsedScopeBlock, ParsedToken, TokenCategory } from "@/lib/design-
 
 export type TokenRecord = ParsedToken & {
   id: string;
+  sourceId: string;
   originalIndex: number;
 };
 
@@ -22,6 +23,14 @@ function createTokenId(token: ParsedToken, index: number) {
   return `${(token.atRules ?? []).join("||")}::${token.scope}::${token.name}-${index}`;
 }
 
+function createTokenImportKey(token: Pick<ParsedToken, "name" | "scope" | "atRules">) {
+  return `${(token.atRules ?? []).join("||")}::${token.scope}::${token.name}`;
+}
+
+function createSourceId() {
+  return globalThis.crypto?.randomUUID?.() ?? `token-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function normalizeTokenRecord(token: Partial<TokenRecord>, index: number): TokenRecord {
   const scope = sanitizeScope(token.scope ?? ":root");
   const atRules = Array.isArray(token.atRules) ? token.atRules : [];
@@ -32,6 +41,7 @@ function normalizeTokenRecord(token: Partial<TokenRecord>, index: number): Token
     scope,
     atRules,
     id: token.id ?? createTokenId({ name: token.name ?? `--token-${index}`, value: token.value ?? "", category: token.category ?? "other", scope, atRules }, index),
+    sourceId: token.sourceId ?? createSourceId(),
     originalIndex: typeof token.originalIndex === "number" ? token.originalIndex : index
   };
 
@@ -55,8 +65,17 @@ export function normalizeTokenDocument(document: Partial<TokenDocument>): TokenD
   };
 }
 
-export function importCssDocument(rawCss: string): TokenDocument {
+export function importCssDocument(rawCss: string, existingDocument?: Partial<TokenDocument>): TokenDocument {
   const parsedDocument = parseCssDocument(rawCss);
+  const existingTokens = Array.isArray(existingDocument?.tokens) ? existingDocument.tokens.map((token, index) => normalizeTokenRecord(token, index)) : [];
+  const existingSourceIdsByKey = new Map<string, string[]>();
+
+  for (const token of existingTokens) {
+    const key = createTokenImportKey(token);
+    const matchingSourceIds = existingSourceIdsByKey.get(key) ?? [];
+    matchingSourceIds.push(token.sourceId);
+    existingSourceIdsByKey.set(key, matchingSourceIds);
+  }
 
   return {
     importedCss: rawCss,
@@ -65,6 +84,7 @@ export function importCssDocument(rawCss: string): TokenDocument {
     tokens: parsedDocument.tokens.map((token, index) => ({
       ...token,
       id: createTokenId(token, index),
+      sourceId: existingSourceIdsByKey.get(createTokenImportKey(token))?.shift() ?? createSourceId(),
       originalIndex: index
     }))
   };
@@ -126,7 +146,7 @@ export function updateDocumentToken(
   const normalizedDocument = normalizeTokenDocument(document);
   return {
     ...normalizedDocument,
-    tokens: normalizedDocument.tokens.map((token) => (token.id === tokenId ? { ...token, ...updates } : token))
+    tokens: normalizedDocument.tokens.map((token) => (token.sourceId === tokenId || token.id === tokenId ? { ...token, ...updates } : token))
   };
 }
 
@@ -135,7 +155,7 @@ export function findTokenById(document: TokenDocument, tokenId: string | null) {
     return null;
   }
 
-  return normalizeTokenDocument(document).tokens.find((token) => token.id === tokenId) ?? null;
+  return normalizeTokenDocument(document).tokens.find((token) => token.sourceId === tokenId || token.id === tokenId) ?? null;
 }
 
 export function normalizeCategory(value: string): Exclude<TokenCategory, "all"> {

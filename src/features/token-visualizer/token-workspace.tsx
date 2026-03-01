@@ -37,10 +37,11 @@ export function TokenWorkspace() {
   const { activeCategory, visibleTokens, groupedVisibleTokens, counts, setActiveCategory, setSelectedTokenId, supportsVirtualizedSingleCategory } =
     useCanvasPaneState();
   const { selectedToken, updateToken, closeInspector } = useInspectorPaneState();
-  const { document, replaceWorkspace } = useTokenStore(
+  const { document, replaceWorkspace, selectedTokenId } = useTokenStore(
     useShallow((state) => ({
       document: state.document,
-      replaceWorkspace: state.replaceWorkspace
+      replaceWorkspace: state.replaceWorkspace,
+      selectedTokenId: state.selectedTokenId
     }))
   );
   const editorCssDraft = useTokenStore((state) => state.editorCss);
@@ -52,7 +53,11 @@ export function TokenWorkspace() {
   const initializedCategorySyncRef = useRef(false);
   const previousUrlCategoryRef = useRef<TokenCategoryFilter | null>(null);
   const skipNextCategoryUrlWriteRef = useRef(false);
+  const initializedTokenSyncRef = useRef(false);
+  const previousUrlTokenRef = useRef<string | null>(null);
+  const skipNextTokenUrlWriteRef = useRef(false);
   const urlCategory = resolveCategoryFilter(searchParams.get("category"));
+  const urlTokenId = searchParams.get("token");
 
   const gridClassName = selectedToken ? `${styles.workspaceGrid} ${styles.workspaceGridInspectorOpen}` : styles.workspaceGrid;
 
@@ -114,6 +119,79 @@ export function TokenWorkspace() {
     previousUrlCategoryRef.current = activeCategory;
     router.replace(nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname, { scroll: false });
   }, [activeCategory, pathname, router, searchParams, urlCategory]);
+
+  useEffect(() => {
+    if (!hasLoadedWorkspace) {
+      return;
+    }
+
+    const previousUrlToken = previousUrlTokenRef.current;
+    previousUrlTokenRef.current = urlTokenId;
+
+    const routeToken = urlTokenId ? document.tokens.find((token) => token.sourceId === urlTokenId) ?? null : null;
+
+    if (!initializedTokenSyncRef.current) {
+      initializedTokenSyncRef.current = true;
+
+      if (routeToken) {
+        skipNextTokenUrlWriteRef.current = true;
+        if (activeCategory !== routeToken.category) {
+          setActiveCategory(routeToken.category);
+        }
+        if (selectedTokenId !== routeToken.sourceId) {
+          setSelectedTokenId(routeToken.sourceId);
+        }
+      }
+
+      return;
+    }
+
+    if (previousUrlToken === urlTokenId) {
+      return;
+    }
+
+    if (routeToken) {
+      skipNextTokenUrlWriteRef.current = true;
+      if (activeCategory !== routeToken.category) {
+        setActiveCategory(routeToken.category);
+      }
+      if (selectedTokenId !== routeToken.sourceId) {
+        setSelectedTokenId(routeToken.sourceId);
+      }
+      return;
+    }
+
+    if (selectedTokenId !== null) {
+      skipNextTokenUrlWriteRef.current = true;
+      setSelectedTokenId(null);
+    }
+  }, [activeCategory, document.tokens, hasLoadedWorkspace, selectedTokenId, setActiveCategory, setSelectedTokenId, urlTokenId]);
+
+  useEffect(() => {
+    if (!hasLoadedWorkspace || !initializedTokenSyncRef.current) {
+      return;
+    }
+
+    if (skipNextTokenUrlWriteRef.current) {
+      skipNextTokenUrlWriteRef.current = false;
+      return;
+    }
+
+    if (urlTokenId === selectedTokenId) {
+      return;
+    }
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    if (selectedTokenId) {
+      nextSearchParams.set("token", selectedTokenId);
+    } else {
+      nextSearchParams.delete("token");
+    }
+
+    previousUrlTokenRef.current = selectedTokenId;
+    router.replace(nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname, { scroll: false });
+  }, [hasLoadedWorkspace, pathname, router, searchParams, selectedTokenId, urlTokenId]);
 
   useEffect(() => {
     let isActive = true;
@@ -288,7 +366,7 @@ export function TokenWorkspace() {
   function handleSelectToken(token: (typeof document.tokens)[number]) {
     setActiveCategory(token.category);
     setSearchQuery("");
-    setSelectedTokenId(token.id);
+    setSelectedTokenId(token.sourceId);
   }
 
   function handleSelectCategory(category: typeof activeCategory) {

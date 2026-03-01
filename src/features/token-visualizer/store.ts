@@ -51,7 +51,7 @@ export const useTokenStore = create<TokenStoreState>()(
         set({ editorCss: value });
       },
       importEditorCss: () => {
-        const document = importCssDocument(get().editorCss);
+        const document = importCssDocument(get().editorCss, get().document);
         set({
           document,
           generatedCss: serializeDocumentToCss(document),

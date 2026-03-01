@@ -65,7 +65,7 @@ function PaintSwatchGroup({
           <button
             key={token.id}
             type="button"
-            onClick={() => onSelect(token.id)}
+            onClick={() => onSelect(token.sourceId)}
             className={styles.paintSwatchCard}
             style={{ background: token.value, zIndex: tokens.length - index }}
             title={`${token.name}: ${token.value}`}
@@ -157,7 +157,7 @@ function ScaleTableRow({
             <button
               key={token.id}
               type="button"
-              onClick={() => onSelect(token.id)}
+              onClick={() => onSelect(token.sourceId)}
               className={styles.scaleTableSwatchButton}
               title={`${token.name}: ${token.value}`}
             >
@@ -169,7 +169,7 @@ function ScaleTableRow({
       {row.extras.length > 0 ? (
         <div className={styles.scaleTableExtras}>
           {row.extras.map((token) => (
-            <button key={token.id} type="button" onClick={() => onSelect(token.id)} className={styles.scaleExtraChip} title={`${token.name}: ${token.value}`}>
+            <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.scaleExtraChip} title={`${token.name}: ${token.value}`}>
               <span className={styles.scaleExtraDot} style={{ background: token.value }} />
               <Text size="1" className="font-mono">
                 {token.name}
@@ -376,7 +376,7 @@ export function SpacingCanvas({ tokens, onSelect, virtualize = false }: CanvasPr
       const width = `${Math.max(6, (numeric / largest) * 100)}%`;
 
       return (
-        <button key={token.id} type="button" onClick={() => onSelect(token.id)} className={styles.comparisonRowButton}>
+        <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.comparisonRowButton}>
           <div className={styles.comparisonLabelBlock}>
             <Text size="1" color="gray" className="font-mono">
               {index + 1}
@@ -403,7 +403,7 @@ export function SizingCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
   return renderStack(
     tokens,
     (token) => (
-      <Card key={token.id} onClick={() => onSelect(token.id)} className={styles.canvasCard}>
+      <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
         <Flex direction="column" gap="2">
           <Flex justify="between" align="center">
             <Text size="1" className="font-mono">
@@ -428,7 +428,7 @@ export function TypographyCanvas({ tokens, onSelect, virtualize = false }: Canva
   return renderStack(
     sorted,
     (token) => (
-      <button key={token.id} type="button" onClick={() => onSelect(token.id)} className={styles.typographyComparisonRow}>
+      <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.typographyComparisonRow}>
         <div className={styles.typographyComparisonMeta}>
           <Text size="1" color="gray" className="font-mono">
             {token.name}
@@ -464,7 +464,7 @@ export function RadiusCanvas({ tokens, onSelect }: CanvasProps) {
       </Text>
       <div className={styles.radiusComparisonRail}>
         {sorted.map((token) => (
-          <button key={token.id} type="button" onClick={() => onSelect(token.id)} className={styles.radiusSampleButton} title={`${token.name}: ${token.value}`}>
+          <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.radiusSampleButton} title={`${token.name}: ${token.value}`}>
             <span className={styles.radiusSampleShape} style={{ borderRadius: token.value }} />
             <span className={styles.radiusSampleMeta}>
               <Text size="1" className="font-mono">
@@ -487,7 +487,7 @@ export function ShadowCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
   return renderStack(
     sorted,
     (token, index) => (
-      <button key={token.id} type="button" onClick={() => onSelect(token.id)} className={styles.shadowComparisonRow}>
+      <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.shadowComparisonRow}>
         <div className={styles.shadowComparisonMeta}>
           <Text size="1" color="gray" className="font-mono">
             {index + 1}
@@ -517,7 +517,7 @@ export function OpacityCanvas({ tokens, onSelect, virtualize = false }: CanvasPr
     (token) => {
       const opacity = numericValue(token.value) ?? 0;
       return (
-        <button key={token.id} type="button" onClick={() => onSelect(token.id)} className={styles.opacityComparisonRow}>
+        <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.opacityComparisonRow}>
           <div className={styles.opacityComparisonMeta}>
             <Text size="2" className="font-mono">
               {token.name}
@@ -545,7 +545,7 @@ export function MotionCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
         const width = ms === null ? "35%" : `${Math.max(15, Math.min(100, (ms / 1000) * 100))}%`;
 
         return (
-          <Card key={token.id} onClick={() => onSelect(token.id)} className={styles.canvasCard}>
+          <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
             <Flex direction="column" gap="2">
               <Flex justify="between" align="center">
                 <Text size="1" className="font-mono">
@@ -575,7 +575,7 @@ export function ZIndexCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
     (token, index) => {
       const itemIndex = index;
       return (
-        <Card key={token.id} onClick={() => onSelect(token.id)} className={styles.canvasCard}>
+        <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
           <Flex align="center" justify="between" gap="3">
             <Flex align="center" gap="2">
               <Box width="22px" height="22px" style={{ borderRadius: 6, background: "var(--iris-9)", opacity: Math.max(0.25, 1 - itemIndex * 0.08) }} />
@@ -603,7 +603,7 @@ export function BreakpointCanvas({ tokens, onSelect, virtualize = false }: Canva
         const width = `${Math.max(12, (numeric / largest) * 100)}%`;
 
         return (
-          <Card key={token.id} onClick={() => onSelect(token.id)} className={styles.canvasCard}>
+          <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
             <Flex direction="column" gap="2">
               <Flex justify="between" align="center">
                 <Text size="1" className="font-mono">
@@ -627,7 +627,7 @@ export function GenericCanvas({ tokens, onSelect, virtualize = false }: CanvasPr
   return renderStack(
     tokens,
     (token) => (
-      <Card key={token.id} onClick={() => onSelect(token.id)} className={styles.canvasCard}>
+      <Card key={token.id} onClick={() => onSelect(token.sourceId)} className={styles.canvasCard}>
         <Flex justify="between" align="center" gap="3">
           <Text size="2" className="font-mono">
             {token.name}
