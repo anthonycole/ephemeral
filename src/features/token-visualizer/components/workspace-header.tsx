@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Button, Flex, Heading, Kbd } from "@radix-ui/themes";
+import { Command as CommandIcon } from "@phosphor-icons/react";
+import { Button, Flex, Heading } from "@radix-ui/themes";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 export type PersistenceStatus = "loading" | "saving" | "saved" | "error";
@@ -27,12 +28,21 @@ export function WorkspaceHeader({ onOpenCommandPalette, persistenceStatus }: Wor
           <span className={styles.appStatus}>{persistenceLabels[persistenceStatus]}</span>
         </Flex>
         <Flex align="center" justify="end" gap="2" pr="3">
-          <Button asChild type="button" variant="soft" color="gray">
-            <Link href="/tokens">Tokens</Link>
+          <Button asChild type="button" variant="soft" color="gray" className={styles.headerActionButton}>
+            <Link href="/tokens">View Tokens</Link>
           </Button>
-          <Button type="button" variant="soft" color="gray" onClick={onOpenCommandPalette} className={styles.commandTrigger}>
-            Command
-            <Kbd>⌘/Ctrl K</Kbd>
+          <Button
+            type="button"
+            variant="soft"
+            color="gray"
+            onClick={onOpenCommandPalette}
+            className={styles.commandTrigger}
+            aria-label="Command K"
+            title="Command K"
+          >
+            <CommandIcon size={16} weight="regular" />
+            <span className={styles.commandTriggerKey}>K</span>
+            <span className={styles.srOnly}>Command K</span>
           </Button>
         </Flex>
       </div>

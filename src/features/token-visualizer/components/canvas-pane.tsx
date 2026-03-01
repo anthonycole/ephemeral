@@ -40,14 +40,15 @@ export function CanvasPane({
             {visibleCount} visible
           </Text>
         </Flex>
-        <TextField.Root
-          id="workspace-search"
-          value={searchQuery}
-          onChange={(event) => onSearchQueryChange(event.target.value)}
-          placeholder="Search tokens"
-          size="3"
-          className={styles.canvasSearchField}
-        />
+        <div data-workspace-search-field="">
+          <TextField.Root
+            value={searchQuery}
+            onChange={(event) => onSearchQueryChange(event.target.value)}
+            placeholder="Search tokens"
+            size="3"
+            className={styles.canvasSearchField}
+          />
+        </div>
         <CategoryTabs activeCategory={activeCategory} onActiveCategoryChange={onActiveCategoryChange} counts={counts} />
         {activeCategory === "all" || !supportsVirtualizedSingleCategory ? (
           <ScrollArea type="auto" scrollbars="vertical" className={styles.paneScroll}>

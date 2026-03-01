@@ -255,8 +255,7 @@ export function TokenWorkspace() {
       keywords: ["search", "find", "filter"],
       run: () => {
         window.setTimeout(() => {
-          const root = globalThis.document.getElementById("workspace-search");
-          const input = root?.querySelector("input") as HTMLInputElement | null;
+          const input = globalThis.document.querySelector('[data-workspace-search-field] input') as HTMLInputElement | null;
           input?.focus();
           input?.select();
         }, 0);
