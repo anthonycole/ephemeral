@@ -9,6 +9,7 @@ import useColor, { parse as parseTerrazzoColor } from "@terrazzo/use-color";
 import { HexAlphaColorPicker } from "react-colorful";
 import type { TokenCategory } from "@/lib/design-tokens";
 import { CATEGORY_DEFINITIONS } from "@/features/token-visualizer/config";
+import { buildFontFamilyValue, type ImportedGoogleFont } from "@/features/token-visualizer/font-utils";
 import type { EditableDurationUnit, EditableLengthUnit } from "@/features/token-visualizer/utils";
 import { formatDurationValue, formatLengthValue } from "@/features/token-visualizer/utils";
 import styles from "@/features/token-visualizer/styles.module.css";
@@ -16,13 +17,16 @@ import styles from "@/features/token-visualizer/styles.module.css";
 export type PersistenceStatus = "loading" | "saving" | "saved" | "error";
 type CreateTokenInput = {
   category: Exclude<TokenCategory, "all">;
+  name?: string;
   value: string;
 };
 
 type TokenComposerUnit = "raw" | EditableLengthUnit | EditableDurationUnit;
 type ColorComposerMode = "hex" | "css";
+type TypographyTokenType = "font-family" | "font-size" | "font-weight" | "line-height" | "letter-spacing" | "text-shadow" | "custom";
 
 type WorkspaceHeaderProps = {
+  importedGoogleFonts: ImportedGoogleFont[];
   onCreateToken: (input: CreateTokenInput) => void;
   onOpenEditor: () => void;
   onOpenCommandPalette: () => void;
@@ -41,6 +45,7 @@ const persistenceLabels: Record<PersistenceStatus, string> = {
 const DEFAULT_TOKEN_CATEGORY: Exclude<TokenCategory, "all"> = "other";
 const DEFAULT_COLOR_VALUE = "#2563eb";
 const DEFAULT_CSS_COLOR_VALUE = "oklch(0.62 0.19 259)";
+const DEFAULT_TYPOGRAPHY_TOKEN_TYPE: TypographyTokenType = "font-size";
 
 function expandShortHex(value: string) {
   return value
@@ -125,7 +130,7 @@ function supportsTerrazzoColor(value: string) {
   }
 }
 
-function getUnitOptions(category: Exclude<TokenCategory, "all">) {
+function getUnitOptions(category: Exclude<TokenCategory, "all">, typographyTokenType: TypographyTokenType) {
   if (category === "spacing" || category === "radius" || category === "sizing" || category === "breakpoint") {
     return ["rem", "px"] as const;
   }
@@ -135,13 +140,21 @@ function getUnitOptions(category: Exclude<TokenCategory, "all">) {
   }
 
   if (category === "typography") {
-    return ["raw", "rem", "px"] as const;
+    if (typographyTokenType === "font-size" || typographyTokenType === "letter-spacing") {
+      return ["rem", "px"] as const;
+    }
+
+    if (typographyTokenType === "custom") {
+      return ["raw", "rem", "px"] as const;
+    }
+
+    return ["raw"] as const;
   }
 
   return ["raw"] as const;
 }
 
-function defaultUnitForCategory(category: Exclude<TokenCategory, "all">): TokenComposerUnit {
+function defaultUnitForCategory(category: Exclude<TokenCategory, "all">, typographyTokenType: TypographyTokenType): TokenComposerUnit {
   if (category === "breakpoint") {
     return "px";
   }
@@ -154,7 +167,34 @@ function defaultUnitForCategory(category: Exclude<TokenCategory, "all">): TokenC
     return "ms";
   }
 
+  if (category === "typography") {
+    if (typographyTokenType === "font-size" || typographyTokenType === "letter-spacing") {
+      return "rem";
+    }
+
+    return "raw";
+  }
+
   return "raw";
+}
+
+function getTypographyTokenName(tokenType: TypographyTokenType) {
+  switch (tokenType) {
+    case "font-family":
+      return "--font-family";
+    case "font-size":
+      return "--font-size";
+    case "font-weight":
+      return "--font-weight";
+    case "line-height":
+      return "--line-height";
+    case "letter-spacing":
+      return "--letter-spacing";
+    case "text-shadow":
+      return "--text-shadow";
+    default:
+      return undefined;
+  }
 }
 
 function isLengthUnit(value: TokenComposerUnit): value is EditableLengthUnit {
@@ -166,6 +206,7 @@ function isDurationUnit(value: TokenComposerUnit): value is EditableDurationUnit
 }
 
 export function WorkspaceHeader({
+  importedGoogleFonts,
   onCreateToken,
   onOpenEditor,
   onOpenCommandPalette,
@@ -174,16 +215,20 @@ export function WorkspaceHeader({
   tokenComposerOpen
 }: WorkspaceHeaderProps) {
   const [tokenCategory, setTokenCategory] = useState<Exclude<TokenCategory, "all">>(DEFAULT_TOKEN_CATEGORY);
+  const [typographyTokenType, setTypographyTokenType] = useState<TypographyTokenType>(DEFAULT_TYPOGRAPHY_TOKEN_TYPE);
   const [tokenRawValue, setTokenRawValue] = useState("");
   const [tokenColorValue, setTokenColorValue] = useState(DEFAULT_COLOR_VALUE);
   const [tokenCssColorValue, setTokenCssColorValue] = useState(DEFAULT_CSS_COLOR_VALUE);
+  const [tokenFontFamily, setTokenFontFamily] = useState("");
   const [colorComposerMode, setColorComposerMode] = useState<ColorComposerMode>("hex");
-  const [tokenUnit, setTokenUnit] = useState<TokenComposerUnit>(defaultUnitForCategory(DEFAULT_TOKEN_CATEGORY));
+  const [tokenUnit, setTokenUnit] = useState<TokenComposerUnit>(defaultUnitForCategory(DEFAULT_TOKEN_CATEGORY, DEFAULT_TYPOGRAPHY_TOKEN_TYPE));
   const [tokenUnitAmount, setTokenUnitAmount] = useState("");
   const [cssColor, setCssColor] = useColor(DEFAULT_CSS_COLOR_VALUE);
   const [cssPickerVersion, setCssPickerVersion] = useState(0);
-  const availableUnits = getUnitOptions(tokenCategory);
+  const availableUnits = getUnitOptions(tokenCategory, typographyTokenType);
   const usesManagedUnit = tokenUnit !== "raw";
+  const importedTypographyFamilies = useMemo(() => importedGoogleFonts.map((font) => font.family), [importedGoogleFonts]);
+  const selectedTypographyFamily = tokenFontFamily || importedTypographyFamilies[0] || "";
   const normalizedColorValue = normalizeHexColor(tokenColorValue);
   const validCssColorValue = supportsTerrazzoColor(tokenCssColorValue) ? tokenCssColorValue : null;
   const previewColorValue = useMemo(() => {
@@ -198,6 +243,8 @@ export function WorkspaceHeader({
       ? colorComposerMode === "hex"
         ? normalizedColorValue !== null
         : validCssColorValue !== null
+      : tokenCategory === "typography" && typographyTokenType === "font-family"
+        ? selectedTypographyFamily.trim().length > 0
       : usesManagedUnit
         ? tokenUnitAmount.trim() !== "" && !Number.isNaN(Number.parseFloat(tokenUnitAmount))
         : tokenRawValue.trim() !== "";
@@ -208,15 +255,17 @@ export function WorkspaceHeader({
     }
 
     setTokenCategory(DEFAULT_TOKEN_CATEGORY);
+    setTypographyTokenType(DEFAULT_TYPOGRAPHY_TOKEN_TYPE);
     setTokenRawValue("");
     setTokenColorValue(DEFAULT_COLOR_VALUE);
     setTokenCssColorValue(DEFAULT_CSS_COLOR_VALUE);
+    setTokenFontFamily(importedGoogleFonts[0]?.family ?? "");
     setColorComposerMode("hex");
-    setTokenUnit(defaultUnitForCategory(DEFAULT_TOKEN_CATEGORY));
+    setTokenUnit(defaultUnitForCategory(DEFAULT_TOKEN_CATEGORY, DEFAULT_TYPOGRAPHY_TOKEN_TYPE));
     setTokenUnitAmount("");
     setCssColor(DEFAULT_CSS_COLOR_VALUE);
     setCssPickerVersion((current) => current + 1);
-  }, [setCssColor, tokenComposerOpen]);
+  }, [importedGoogleFonts, setCssColor, tokenComposerOpen]);
 
   useEffect(() => {
     if (tokenCategory !== "color" || colorComposerMode !== "css") {
@@ -250,22 +299,58 @@ export function WorkspaceHeader({
       return;
     }
 
-    setTokenUnit(defaultUnitForCategory(tokenCategory));
-  }, [availableUnits, tokenCategory, tokenUnit]);
+    setTokenUnit(defaultUnitForCategory(tokenCategory, typographyTokenType));
+  }, [availableUnits, tokenCategory, tokenUnit, typographyTokenType]);
+
+  useEffect(() => {
+    if (tokenCategory !== "typography" || typographyTokenType !== "font-family") {
+      return;
+    }
+
+    if (importedTypographyFamilies.length === 0) {
+      if (tokenFontFamily) {
+        setTokenFontFamily("");
+      }
+      return;
+    }
+
+    if (tokenFontFamily && importedTypographyFamilies.includes(tokenFontFamily)) {
+      return;
+    }
+
+    setTokenFontFamily(importedTypographyFamilies[0]);
+  }, [importedTypographyFamilies, tokenCategory, tokenFontFamily, typographyTokenType]);
 
   function handleCreateToken(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     let nextValue = tokenRawValue.trim();
+    let nextName: string | undefined;
 
     if (tokenCategory === "color") {
       nextValue = colorComposerMode === "hex" ? normalizedColorValue ?? "" : validCssColorValue ?? "";
+    } else if (tokenCategory === "typography" && typographyTokenType === "font-family") {
+      nextName = getTypographyTokenName(typographyTokenType);
+      nextValue = buildFontFamilyValue(selectedTypographyFamily, nextName ?? "--font-family");
+    } else if (tokenCategory === "typography") {
+      nextName = getTypographyTokenName(typographyTokenType);
     } else if (usesManagedUnit) {
+      const numeric = Number.parseFloat(tokenUnitAmount);
+
+      if (Number.isNaN(numeric)) {
+          return;
+      }
+
+      nextValue = isLengthUnit(tokenUnit) ? formatLengthValue(numeric, tokenUnit) : isDurationUnit(tokenUnit) ? formatDurationValue(numeric, tokenUnit) : "";
+    }
+
+    if (tokenCategory === "typography" && usesManagedUnit) {
       const numeric = Number.parseFloat(tokenUnitAmount);
 
       if (Number.isNaN(numeric)) {
         return;
       }
 
+      nextName = getTypographyTokenName(typographyTokenType);
       nextValue = isLengthUnit(tokenUnit) ? formatLengthValue(numeric, tokenUnit) : isDurationUnit(tokenUnit) ? formatDurationValue(numeric, tokenUnit) : "";
     }
 
@@ -275,6 +360,7 @@ export function WorkspaceHeader({
 
     onCreateToken({
       category: tokenCategory,
+      name: nextName,
       value: nextValue
     });
     onTokenComposerOpenChange(false);
@@ -307,7 +393,7 @@ export function WorkspaceHeader({
             <Popover.Content
               align="end"
               sideOffset={8}
-              className={`${styles.tokenComposerContent} ${tokenCategory === "color" ? styles.tokenComposerContentWide : ""}`.trim()}
+              className={`${styles.tokenComposerContent} ${tokenCategory === "color" || tokenCategory === "typography" ? styles.tokenComposerContentWide : ""}`.trim()}
             >
               <form onSubmit={handleCreateToken}>
                 <Flex direction="column" gap="3">
@@ -334,6 +420,25 @@ export function WorkspaceHeader({
                       </Select.Content>
                     </Select.Root>
                   </Flex>
+                  {tokenCategory === "typography" ? (
+                    <Flex direction="column" gap="1">
+                      <Text size="1" color="gray">
+                        Type
+                      </Text>
+                      <Select.Root value={typographyTokenType} onValueChange={(value) => setTypographyTokenType(value as TypographyTokenType)}>
+                        <Select.Trigger />
+                        <Select.Content>
+                          <Select.Item value="font-family">Font family</Select.Item>
+                          <Select.Item value="font-size">Type scale</Select.Item>
+                          <Select.Item value="font-weight">Weight</Select.Item>
+                          <Select.Item value="line-height">Line height</Select.Item>
+                          <Select.Item value="letter-spacing">Letter spacing</Select.Item>
+                          <Select.Item value="text-shadow">Text shadow</Select.Item>
+                          <Select.Item value="custom">Custom</Select.Item>
+                        </Select.Content>
+                      </Select.Root>
+                    </Flex>
+                  ) : null}
                   <Flex direction="column" gap="1">
                     <Text size="1" color="gray">
                       Value
@@ -407,16 +512,57 @@ export function WorkspaceHeader({
                           </>
                         )}
                       </Flex>
+                    ) : tokenCategory === "typography" && typographyTokenType === "font-family" ? (
+                      <Flex direction="column" gap="2">
+                        {importedTypographyFamilies.length > 0 ? (
+                          <Select.Root
+                            value={selectedTypographyFamily}
+                            onValueChange={(value) => {
+                              setTokenFontFamily(value);
+                            }}
+                          >
+                            <Select.Trigger />
+                            <Select.Content>
+                              {importedTypographyFamilies.map((family) => (
+                                <Select.Item key={family} value={family}>
+                                  {family}
+                                </Select.Item>
+                              ))}
+                            </Select.Content>
+                          </Select.Root>
+                        ) : (
+                          <Text size="2" color="gray">
+                            Add a font in Typography first, then create a font-family token here.
+                          </Text>
+                        )}
+                        <Text size="1" color="gray">
+                          Uses the imported font stack for this token.
+                        </Text>
+                      </Flex>
                     ) : (
                       <Flex gap="2">
                         {usesManagedUnit ? (
                           <TextField.Root
                             autoFocus
-                            type="number"
-                            step={tokenUnit === "ms" || tokenUnit === "s" ? "0.05" : "0.0625"}
+                            type={tokenCategory === "typography" && typographyTokenType === "font-weight" ? "number" : usesManagedUnit ? "number" : undefined}
+                            step={
+                              tokenCategory === "typography" && typographyTokenType === "font-weight"
+                                ? "100"
+                                : tokenUnit === "ms" || tokenUnit === "s"
+                                  ? "0.05"
+                                  : "0.0625"
+                            }
                             value={tokenUnitAmount}
                             onChange={(event) => setTokenUnitAmount(event.target.value)}
-                            placeholder="Value"
+                            placeholder={
+                              tokenCategory === "typography" && typographyTokenType === "font-weight"
+                                ? "400"
+                                : tokenCategory === "typography" && typographyTokenType === "font-size"
+                                  ? "1"
+                                  : tokenCategory === "typography" && typographyTokenType === "letter-spacing"
+                                    ? "0.02"
+                                    : "Value"
+                            }
                             className={styles.tokenComposerField}
                           />
                         ) : (
@@ -424,7 +570,13 @@ export function WorkspaceHeader({
                             autoFocus
                             value={tokenRawValue}
                             onChange={(event) => setTokenRawValue(event.target.value)}
-                            placeholder="Value"
+                            placeholder={
+                              tokenCategory === "typography" && typographyTokenType === "line-height"
+                                ? "1.4"
+                                : tokenCategory === "typography" && typographyTokenType === "text-shadow"
+                                  ? "0 1px 2px rgb(0 0 0 / 0.2)"
+                                  : "Value"
+                            }
                             className={styles.tokenComposerField}
                           />
                         )}

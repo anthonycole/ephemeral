@@ -30,7 +30,6 @@ export function TokenWorkspace() {
   const { searchQuery, setSearchQuery } = useHeaderState();
   const {
     editorCss,
-    generatedCss,
     syntaxErrors,
     setEditorCss,
     addGoogleFontImport,
@@ -51,6 +50,7 @@ export function TokenWorkspace() {
   );
   const editorCssDraft = useTokenStore((state) => state.editorCss);
   const [persistenceStatus, setPersistenceStatus] = useState<PersistenceStatus>("loading");
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [hasLoadedWorkspace, setHasLoadedWorkspace] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -234,6 +234,7 @@ export function TokenWorkspace() {
         if (response.status === 404) {
           if (isActive) {
             setPersistenceStatus("saved");
+            setLastSavedAt(null);
             setHasLoadedWorkspace(true);
           }
           return;
@@ -260,6 +261,7 @@ export function TokenWorkspace() {
           editorCss: payload.workspace.editorCss
         });
         setPersistenceStatus("saved");
+        setLastSavedAt(null);
       } catch (error) {
         console.error(error);
 
@@ -314,6 +316,7 @@ export function TokenWorkspace() {
 
           if (saveSequenceRef.current === requestId) {
             setPersistenceStatus("saved");
+            setLastSavedAt(Date.now());
           }
         } catch (error) {
           console.error(error);
@@ -361,16 +364,9 @@ export function TokenWorkspace() {
       run: () => importEditorCss()
     },
     {
-      id: "load-generated",
-      title: "Load generated CSS",
-      subtitle: "Copy the generated token CSS back into the editor",
-      keywords: ["export", "generated", "editor"],
-      run: () => setEditorCss(generatedCss)
-    },
-    {
       id: "reset-sample",
-      title: "Reset sample",
-      subtitle: "Replace the current workspace with the sample token set",
+      title: "Start over",
+      subtitle: "Replace the current workspace with the starter example",
       keywords: ["reset", "sample", "default"],
       run: () => resetToSample()
     },
@@ -426,6 +422,7 @@ export function TokenWorkspace() {
     <main className={styles.workspaceRoot}>
       <GoogleFontLinks directives={document.directives} />
       <WorkspaceHeader
+        importedGoogleFonts={importedGoogleFonts}
         onCreateToken={createToken}
         onOpenEditor={() => setEditorOpen(true)}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
@@ -441,6 +438,9 @@ export function TokenWorkspace() {
           visibleCount={visibleTokens.length}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
+          importedGoogleFonts={importedGoogleFonts}
+          onImportGoogleFont={addGoogleFontImport}
+          onRemoveGoogleFont={removeGoogleFontImport}
           groupedVisibleTokens={groupedVisibleTokens}
           onSelectToken={setSelectedTokenId}
           supportsVirtualizedSingleCategory={supportsVirtualizedSingleCategory}
@@ -459,13 +459,11 @@ export function TokenWorkspace() {
             <EditorPane
               className={styles.editorOverlayPane}
               editorCss={editorCss}
+              lastSavedAt={lastSavedAt}
               onClose={() => setEditorOpen(false)}
-              importedGoogleFonts={importedGoogleFonts}
+              persistenceStatus={persistenceStatus}
               onEditorCssChange={setEditorCss}
-              onImportGoogleFont={addGoogleFontImport}
               onImportCss={importEditorCss}
-              onLoadGeneratedCss={() => setEditorCss(generatedCss)}
-              onRemoveGoogleFont={removeGoogleFontImport}
               onResetToSample={resetToSample}
               syntaxErrors={syntaxErrors}
             />

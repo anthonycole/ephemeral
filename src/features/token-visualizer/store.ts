@@ -86,15 +86,12 @@ export const useTokenStore = create<TokenStoreState>()(
       },
       createToken: (tokenInput) => {
         const currentDocument = get().document;
-        const currentEditorCss = get().editorCss;
-        const currentGeneratedCss = get().generatedCss;
         const { document, token } = addDocumentToken(currentDocument, tokenInput);
         const nextCss = serializeDocumentToCss(document);
-        const shouldSyncEditor = currentEditorCss.trim() === currentGeneratedCss.trim();
 
         set({
           document,
-          editorCss: shouldSyncEditor ? nextCss : currentEditorCss,
+          editorCss: nextCss,
           generatedCss: nextCss,
           activeCategory: token.category,
           selectedTokenId: token.sourceId

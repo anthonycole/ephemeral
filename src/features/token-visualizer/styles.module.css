@@ -236,20 +236,74 @@
 
 .editorWorkspace {
   display: grid;
-  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   flex: 1;
   min-height: 0;
 }
 
-.editorSidebar,
 .editorMain {
   min-height: 0;
 }
 
-.editorSidebar {
-  border-right: 1px solid var(--gray-6);
-  padding-right: 1rem;
+.editorMain {
+  display: flex;
+  min-width: 0;
+}
+
+.editorMainStack {
+  flex: 1;
+  min-height: 0;
+}
+
+.editorToolbar {
+  align-items: center;
+}
+
+.editorToolbarGroup {
+  min-width: 0;
+}
+
+.editorToolbarButton {
+  gap: 0.4rem;
+}
+
+.editorThemeField {
+  min-width: 11rem;
+}
+
+.editorCodeArea {
+  flex: 1;
+  min-height: 0;
+}
+
+.editorErrorList {
+  flex: none;
+}
+
+.editorFooter {
+  padding-top: 0.125rem;
+  border-top: 1px solid var(--gray-5);
+}
+
+.editorFooterStatus {
+  color: var(--gray-11);
+}
+
+.editorFooterStatusSaved {
+  color: var(--green-11);
+}
+
+.editorFooterStatusSaving {
+  color: var(--gray-11);
+}
+
+.editorFooterStatusError {
+  color: var(--red-11);
+}
+
+.editorStatusIconSpin {
+  animation: editorStatusSpin 0.9s linear infinite;
 }
 
 .editorCloseButton {
@@ -268,34 +322,8 @@
 .codeEditorWrap {
   border-radius: 10px;
   overflow: hidden;
-  position: relative;
-}
-
-.fontFamilyInput {
-  width: 100%;
-  min-width: 0;
-  height: 2.5rem;
-  padding: 0 0.625rem;
-  border: 1px solid var(--gray-7);
-  background: var(--color-panel, white);
-  color: inherit;
-  font: inherit;
-}
-
-.fontImportList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.fontImportRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid var(--gray-6);
-  background: var(--gray-2);
+  min-height: 0;
+  height: 100%;
 }
 
 .codeEditorValid {
@@ -306,43 +334,26 @@
   border: 1px solid var(--red-9);
 }
 
-.codeHighlight {
-  max-height: 340px;
-  overflow: auto;
+.codeEditorSurface {
   width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
-.codeHighlight pre,
-.codeHighlight code {
-  white-space: pre-wrap !important;
-  word-break: break-word !important;
-  overflow-wrap: anywhere;
+.codeEditorSurface :global(.ace_editor),
+.codeEditorSurface :global(.ace_scroller),
+.codeEditorSurface :global(.ace_gutter) {
   font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
 }
 
-.codeEditor {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  margin: 0;
-  padding: 12px;
-  resize: none;
-  background: transparent;
-  color: transparent;
-  caret-color: var(--foreground);
-  overflow: auto;
-  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 12px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
+@keyframes editorStatusSpin {
+  from {
+    transform: rotate(0deg);
+  }
 
-.codeEditor:focus {
-  outline: none;
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .canvasCard {
@@ -561,6 +572,97 @@
   gap: 0.125rem;
 }
 
+.typographyFontManager {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.typographyFontInputRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.typographyFontAutocomplete {
+  position: relative;
+}
+
+.typographyFontInput {
+  width: 100%;
+}
+
+.typographyFontAutocompleteMenu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 4;
+  border: 1px solid var(--gray-6);
+  background: white;
+  opacity: 1;
+  max-height: 14rem;
+  overflow: auto;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 0.12);
+}
+
+.typographyFontAutocompleteOption {
+  appearance: none;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--gray-4);
+  background: white;
+  color: inherit;
+  padding: 0.6rem 0.7rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.typographyFontAutocompleteOption:first-child {
+  border-top: 0;
+}
+
+.typographySelectedFonts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.typographySelectedFontsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  border: 1px solid var(--gray-6);
+  background: var(--gray-2);
+}
+
+.typographySelectedFontsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.typographySelectedFont {
+  appearance: none;
+  border: 1px solid var(--gray-6);
+  background: white;
+  color: inherit;
+  padding: 0.45rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.typographySelectedFontAction {
+  color: var(--gray-10);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
 .typographyTokenGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -765,10 +867,12 @@
     grid-template-columns: 1fr;
   }
 
-  .editorSidebar {
-    border-right: 0;
-    border-bottom: 1px solid var(--gray-6);
-    padding-right: 0;
-    padding-bottom: 1rem;
+  .editorThemeField {
+    min-width: 9.5rem;
   }
+
+  .editorFooter {
+    align-items: flex-start;
+  }
+
 }

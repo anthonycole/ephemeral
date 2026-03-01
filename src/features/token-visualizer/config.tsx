@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { TokenCategory } from "@/lib/design-tokens";
 import type { TokenRecord } from "@/features/token-visualizer/document";
+import type { ImportedGoogleFont } from "@/features/token-visualizer/font-utils";
 import type { CategoryDefinition, CategoryIcon, CategoryIconProps } from "@/features/token-visualizer/types";
 import {
   BreakpointCanvas,
@@ -16,7 +17,14 @@ import {
   ZIndexCanvas
 } from "@/features/token-visualizer/components/canvases";
 
-type CanvasRenderer = (tokens: TokenRecord[], onSelect: (name: string) => void, options?: { virtualize?: boolean }) => ReactNode;
+type CanvasRenderOptions = {
+  virtualize?: boolean;
+  importedGoogleFonts?: ImportedGoogleFont[];
+  onImportGoogleFont?: (family: string) => void;
+  onRemoveGoogleFont?: (family: string) => void;
+};
+
+type CanvasRenderer = (tokens: TokenRecord[], onSelect: (name: string) => void, options?: CanvasRenderOptions) => ReactNode;
 
 type CategoryConfig = CategoryDefinition & {
   render: CanvasRenderer;
@@ -135,7 +143,22 @@ export const ALL_CATEGORY_ICON = ShapesIcon;
 export const CATEGORY_DEFINITIONS: CategoryConfig[] = [
   { key: "color", label: "Color", Icon: PaletteIcon, render: (tokens, onSelect, options) => <ColorCanvas tokens={tokens} onSelect={onSelect} virtualize={options?.virtualize} />, supportsVirtualizedCanvas: true },
   { key: "spacing", label: "Spacing", Icon: SpacingIcon, render: (tokens, onSelect, options) => <SpacingCanvas tokens={tokens} onSelect={onSelect} virtualize={options?.virtualize} />, supportsVirtualizedCanvas: true },
-  { key: "typography", label: "Typography", Icon: TextIcon, render: (tokens, onSelect, options) => <TypographyCanvas tokens={tokens} onSelect={onSelect} virtualize={options?.virtualize} />, supportsVirtualizedCanvas: true },
+  {
+    key: "typography",
+    label: "Typography",
+    Icon: TextIcon,
+    render: (tokens, onSelect, options) => (
+      <TypographyCanvas
+        tokens={tokens}
+        onSelect={onSelect}
+        virtualize={options?.virtualize}
+        importedGoogleFonts={options?.importedGoogleFonts ?? []}
+        onImportGoogleFont={options?.onImportGoogleFont}
+        onRemoveGoogleFont={options?.onRemoveGoogleFont}
+      />
+    ),
+    supportsVirtualizedCanvas: true
+  },
   { key: "radius", label: "Radius", Icon: RadiusIcon, render: (tokens, onSelect) => <RadiusCanvas tokens={tokens} onSelect={onSelect} /> },
   { key: "shadow", label: "Shadow", Icon: ShadowIcon, render: (tokens, onSelect, options) => <ShadowCanvas tokens={tokens} onSelect={onSelect} virtualize={options?.virtualize} />, supportsVirtualizedCanvas: true },
   { key: "sizing", label: "Sizing", Icon: SizingIcon, render: (tokens, onSelect, options) => <SizingCanvas tokens={tokens} onSelect={onSelect} virtualize={options?.virtualize} />, supportsVirtualizedCanvas: true },

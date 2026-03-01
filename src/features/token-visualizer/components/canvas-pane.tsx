@@ -3,6 +3,7 @@ import type { TokenCategory } from "@/lib/design-tokens";
 import { CATEGORY_DEFINITIONS } from "@/features/token-visualizer/config";
 import { CategoryPanel } from "@/features/token-visualizer/components/category-panel";
 import { CategoryTabs } from "@/features/token-visualizer/components/category-tabs";
+import type { ImportedGoogleFont } from "@/features/token-visualizer/font-utils";
 import type { TokenCounts, TokenGroups } from "@/features/token-visualizer/types";
 import styles from "@/features/token-visualizer/styles.module.css";
 
@@ -13,6 +14,9 @@ type CanvasPaneProps = {
   visibleCount: number;
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
+  importedGoogleFonts: ImportedGoogleFont[];
+  onImportGoogleFont: (family: string) => void;
+  onRemoveGoogleFont: (family: string) => void;
   groupedVisibleTokens: TokenGroups;
   onSelectToken: (name: string) => void;
   supportsVirtualizedSingleCategory: boolean;
@@ -25,6 +29,9 @@ export function CanvasPane({
   visibleCount,
   searchQuery,
   onSearchQueryChange,
+  importedGoogleFonts,
+  onImportGoogleFont,
+  onRemoveGoogleFont,
   groupedVisibleTokens,
   onSelectToken,
   supportsVirtualizedSingleCategory
@@ -61,17 +68,35 @@ export function CanvasPane({
                       category={definition.key}
                       tokens={groupedVisibleTokens[definition.key]}
                       onSelect={onSelectToken}
+                      importedGoogleFonts={importedGoogleFonts}
+                      onImportGoogleFont={onImportGoogleFont}
+                      onRemoveGoogleFont={onRemoveGoogleFont}
                     />
                   ))}
                 </Grid>
               ) : (
-                <CategoryPanel category={activeCategoryKey} tokens={groupedVisibleTokens[activeCategoryKey]} onSelect={onSelectToken} />
+                <CategoryPanel
+                  category={activeCategoryKey}
+                  tokens={groupedVisibleTokens[activeCategoryKey]}
+                  onSelect={onSelectToken}
+                  importedGoogleFonts={importedGoogleFonts}
+                  onImportGoogleFont={onImportGoogleFont}
+                  onRemoveGoogleFont={onRemoveGoogleFont}
+                />
               )}
             </Flex>
           </ScrollArea>
         ) : (
           <div className={styles.paneScroll}>
-            <CategoryPanel category={activeCategoryKey} tokens={groupedVisibleTokens[activeCategoryKey]} onSelect={onSelectToken} virtualize />
+            <CategoryPanel
+              category={activeCategoryKey}
+              tokens={groupedVisibleTokens[activeCategoryKey]}
+              onSelect={onSelectToken}
+              importedGoogleFonts={importedGoogleFonts}
+              onImportGoogleFont={onImportGoogleFont}
+              onRemoveGoogleFont={onRemoveGoogleFont}
+              virtualize
+            />
           </div>
         )}
       </Flex>

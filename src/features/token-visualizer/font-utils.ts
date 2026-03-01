@@ -12,6 +12,29 @@ export type FontTokenDefinition = {
   fallback: string;
 };
 
+export const GOOGLE_FONT_SUGGESTIONS = [
+  "Inter",
+  "Instrument Sans",
+  "Manrope",
+  "DM Sans",
+  "Plus Jakarta Sans",
+  "Space Grotesk",
+  "Work Sans",
+  "Source Sans 3",
+  "Merriweather",
+  "Source Serif 4",
+  "Libre Baskerville",
+  "Playfair Display",
+  "IBM Plex Sans",
+  "IBM Plex Serif",
+  "IBM Plex Mono",
+  "JetBrains Mono",
+  "Fira Code",
+  "Geist",
+  "Outfit",
+  "Sora"
+] as const;
+
 const GOOGLE_FONTS_HOST_REGEX = /(^|\.)fonts\.googleapis\.com$/i;
 const GOOGLE_FONT_IMPORT_REGEX =
   /@import\s+(?:url\(\s*(?:(['"])(.*?)\1|([^)\s]+))\s*\)|(['"])(.*?)\4)\s*;?/i;
@@ -37,9 +60,9 @@ const FONT_TOKEN_DEFINITIONS: Array<{
   { matcher: /^--code-font-family$/i, framework: "Radix", role: "Code", fallback: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' },
   { matcher: /^--em-font-family$/i, framework: "Radix", role: "Emphasis", fallback: "ui-serif, Georgia, serif" },
   { matcher: /^--quote-font-family$/i, framework: "Radix", role: "Quote", fallback: "ui-serif, Georgia, serif" },
-  { matcher: /^--font-body$/i, framework: "Generic", role: "Body", fallback: "ui-sans-serif, system-ui, sans-serif" },
-  { matcher: /^--font-heading$/i, framework: "Generic", role: "Heading", fallback: "ui-sans-serif, system-ui, sans-serif" },
-  { matcher: /^--font-family$/i, framework: "Generic", role: "Body", fallback: "ui-sans-serif, system-ui, sans-serif" }
+  { matcher: /^--font-body(?:-.+)?$/i, framework: "Generic", role: "Body", fallback: "ui-sans-serif, system-ui, sans-serif" },
+  { matcher: /^--font-heading(?:-.+)?$/i, framework: "Generic", role: "Heading", fallback: "ui-sans-serif, system-ui, sans-serif" },
+  { matcher: /^--font-family(?:-.+)?$/i, framework: "Generic", role: "Body", fallback: "ui-sans-serif, system-ui, sans-serif" }
 ];
 
 function uniqueByFamily(fonts: ImportedGoogleFont[]) {

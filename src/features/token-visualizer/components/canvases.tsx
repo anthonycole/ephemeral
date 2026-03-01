@@ -1,10 +1,10 @@
 import type { CSSProperties, ReactNode } from "react";
-import { useMemo } from "react";
-import { Badge, Box, Card, Flex, Text } from "@radix-ui/themes";
+import { useMemo, useState } from "react";
+import { Badge, Box, Button, Card, Flex, Text, TextField } from "@radix-ui/themes";
 import { groupColorTokens, parseColorTokenMeta, resolveColorDisplayMode } from "@/features/token-visualizer/color-meta";
 import { VirtualizedCardList } from "@/features/token-visualizer/components/virtualized-card-list";
 import type { TokenRecord } from "@/features/token-visualizer/document";
-import { getFontTokenDefinition } from "@/features/token-visualizer/font-utils";
+import { GOOGLE_FONT_SUGGESTIONS, getFontTokenDefinition, type ImportedGoogleFont } from "@/features/token-visualizer/font-utils";
 import styles from "@/features/token-visualizer/styles.module.css";
 import { numericValue, toMilliseconds, tokenValueForWidth } from "@/features/token-visualizer/utils";
 
@@ -423,7 +423,20 @@ export function SizingCanvas({ tokens, onSelect, virtualize = false }: CanvasPro
   );
 }
 
-export function TypographyCanvas({ tokens, onSelect, virtualize = false }: CanvasProps) {
+type TypographyCanvasProps = CanvasProps & {
+  importedGoogleFonts?: ImportedGoogleFont[];
+  onImportGoogleFont?: (family: string) => void;
+  onRemoveGoogleFont?: (family: string) => void;
+};
+
+export function TypographyCanvas({
+  tokens,
+  onSelect,
+  virtualize = false,
+  importedGoogleFonts = [],
+  onImportGoogleFont,
+  onRemoveGoogleFont
+}: TypographyCanvasProps) {
   const { familyTokens, sizeTokens, weightTokens, utilityTokens } = useMemo(() => {
     const sorted = [...tokens].sort(compareByNumericValue);
     const familyTokens = sorted.filter((token) => getFontTokenDefinition(token.name));
@@ -438,6 +451,32 @@ export function TypographyCanvas({ tokens, onSelect, virtualize = false }: Canva
       utilityTokens
     };
   }, [tokens]);
+  const [fontQuery, setFontQuery] = useState("");
+  const [fontSearchOpen, setFontSearchOpen] = useState(false);
+  const normalizedFontQuery = fontQuery.trim().replace(/\s+/g, " ");
+  const importedFamilies = useMemo(() => importedGoogleFonts.map((font) => font.family), [importedGoogleFonts]);
+  const filteredFontSuggestions = useMemo(() => {
+    const normalizedQuery = normalizedFontQuery.toLowerCase();
+    const availableFonts = GOOGLE_FONT_SUGGESTIONS.filter((family) => !importedFamilies.includes(family));
+
+    if (!normalizedQuery) {
+      return availableFonts.slice(0, 5);
+    }
+
+    return availableFonts.filter((family) => family.toLowerCase().includes(normalizedQuery)).slice(0, 5);
+  }, [importedFamilies, normalizedFontQuery]);
+  const canAddTypedFont =
+    normalizedFontQuery.length > 0 && !importedFamilies.some((family) => family.toLowerCase() === normalizedFontQuery.toLowerCase());
+
+  function importFontFamily(family: string) {
+    if (!onImportGoogleFont) {
+      return;
+    }
+
+    onImportGoogleFont(family);
+    setFontQuery("");
+    setFontSearchOpen(false);
+  }
 
   function renderTypographyToken(token: TokenRecord, sampleClassName?: string) {
     const fontDefinition = getFontTokenDefinition(token.name);
@@ -471,13 +510,113 @@ export function TypographyCanvas({ tokens, onSelect, virtualize = false }: Canva
 
   return (
     <Flex direction="column" gap="4">
-      {familyTokens.length > 0 ? (
+      {familyTokens.length > 0 || onImportGoogleFont ? (
         <section className={styles.typographySection}>
           <div className={styles.typographySectionHeader}>
             <Text size="2" weight="medium">
               Font families
             </Text>
           </div>
+          {onImportGoogleFont ? (
+            <div className={styles.typographyFontManager}>
+              <div className={styles.typographyFontInputRow}>
+                <div className={styles.typographyFontAutocomplete}>
+                  <TextField.Root
+                    value={fontQuery}
+                    onChange={(event) => {
+                      setFontQuery(event.target.value);
+                      setFontSearchOpen(true);
+                    }}
+                    onFocus={() => setFontSearchOpen(true)}
+                    onBlur={() => {
+                      window.setTimeout(() => {
+                        setFontSearchOpen(false);
+                      }, 120);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter") {
+                        return;
+                      }
+
+                      event.preventDefault();
+
+                      if (filteredFontSuggestions.length > 0) {
+                        importFontFamily(filteredFontSuggestions[0]);
+                        return;
+                      }
+
+                      if (canAddTypedFont) {
+                        importFontFamily(normalizedFontQuery);
+                      }
+                    }}
+                    placeholder="Search Google Fonts"
+                    className={styles.typographyFontInput}
+                  />
+                  {fontSearchOpen && filteredFontSuggestions.length > 0 ? (
+                    <div className={styles.typographyFontAutocompleteMenu}>
+                      {filteredFontSuggestions.map((family) => (
+                        <button
+                          key={family}
+                          type="button"
+                          className={styles.typographyFontAutocompleteOption}
+                          style={{ fontFamily: `"${family}", ui-sans-serif, system-ui, sans-serif` }}
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            importFontFamily(family);
+                          }}
+                        >
+                          {family}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                <Button
+                  size="2"
+                  variant="soft"
+                  disabled={!canAddTypedFont}
+                  onClick={() => {
+                    if (canAddTypedFont) {
+                      importFontFamily(normalizedFontQuery);
+                    }
+                  }}
+                >
+                  Add font
+                </Button>
+              </div>
+              {importedGoogleFonts.length > 0 ? (
+                <div className={styles.typographySelectedFontsGroup}>
+                  <div className={styles.typographySelectedFontsHeader}>
+                    <Text size="1" color="gray">
+                      Installed fonts
+                    </Text>
+                    <Text size="1" color="gray">
+                      {importedGoogleFonts.length}
+                    </Text>
+                  </div>
+                  <div className={styles.typographySelectedFonts}>
+                    {importedGoogleFonts.map((font) => (
+                      <button
+                        key={font.family}
+                        type="button"
+                        className={styles.typographySelectedFont}
+                        style={{ fontFamily: `"${font.family}", ui-sans-serif, system-ui, sans-serif` }}
+                        onClick={() => onRemoveGoogleFont?.(font.family)}
+                        title={`Remove ${font.family}`}
+                      >
+                        <span>{font.family}</span>
+                        <span className={styles.typographySelectedFontAction}>Remove</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Text size="1" color="gray">
+                  Add fonts here to use them in font-family tokens.
+                </Text>
+              )}
+            </div>
+          ) : null}
           <div className={styles.typographyTokenGrid}>
             {familyTokens.map((token) => renderTypographyToken(token, styles.typographyFamilySample))}
           </div>

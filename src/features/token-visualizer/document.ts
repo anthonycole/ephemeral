@@ -157,20 +157,29 @@ export function addDocumentToken(
   const normalizedDocument = normalizeTokenDocument(document);
   const existingNames = new Set(normalizedDocument.tokens.map((entry) => entry.name.toLowerCase()));
   const categoryKey = token?.category && token.category !== "other" ? token.category : "token";
-  let tokenNumber = normalizedDocument.tokens.length + 1;
-  let defaultName = `--${categoryKey}-${tokenNumber}`;
 
-  while (existingNames.has(defaultName.toLowerCase())) {
-    tokenNumber += 1;
-    defaultName = `--${categoryKey}-${tokenNumber}`;
+  function createUniqueTokenName(baseName: string) {
+    let nextName = baseName;
+    let suffix = 2;
+
+    while (existingNames.has(nextName.toLowerCase())) {
+      nextName = `${baseName}-${suffix}`;
+      suffix += 1;
+    }
+
+    return nextName;
   }
+
+  const defaultName = token?.name
+    ? createUniqueTokenName(token.name)
+    : createUniqueTokenName(`--${categoryKey}-${normalizedDocument.tokens.length + 1}`);
 
   const scope = sanitizeScope(token?.scope ?? ":root");
   const atRules = Array.isArray(token?.atRules) ? token.atRules : [];
   const originalIndex = normalizedDocument.tokens.length === 0 ? 0 : Math.max(...normalizedDocument.tokens.map((entry) => entry.originalIndex)) + 1;
   const createdToken = normalizeTokenRecord(
     {
-      name: token?.name ?? defaultName,
+      name: defaultName,
       value: token?.value ?? "initial",
       category: token?.category ?? "other",
       scope,
