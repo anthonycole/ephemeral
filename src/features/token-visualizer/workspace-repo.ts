@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { normalizeTokenDocument, type TokenDocument } from "@/features/token-visualizer/document";
+import { importCssDocument, normalizeTokenDocument, type TokenDocument } from "@/features/token-visualizer/document";
 import { ensureDatabase, db } from "@/lib/db";
 import { workspaces } from "@/lib/db/schema";
 
@@ -18,10 +18,14 @@ type WorkspaceSaveInput = {
 };
 
 function parseWorkspaceRecord(row: typeof workspaces.$inferSelect): WorkspaceRecord {
+  const normalizedDocument = normalizeTokenDocument(JSON.parse(row.documentJson) as Partial<TokenDocument>);
+  const recoveredDocument =
+    normalizedDocument.tokens.length === 0 && row.editorCss.trim().length > 0 ? importCssDocument(row.editorCss, normalizedDocument) : normalizedDocument;
+
   return {
     id: row.id,
     editorCss: row.editorCss,
-    document: normalizeTokenDocument(JSON.parse(row.documentJson) as Partial<TokenDocument>),
+    document: recoveredDocument,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   };

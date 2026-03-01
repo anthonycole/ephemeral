@@ -44,9 +44,35 @@ const SIZE_VALUE_REGEX = /^-?\d*\.?\d+(px|rem|em|vh|vw|ch|%)?$/i;
 const CSS_COMMENT_REGEX = /\/\*[\s\S]*?\*\//g;
 const THEME_BLOCK_REGEX = /^@theme\b/i;
 
+function splitDirectives(rawCss: string) {
+  const directives: string[] = [];
+  const bodyLines: string[] = [];
+
+  for (const line of rawCss.split("\n")) {
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith("@") && !trimmed.includes("{") && /;\s*$/.test(trimmed)) {
+      directives.push(trimmed);
+      bodyLines.push("");
+      continue;
+    }
+
+    bodyLines.push(line);
+  }
+
+  return {
+    directives,
+    body: bodyLines.join("\n")
+  };
+}
+
 function inferCategory(name: string, value: string): Exclude<TokenCategory, "all"> {
   const lowerName = name.toLowerCase();
   const lowerValue = value.trim().toLowerCase();
+
+  if (/(shadow|elevation)/.test(lowerName) || /(\d+px\s+\d+px)/.test(lowerValue)) {
+    return "shadow";
+  }
 
   if (
     COLOR_VALUE_REGEX.test(lowerValue) ||
@@ -65,10 +91,6 @@ function inferCategory(name: string, value: string): Exclude<TokenCategory, "all
 
   if (/(radius|rounded|corner)/.test(lowerName)) {
     return "radius";
-  }
-
-  if (/(shadow|elevation)/.test(lowerName) || /(\d+px\s+\d+px)/.test(lowerValue)) {
-    return "shadow";
   }
 
   if (/(blur|perspective)/.test(lowerName)) {
@@ -112,8 +134,8 @@ export function parseCssTokens(rawCss: string): ParsedToken[] {
 
 export function parseCssDocument(rawCss: string): ParsedCssDocument {
   const tokens: ParsedToken[] = [];
-  const directives = [...rawCss.matchAll(/^\s*@[^{;]+;/gm)].map((match) => match[0].trim());
-  const scanSource = rawCss.replace(/^\s*@[^{;]+;\s*$/gm, "").replace(CSS_COMMENT_REGEX, "");
+  const { directives, body } = splitDirectives(rawCss);
+  const scanSource = body.replace(CSS_COMMENT_REGEX, "");
   const blockOrder: ParsedScopeBlock[] = [];
   const tokenPattern = /--([a-zA-Z0-9-_]+)\s*:\s*([^;]+);/g;
   const seenBlocks = new Set<string>();
