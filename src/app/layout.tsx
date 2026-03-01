@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
-import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import "@terrazzo/tokens/index.css";
 import "@terrazzo/tiles/dist/all-components.css";
@@ -24,11 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={geistMono.variable}>
-        <Theme appearance="light" accentColor="blue" grayColor="slate" radius="none" scaling="100%">
-          {children}
-        </Theme>
-      </body>
+      <body className={geistMono.variable}>{children}</body>
     </html>
   );
 }

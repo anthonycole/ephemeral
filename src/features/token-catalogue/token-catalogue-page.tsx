@@ -1,38 +1,13 @@
+"use client";
+
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Badge, Card, Code, Container, Flex, Heading, Section, Separator, Text } from "@radix-ui/themes";
-import type { TokenCategory } from "@/lib/design-tokens";
 import type { TokenDocument, TokenRecord } from "@/features/token-visualizer/document";
+import { isTokenCategoryFilter, tokenCategoryDefinitions, tokenCategoryDescriptions, type TokenCategoryFilter } from "@/features/token-catalogue/categories";
 import { formatScopeLabel, groupTokens, tokenValueForWidth } from "@/features/token-visualizer/utils";
 import styles from "@/features/token-catalogue/styles.module.css";
-
-const categoryDefinitions: Array<{ key: Exclude<TokenCategory, "all">; label: string }> = [
-  { key: "color", label: "Color" },
-  { key: "spacing", label: "Spacing" },
-  { key: "typography", label: "Typography" },
-  { key: "radius", label: "Radius" },
-  { key: "shadow", label: "Shadow" },
-  { key: "sizing", label: "Sizing" },
-  { key: "motion", label: "Motion" },
-  { key: "z-index", label: "Z Index" },
-  { key: "opacity", label: "Opacity" },
-  { key: "breakpoint", label: "Breakpoint" },
-  { key: "other", label: "Other" },
-];
-
-const categoryDescriptions: Record<(typeof categoryDefinitions)[number]["key"], string> = {
-  color: "Core brand, surface, and content colors as direct reference swatches.",
-  spacing: "Layout spacing primitives rendered as simple measurable bars.",
-  typography: "Type scale and weight decisions presented as display-ready samples.",
-  radius: "Corner treatments used by components, tiles, and interactive surfaces.",
-  shadow: "Elevation tokens shown as static, package-friendly surface previews.",
-  sizing: "Reusable size primitives for icons, containers, and layout constraints.",
-  motion: "Duration tokens represented as slim animation timings rather than controls.",
-  "z-index": "Layering tokens for overlays, popovers, and compositional depth.",
-  opacity: "Transparency utilities displayed as compositing examples.",
-  breakpoint: "Responsive thresholds presented as widths for docs and Storybook.",
-  other: "Reference tokens that still belong in a package, even without a richer visual.",
-};
 
 type TokenCataloguePageProps = {
   document: TokenDocument;
@@ -40,12 +15,20 @@ type TokenCataloguePageProps = {
   updatedAt: string | null;
 };
 
-export async function TokenCataloguePage({ document, source, updatedAt }: TokenCataloguePageProps) {
+function resolveCategoryFilter(value: string | null): TokenCategoryFilter {
+  return isTokenCategoryFilter(value) ? value : "all";
+}
+
+export function TokenCataloguePage({ document, source, updatedAt }: TokenCataloguePageProps) {
+  const searchParams = useSearchParams();
+  const activeCategory = resolveCategoryFilter(searchParams.get("category"));
   const groupedTokens = groupTokens(document.tokens);
-  const sections = categoryDefinitions.map((definition) => ({
+  const sections = tokenCategoryDefinitions.map((definition) => ({
     ...definition,
     tokens: groupedTokens[definition.key],
-  })).filter((section) => section.tokens.length > 0);
+  }))
+    .filter((section) => section.tokens.length > 0)
+    .filter((section) => activeCategory === "all" || section.key === activeCategory);
   const tokenValueMap = new Map(document.tokens.map((token) => [token.name, token.value]));
 
   return (
@@ -86,12 +69,22 @@ export async function TokenCataloguePage({ document, source, updatedAt }: TokenC
                 </Link>
               </div>
               <div className={styles.anchorRow}>
-                {sections.map((section) => (
-                  <a key={section.key} href={`#${section.key}`} className={styles.anchor}>
-                    <Badge size="2" variant="surface" color="gray">
+                <Link href="/tokens" className={styles.anchor} aria-current={activeCategory === "all" ? "page" : undefined}>
+                  <Badge size="2" variant={activeCategory === "all" ? "soft" : "surface"} color={activeCategory === "all" ? "blue" : "gray"}>
+                    All
+                  </Badge>
+                </Link>
+                {tokenCategoryDefinitions.map((section) => (
+                  <Link
+                    key={section.key}
+                    href={`/tokens?category=${section.key}`}
+                    className={styles.anchor}
+                    aria-current={activeCategory === section.key ? "page" : undefined}
+                  >
+                    <Badge size="2" variant={activeCategory === section.key ? "soft" : "surface"} color={activeCategory === section.key ? "blue" : "gray"}>
                       {section.label}
                     </Badge>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </Flex>
@@ -106,7 +99,7 @@ export async function TokenCataloguePage({ document, source, updatedAt }: TokenC
                       <div>
                         <Heading size="6">{section.label}</Heading>
                         <Text size="2" color="gray">
-                          {categoryDescriptions[section.key]}
+                          {tokenCategoryDescriptions[section.key]}
                         </Text>
                       </div>
                       <Badge size="2" variant="soft">

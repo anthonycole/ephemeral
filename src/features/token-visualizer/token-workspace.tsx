@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Grid } from "@radix-ui/themes";
 import { useShallow } from "zustand/react/shallow";
+import { isTokenCategoryFilter, type TokenCategoryFilter } from "@/features/token-catalogue/categories";
 import type { TokenDocument } from "@/features/token-visualizer/document";
 import { CommandPalette, type CommandAction } from "@/features/token-visualizer/components/command-palette";
 import { CanvasPane } from "@/features/token-visualizer/components/canvas-pane";
@@ -15,7 +17,14 @@ import styles from "@/features/token-visualizer/styles.module.css";
 
 const WORKSPACE_ID = "default";
 
+function resolveCategoryFilter(value: string | null): TokenCategoryFilter {
+  return isTokenCategoryFilter(value) ? value : "all";
+}
+
 export function TokenWorkspace() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { searchQuery, setSearchQuery } = useHeaderState();
   const {
     editorCss,
@@ -40,6 +49,10 @@ export function TokenWorkspace() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const skipNextSaveRef = useRef(false);
   const saveSequenceRef = useRef(0);
+  const initializedCategorySyncRef = useRef(false);
+  const previousUrlCategoryRef = useRef<TokenCategoryFilter | null>(null);
+  const skipNextCategoryUrlWriteRef = useRef(false);
+  const urlCategory = resolveCategoryFilter(searchParams.get("category"));
 
   const gridClassName = selectedToken ? `${styles.workspaceGrid} ${styles.workspaceGridInspectorOpen}` : styles.workspaceGrid;
 
@@ -54,6 +67,53 @@ export function TokenWorkspace() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    const previousUrlCategory = previousUrlCategoryRef.current;
+    previousUrlCategoryRef.current = urlCategory;
+
+    if (!initializedCategorySyncRef.current) {
+      initializedCategorySyncRef.current = true;
+
+      if (urlCategory !== activeCategory) {
+        skipNextCategoryUrlWriteRef.current = true;
+        setActiveCategory(urlCategory);
+      }
+
+      return;
+    }
+
+    if (previousUrlCategory !== null && urlCategory !== previousUrlCategory && urlCategory !== activeCategory) {
+      skipNextCategoryUrlWriteRef.current = true;
+      setActiveCategory(urlCategory);
+    }
+  }, [activeCategory, setActiveCategory, urlCategory]);
+
+  useEffect(() => {
+    if (!initializedCategorySyncRef.current) {
+      return;
+    }
+
+    if (skipNextCategoryUrlWriteRef.current) {
+      skipNextCategoryUrlWriteRef.current = false;
+      return;
+    }
+
+    if (urlCategory === activeCategory) {
+      return;
+    }
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    if (activeCategory === "all") {
+      nextSearchParams.delete("category");
+    } else {
+      nextSearchParams.set("category", activeCategory);
+    }
+
+    previousUrlCategoryRef.current = activeCategory;
+    router.replace(nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname, { scroll: false });
+  }, [activeCategory, pathname, router, searchParams, urlCategory]);
 
   useEffect(() => {
     let isActive = true;

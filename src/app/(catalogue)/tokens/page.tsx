@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { getWorkspace } from "@/features/token-visualizer/workspace-repo";
+import { TokenCataloguePage } from "@/features/token-catalogue/token-catalogue-page";
 import { SAMPLE_DOCUMENT } from "@/features/token-visualizer/sample-workspace";
-import { TokenSandboxPage } from "@/features/token-catalogue/token-sandbox-page";
+import { getWorkspace } from "@/features/token-visualizer/workspace-repo";
 
 export const metadata: Metadata = {
-  title: "ephemeral sandbox",
-  description: "Isolated Shadow DOM sandbox for the current token workspace."
+  title: "ephemeral tokens",
+  description: "Read-only reference view for the sample token catalogue."
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function TokensSandboxRoute() {
+export default async function TokensPage() {
   const workspace = await getWorkspace("default");
 
   return (
-    <TokenSandboxPage
+    <TokenCataloguePage
       document={workspace?.document ?? SAMPLE_DOCUMENT}
       source={workspace ? "workspace" : "sample"}
       updatedAt={workspace?.updatedAt.toISOString() ?? null}
