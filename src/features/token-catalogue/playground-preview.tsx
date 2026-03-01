@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TokenRecord } from "@/features/token-visualizer/document";
 import { parseGoogleFontImports } from "@/features/token-visualizer/font-utils";
 import { transformImportedCssForPlayground } from "@/features/token-catalogue/playground-runtime-css";
@@ -222,7 +222,8 @@ function buildPlaygroundDocument({ body, stylesheet, googleFontHrefs }: { body: 
 
 export function PlaygroundPreview({ directives, tokens, importedCss, runtimeCss }: PlaygroundPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [frameHeight, setFrameHeight] = useState(1);
+  const observerCleanupRef = useRef<(() => void) | null>(null);
+  const [frameHeight, setFrameHeight] = useState(520);
   const tokenDeclarations = useMemo(() => {
     return tokens.map((token) => `  ${token.name}: ${token.value};`).join("\n");
   }, [tokens]);
@@ -237,17 +238,17 @@ export function PlaygroundPreview({ directives, tokens, importedCss, runtimeCss 
   const body = useMemo(() => renderPlaygroundShowcases(tokens), [tokens]);
   const previewDocument = useMemo(() => buildPlaygroundDocument({ body, stylesheet, googleFontHrefs }), [body, googleFontHrefs, stylesheet]);
 
-  useEffect(() => {
+  const bindFrameMeasurement = useCallback(() => {
     const iframe = iframeRef.current;
     const documentElement = iframe?.contentDocument?.documentElement;
     const body = iframe?.contentDocument?.body;
 
     if (!iframe || !documentElement || !body) {
-      return;
+      return false;
     }
 
     const syncHeight = () => {
-      const nextHeight = Math.max(documentElement.scrollHeight, body.scrollHeight, 1);
+      const nextHeight = Math.max(documentElement.scrollHeight, body.scrollHeight, 520);
       setFrameHeight(nextHeight);
     };
 
@@ -256,21 +257,43 @@ export function PlaygroundPreview({ directives, tokens, importedCss, runtimeCss 
     const observer = new ResizeObserver(syncHeight);
     observer.observe(documentElement);
     observer.observe(body);
+    const fonts = iframe.contentDocument?.fonts;
 
-    return () => {
+    const handleFontsReady = () => {
+      syncHeight();
+    };
+
+    fonts?.ready.then(handleFontsReady).catch(() => {});
+    observerCleanupRef.current?.();
+    observerCleanupRef.current = () => {
       window.clearTimeout(timer);
       observer.disconnect();
+      observerCleanupRef.current = null;
     };
-  }, [previewDocument]);
+
+    return true;
+  }, []);
+
+  useEffect(() => {
+    setFrameHeight(520);
+    observerCleanupRef.current?.();
+    bindFrameMeasurement();
+
+    return () => {
+      observerCleanupRef.current?.();
+    };
+  }, [bindFrameMeasurement, previewDocument]);
 
   return (
     <div className={styles.playgroundHost}>
       <iframe
         ref={iframeRef}
+        key={previewDocument}
         title="Token playground preview"
         className={styles.playgroundFrame}
         srcDoc={previewDocument}
         style={{ height: `${frameHeight}px` }}
+        onLoad={bindFrameMeasurement}
       />
     </div>
   );
