@@ -312,11 +312,11 @@ export function TokenWorkspace() {
       run: () => router.push("/tokens")
     },
     {
-      id: "open-sandbox",
-      title: "Open sandbox",
-      subtitle: "Open the isolated token sandbox route",
-      keywords: ["sandbox", "preview", "tokens"],
-      run: () => router.push("/tokens/sandbox")
+      id: "open-playground",
+      title: "Open playground",
+      subtitle: "Open the isolated token playground route",
+      keywords: ["playground", "preview", "tokens"],
+      run: () => router.push("/tokens/playground")
     },
     {
       id: "import-css",

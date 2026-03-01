@@ -62,9 +62,9 @@ export function TokenCataloguePage({ document, source, updatedAt }: TokenCatalog
                     Catalogue
                   </Badge>
                 </Link>
-                <Link href="/tokens/sandbox" className={styles.routeLink}>
+                <Link href="/tokens/playground" className={styles.routeLink}>
                   <Badge size="2" color="gray" variant="surface">
-                    Sandbox
+                    Playground
                   </Badge>
                 </Link>
               </div>

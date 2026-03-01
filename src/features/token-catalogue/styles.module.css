@@ -79,13 +79,13 @@
   box-shadow: 0 18px 40px rgb(20 32 51 / 0.06);
 }
 
-.sandboxHost {
+.playgroundHost {
   border: 1px solid rgb(20 32 51 / 0.08);
   background: rgb(255 255 255 / 0.72);
   min-height: 24rem;
 }
 
-.sandboxFrame {
+.playgroundFrame {
   display: block;
   width: 100%;
   border: 0;
@@ -314,7 +314,7 @@
     grid-template-columns: 1fr;
   }
 
-  .sandboxHost {
+  .playgroundHost {
     min-height: 28rem;
   }
 }

@@ -71,7 +71,11 @@ function inferCategory(name: string, value: string): Exclude<TokenCategory, "all
     return "shadow";
   }
 
-  if (/(width|height|size|container|layout)/.test(lowerName) && SIZE_VALUE_REGEX.test(lowerValue)) {
+  if (/(blur|perspective)/.test(lowerName)) {
+    return "other";
+  }
+
+  if (/(width|height|size|container|layout|aspect)/.test(lowerName)) {
     return "sizing";
   }
 

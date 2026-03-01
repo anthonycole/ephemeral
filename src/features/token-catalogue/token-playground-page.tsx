@@ -2,23 +2,23 @@ import Link from "next/link";
 import { Badge, Card, Container, Flex, Heading, Section, Separator, Text } from "@radix-ui/themes";
 import type { TokenDocument } from "@/features/token-visualizer/document";
 import {
-  getSandboxAdapterDefinition,
-  listSandboxAdapters,
-  type SandboxAdapterKey
-} from "@/features/token-catalogue/sandbox-adapters";
-import { SandboxPreview } from "@/features/token-catalogue/sandbox-preview";
+  getPlaygroundAdapterDefinition,
+  listPlaygroundAdapters,
+  type PlaygroundAdapterKey
+} from "@/features/token-catalogue/playground-adapters";
+import { PlaygroundPreview } from "@/features/token-catalogue/playground-preview";
 import styles from "@/features/token-catalogue/styles.module.css";
 
-type TokenSandboxPageProps = {
+type TokenPlaygroundPageProps = {
   document: TokenDocument;
   source: "workspace" | "sample";
   updatedAt: string | null;
-  system: SandboxAdapterKey;
+  system: PlaygroundAdapterKey;
 };
 
-export async function TokenSandboxPage({ document, source, updatedAt, system }: TokenSandboxPageProps) {
-  const adapter = getSandboxAdapterDefinition(system);
-  const adapters = listSandboxAdapters();
+export async function TokenPlaygroundPage({ document, source, updatedAt, system }: TokenPlaygroundPageProps) {
+  const adapter = getPlaygroundAdapterDefinition(system);
+  const adapters = listPlaygroundAdapters();
   const runtimeCss = await adapter.getRuntimeCss();
 
   return (
@@ -42,7 +42,7 @@ export async function TokenSandboxPage({ document, source, updatedAt, system }: 
               </Flex>
               <div>
                 <Heading size="8" mt="2">
-                  Token Sandbox
+                  Token Playground
                 </Heading>
               </div>
               <Text size="3" color="gray" style={{ maxWidth: "48rem" }}>
@@ -55,18 +55,18 @@ export async function TokenSandboxPage({ document, source, updatedAt, system }: 
                     Catalogue
                   </Badge>
                 </Link>
-                <Link href="/tokens/sandbox" className={styles.routeLink} aria-current="page">
+                <Link href="/tokens/playground" className={styles.routeLink} aria-current="page">
                   <Badge size="2" color="blue" variant="soft">
-                    Sandbox
+                    Playground
                   </Badge>
                 </Link>
               </div>
-              <div className={styles.systemSwitch} aria-label="Sandbox systems">
+              <div className={styles.systemSwitch} aria-label="Playground systems">
                 {adapters.map((option) =>
                   option.status === "available" ? (
                     <Link
                       key={option.key}
-                      href={`/tokens/sandbox?system=${option.key}`}
+                      href={`/tokens/playground?system=${option.key}`}
                       className={styles.routeLink}
                       aria-current={system === option.key ? "page" : undefined}
                     >
@@ -102,7 +102,7 @@ export async function TokenSandboxPage({ document, source, updatedAt, system }: 
                   </Badge>
                 </Flex>
                 <Separator size="4" />
-                <SandboxPreview
+                <PlaygroundPreview
                   tokens={document.tokens}
                   importedCss={document.importedCss}
                   runtimeCss={runtimeCss}

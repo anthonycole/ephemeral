@@ -30,6 +30,9 @@
   --text-base--line-height: calc(1.5 / 1);
   --text-lg: 1.125rem;
   --text-lg--line-height: calc(1.75 / 1.125);
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
   --tracking-tight: -0.025em;
   --tracking-normal: 0em;
   --leading-tight: 1.25;
@@ -45,11 +48,19 @@
   --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.08);
   --shadow-md: 0 10px 24px rgb(15 23 42 / 0.1);
   --shadow-lg: 0 18px 40px rgb(15 23 42 / 0.14);
+  --inset-shadow-xs: inset 0 1px 1px rgb(15 23 42 / 0.08);
+  --drop-shadow-sm: 0 2px 6px rgb(15 23 42 / 0.18);
+  --text-shadow-sm: 0 1px 2px rgb(15 23 42 / 0.24);
+  --blur-sm: 8px;
 
   --breakpoint-sm: 40rem;
   --breakpoint-md: 48rem;
   --breakpoint-lg: 64rem;
   --breakpoint-xl: 80rem;
+  --container-sm: 24rem;
+  --container-lg: 32rem;
+  --aspect-video: 16 / 9;
+  --perspective-normal: 800px;
 
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

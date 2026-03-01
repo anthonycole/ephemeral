@@ -179,7 +179,7 @@ function transformBlock(block: CssBlock, hostSelector: string): string[] {
   return [`${rewrittenHeader} {\n${ruleBody}\n}`];
 }
 
-export function transformImportedCssForSandbox(rawCss: string, hostSelector = ":host") {
+export function transformImportedCssForPlayground(rawCss: string, hostSelector = ":host") {
   if (rawCss.trim().length === 0) {
     return "";
   }

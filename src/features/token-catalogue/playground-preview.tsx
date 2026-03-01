@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { TokenRecord } from "@/features/token-visualizer/document";
-import { transformImportedCssForSandbox } from "@/features/token-catalogue/sandbox-runtime-css";
-import { renderSandboxShowcases } from "@/features/token-catalogue/sandbox-showcases";
+import { transformImportedCssForPlayground } from "@/features/token-catalogue/playground-runtime-css";
+import { renderPlaygroundShowcases } from "@/features/token-catalogue/playground-showcases";
 import styles from "@/features/token-catalogue/styles.module.css";
 
-type SandboxPreviewProps = {
+type PlaygroundPreviewProps = {
   tokens: TokenRecord[];
   importedCss: string;
   runtimeCss: string;
@@ -123,30 +123,30 @@ function createSemanticDeclarations(tokens: TokenRecord[]) {
   const shadowPanel = pickTokenName(tokenNameMap, ["--shadow-lg", "--shadow-md", "--shadow-sm"], [["shadow", "lg"], ["shadow", "md"], ["shadow", "sm"]]);
   const shadowPopover = pickTokenName(tokenNameMap, ["--shadow-xl", "--shadow-lg", "--shadow-md"], [["shadow", "xl"], ["shadow", "lg"], ["shadow", "md"]]);
   const declarations = [
-    `  --sandbox-font-sans: ${tokenReference(fontSans, "ui-sans-serif, system-ui, sans-serif")};`,
-    `  --sandbox-color-bg: ${tokenReference(colorBackground, "oklch(0.15 0.02 255)")};`,
-    `  --sandbox-color-fg: ${tokenReference(colorForeground, "oklch(0.97 0.01 255)")};`,
-    `  --sandbox-color-muted: ${tokenReference(colorMuted, "oklch(0.76 0.02 255)")};`,
-    `  --sandbox-color-accent: ${tokenReference(colorAccent, "oklch(0.67 0.18 255)")};`,
-    `  --sandbox-color-accent-strong: ${tokenReference(colorAccentStrong ?? colorAccent, "oklch(0.6 0.18 255)")};`,
-    `  --sandbox-color-border: ${tokenReference(colorBorder, "oklch(0.35 0.03 255)")};`,
-    `  --sandbox-radius-md: ${tokenReference(radiusMd, "1rem")};`,
-    `  --sandbox-radius-xl: ${tokenReference(radiusXl ?? radiusMd, "1.5rem")};`,
-    `  --sandbox-shadow-panel: ${tokenReference(shadowPanel, "0 24px 60px rgb(2 6 23 / 0.45)")};`,
-    `  --sandbox-shadow-popover: ${tokenReference(shadowPopover ?? shadowPanel, "0 18px 42px rgb(2 6 23 / 0.32)")};`,
-    "  --sandbox-color-shell-end: color-mix(in oklab, var(--sandbox-color-bg) 74%, var(--sandbox-color-accent) 26%);",
-    "  --sandbox-color-panel: color-mix(in oklab, var(--sandbox-color-bg) 88%, var(--sandbox-color-fg) 12%);",
-    "  --sandbox-color-panel-strong: color-mix(in oklab, var(--sandbox-color-bg) 78%, var(--sandbox-color-fg) 22%);",
-    "  --sandbox-color-border-strong: color-mix(in oklab, var(--sandbox-color-border) 72%, var(--sandbox-color-accent) 28%);",
-    "  --sandbox-color-accent-soft: color-mix(in oklab, var(--sandbox-color-accent) 16%, transparent);",
-    "  --sandbox-color-focus-ring: color-mix(in oklab, var(--sandbox-color-accent) 28%, transparent);",
-    "  --sandbox-color-on-accent: color-mix(in oklab, var(--sandbox-color-fg) 84%, white 16%);"
+    `  --playground-font-sans: ${tokenReference(fontSans, "ui-sans-serif, system-ui, sans-serif")};`,
+    `  --playground-color-bg: ${tokenReference(colorBackground, "oklch(0.15 0.02 255)")};`,
+    `  --playground-color-fg: ${tokenReference(colorForeground, "oklch(0.97 0.01 255)")};`,
+    `  --playground-color-muted: ${tokenReference(colorMuted, "oklch(0.76 0.02 255)")};`,
+    `  --playground-color-accent: ${tokenReference(colorAccent, "oklch(0.67 0.18 255)")};`,
+    `  --playground-color-accent-strong: ${tokenReference(colorAccentStrong ?? colorAccent, "oklch(0.6 0.18 255)")};`,
+    `  --playground-color-border: ${tokenReference(colorBorder, "oklch(0.35 0.03 255)")};`,
+    `  --playground-radius-md: ${tokenReference(radiusMd, "1rem")};`,
+    `  --playground-radius-xl: ${tokenReference(radiusXl ?? radiusMd, "1.5rem")};`,
+    `  --playground-shadow-panel: ${tokenReference(shadowPanel, "0 24px 60px rgb(2 6 23 / 0.45)")};`,
+    `  --playground-shadow-popover: ${tokenReference(shadowPopover ?? shadowPanel, "0 18px 42px rgb(2 6 23 / 0.32)")};`,
+    "  --playground-color-shell-end: color-mix(in oklab, var(--playground-color-bg) 74%, var(--playground-color-accent) 26%);",
+    "  --playground-color-panel: color-mix(in oklab, var(--playground-color-bg) 88%, var(--playground-color-fg) 12%);",
+    "  --playground-color-panel-strong: color-mix(in oklab, var(--playground-color-bg) 78%, var(--playground-color-fg) 22%);",
+    "  --playground-color-border-strong: color-mix(in oklab, var(--playground-color-border) 72%, var(--playground-color-accent) 28%);",
+    "  --playground-color-accent-soft: color-mix(in oklab, var(--playground-color-accent) 16%, transparent);",
+    "  --playground-color-focus-ring: color-mix(in oklab, var(--playground-color-accent) 28%, transparent);",
+    "  --playground-color-on-accent: color-mix(in oklab, var(--playground-color-fg) 84%, white 16%);"
   ];
 
   return declarations.join("\n");
 }
 
-const SANDBOX_RECIPE_CSS = `
+const PLAYGROUND_RECIPE_CSS = `
 html,
 body {
   margin: 0;
@@ -155,7 +155,7 @@ body {
 }
 
 body {
-  font-family: var(--sandbox-font-sans);
+  font-family: var(--playground-font-sans);
 }
 
 *,
@@ -169,7 +169,7 @@ function escapeStyleTagContent(value: string) {
   return value.replace(/<\/style/gi, "<\\/style");
 }
 
-function buildSandboxDocument({ body, stylesheet }: { body: string; stylesheet: string }) {
+function buildPlaygroundDocument({ body, stylesheet }: { body: string; stylesheet: string }) {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -183,19 +183,19 @@ function buildSandboxDocument({ body, stylesheet }: { body: string; stylesheet: 
 </html>`;
 }
 
-export function SandboxPreview({ tokens, importedCss, runtimeCss }: SandboxPreviewProps) {
+export function PlaygroundPreview({ tokens, importedCss, runtimeCss }: PlaygroundPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [frameHeight, setFrameHeight] = useState(720);
   const tokenDeclarations = useMemo(() => {
     return tokens.map((token) => `  ${token.name}: ${token.value};`).join("\n");
   }, [tokens]);
   const semanticDeclarations = useMemo(() => createSemanticDeclarations(tokens), [tokens]);
-  const importedRuntimeCss = useMemo(() => transformImportedCssForSandbox(importedCss, ":root"), [importedCss]);
+  const importedRuntimeCss = useMemo(() => transformImportedCssForPlayground(importedCss, ":root"), [importedCss]);
   const stylesheet = useMemo(() => {
-    return `:root {\n${tokenDeclarations}\n${semanticDeclarations ? `\n${semanticDeclarations}` : ""}\n}\n\n${importedRuntimeCss}\n\n${runtimeCss}\n\n${SANDBOX_RECIPE_CSS}`;
+    return `:root {\n${tokenDeclarations}\n${semanticDeclarations ? `\n${semanticDeclarations}` : ""}\n}\n\n${importedRuntimeCss}\n\n${runtimeCss}\n\n${PLAYGROUND_RECIPE_CSS}`;
   }, [importedRuntimeCss, runtimeCss, semanticDeclarations, tokenDeclarations]);
-  const body = useMemo(() => renderSandboxShowcases(tokens), [tokens]);
-  const previewDocument = useMemo(() => buildSandboxDocument({ body, stylesheet }), [body, stylesheet]);
+  const body = useMemo(() => renderPlaygroundShowcases(tokens), [tokens]);
+  const previewDocument = useMemo(() => buildPlaygroundDocument({ body, stylesheet }), [body, stylesheet]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -224,11 +224,11 @@ export function SandboxPreview({ tokens, importedCss, runtimeCss }: SandboxPrevi
   }, [previewDocument]);
 
   return (
-    <div className={styles.sandboxHost}>
+    <div className={styles.playgroundHost}>
       <iframe
         ref={iframeRef}
-        title="Token sandbox preview"
-        className={styles.sandboxFrame}
+        title="Token playground preview"
+        className={styles.playgroundFrame}
         srcDoc={previewDocument}
         style={{ height: `${frameHeight}px` }}
       />
