@@ -684,11 +684,14 @@
   }
 
   .workspaceGridInspectorOpen {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, min(25vw, 275px));
   }
 
   .inspectorColumn {
     overflow: hidden;
+    width: 100%;
+    max-width: 275px;
+    justify-self: end;
     transform: translateX(100%);
     opacity: 0;
     transition: transform 260ms ease, opacity 220ms ease;
