@@ -18,17 +18,17 @@ export const tokenCategoryDefinitions: Array<{ key: TokenCategoryKey; label: str
 ];
 
 export const tokenCategoryDescriptions: Record<TokenCategoryKey, string> = {
-  color: "Core brand, surface, and content colors as direct reference swatches.",
-  spacing: "Layout spacing primitives rendered as simple measurable bars.",
-  typography: "Type scale and weight decisions presented as display-ready samples.",
-  radius: "Corner treatments used by components, tiles, and interactive surfaces.",
-  shadow: "Elevation tokens shown as static, package-friendly surface previews.",
+  color: "Palette tokens shown as reference swatches for contrast and brand balance checks.",
+  spacing: "Layout spacing primitives rendered as quick measurement previews.",
+  typography: "Type scale and weight decisions shown in representative preview copy.",
+  radius: "Corner treatments previewed across cards, tiles, and interactive surfaces.",
+  shadow: "Elevation tokens shown as surface studies rather than production components.",
   sizing: "Reusable size primitives for icons, containers, and layout constraints.",
-  motion: "Duration tokens represented as slim animation timings rather than controls.",
-  "z-index": "Layering tokens for overlays, popovers, and compositional depth.",
-  opacity: "Transparency utilities displayed as compositing examples.",
-  breakpoint: "Responsive thresholds presented as widths for docs and Storybook.",
-  other: "Reference tokens that still belong in a package, even without a richer visual."
+  motion: "Timing tokens represented as simple motion studies for feel and pacing.",
+  "z-index": "Layering tokens previewed for overlays, popovers, and compositional depth.",
+  opacity: "Transparency utilities displayed as compositing checks.",
+  breakpoint: "Responsive thresholds presented as width references for layout planning.",
+  other: "Reference tokens that still inform the preview, even without a richer visual."
 };
 
 export function isTokenCategoryFilter(value: string | null | undefined): value is TokenCategoryFilter {

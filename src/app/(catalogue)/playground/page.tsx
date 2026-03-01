@@ -6,7 +6,7 @@ import { getWorkspace } from "@/features/token-visualizer/workspace-repo";
 
 export const metadata: Metadata = {
   title: "ephemeral playground",
-  description: "Visual preview for the current token workspace."
+  description: "Design preview for the current token workspace."
 };
 
 export const dynamic = "force-dynamic";

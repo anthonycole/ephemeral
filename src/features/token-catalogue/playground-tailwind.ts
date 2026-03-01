@@ -24,6 +24,18 @@ const PLAYGROUND_TAILWIND_SOURCE = `
     @apply tw:grid tw:gap-4;
   }
 
+  .tw\\:playground-featureRow {
+    @apply tw:grid tw:items-start tw:gap-6 tw:lg:grid-cols-2;
+  }
+
+  .tw\\:playground-secondaryGrid {
+    @apply tw:grid tw:items-start tw:gap-6 tw:xl:grid-cols-2;
+  }
+
+  .tw\\:playground-column {
+    @apply tw:grid tw:content-start tw:gap-6;
+  }
+
   .tw\\:playground-sectionHeader {
     @apply tw:flex tw:flex-wrap tw:items-start tw:justify-between tw:gap-3;
   }
@@ -121,12 +133,21 @@ const PLAYGROUND_TAILWIND_SOURCE = `
     font-family: var(--playground-font-quote);
   }
 
-  .tw\\:playground-wheelWrap {
+  .tw\\:playground-mosaicWrap {
     @apply tw:grid tw:w-full tw:justify-items-start tw:gap-3;
   }
 
-  .tw\\:playground-wheel {
-    @apply tw:h-44 tw:w-44 tw:justify-self-center tw:rounded-full;
+  .tw\\:playground-mosaic {
+    @apply tw:grid tw:w-full tw:grid-cols-3 tw:gap-1.5;
+    grid-auto-rows: minmax(1.75rem, auto);
+  }
+
+  .tw\\:playground-mosaicTile {
+    @apply tw:w-full;
+    min-height: 2rem;
+    border: 1px solid color-mix(in oklab, var(--playground-color-fg) 10%, transparent);
+    border-radius: calc(var(--playground-radius-md) * 0.9);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18);
   }
 
   .tw\\:playground-tokenList {
@@ -163,8 +184,16 @@ const PLAYGROUND_TAILWIND_SOURCE = `
     @apply tw:grid tw:gap-2;
   }
 
+  .tw\\:playground-spacingScale {
+    @apply tw:flex tw:items-center tw:justify-between tw:gap-2;
+  }
+
   .tw\\:playground-stackRow {
     @apply tw:grid tw:gap-1;
+  }
+
+  .tw\\:playground-stackRowMeta {
+    @apply tw:flex tw:items-center tw:justify-between tw:gap-3;
   }
 
   .tw\\:playground-spacingRail {
@@ -374,6 +403,9 @@ const PLAYGROUND_TAILWIND_CANDIDATES = [
   "tw:playground-shell",
   "tw:playground-panel",
   "tw:playground-section",
+  "tw:playground-featureRow",
+  "tw:playground-secondaryGrid",
+  "tw:playground-column",
   "tw:playground-sectionHeader",
   "tw:playground-sectionMeta",
   "tw:playground-sectionTitle",
@@ -394,8 +426,9 @@ const PLAYGROUND_TAILWIND_CANDIDATES = [
   "tw:playground-copy-strong",
   "tw:playground-copy-em",
   "tw:playground-copy-quote",
-  "tw:playground-wheelWrap",
-  "tw:playground-wheel",
+  "tw:playground-mosaicWrap",
+  "tw:playground-mosaic",
+  "tw:playground-mosaicTile",
   "tw:playground-tokenList",
   "tw:playground-tokenRow",
   "tw:playground-swatch",
@@ -404,7 +437,9 @@ const PLAYGROUND_TAILWIND_CANDIDATES = [
   "tw:playground-tokenValue",
   "tw:playground-spacing",
   "tw:playground-stackDemo",
+  "tw:playground-spacingScale",
   "tw:playground-stackRow",
+  "tw:playground-stackRowMeta",
   "tw:playground-spacingRail",
   "tw:playground-spacingBar",
   "tw:playground-actions",

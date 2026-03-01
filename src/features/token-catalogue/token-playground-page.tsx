@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Button, Flex, Heading } from "@radix-ui/themes";
+import { Badge, Button, Flex, Heading, Text } from "@radix-ui/themes";
 import type { TokenDocument } from "@/features/token-visualizer/document";
 import {
   getPlaygroundAdapterDefinition,
@@ -16,7 +16,7 @@ type TokenPlaygroundPageProps = {
   system: PlaygroundAdapterKey;
 };
 
-export async function TokenPlaygroundPage({ document, directives, source: _source, updatedAt, system }: TokenPlaygroundPageProps) {
+export async function TokenPlaygroundPage({ document, directives, source, updatedAt, system }: TokenPlaygroundPageProps) {
   const runtimeCss = await getPlaygroundAdapterDefinition(system).getRuntimeCss();
 
   return (
@@ -26,13 +26,25 @@ export async function TokenPlaygroundPage({ document, directives, source: _sourc
           <Flex direction="column" gap="3" className={styles.playgroundToolbarLead}>
             {updatedAt ? (
               <Flex align="center" gap="2" wrap="wrap">
+                <Badge size="2" color="bronze" variant="soft">
+                  {source === "workspace" ? "Workspace theme" : "Sample theme"}
+                </Badge>
                 <Badge size="2" color="gray" variant="soft">
                   Updated {new Date(updatedAt).toLocaleString()}
                 </Badge>
               </Flex>
-            ) : null}
+            ) : (
+              <Flex align="center" gap="2" wrap="wrap">
+                <Badge size="2" color="bronze" variant="soft">
+                  {source === "workspace" ? "Workspace theme" : "Sample theme"}
+                </Badge>
+              </Flex>
+            )}
             <div>
-              <Heading size="7">Preview</Heading>
+              <Heading size="7">Design Preview</Heading>
+              <Text as="p" size="3" color="gray">
+                Review palette, type, spacing, and component tone in a representative mock layout.
+              </Text>
             </div>
           </Flex>
           <Button asChild variant="soft" color="gray">
