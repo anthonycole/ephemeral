@@ -17,6 +17,34 @@
   gap: 0.9rem;
 }
 
+.workspaceDashboardSlot {
+  padding: 0.75rem;
+}
+
+.comparisonSurfaceHeader {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.6rem;
+}
+
+.comparisonSurfaceLead {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.comparisonStatusBadgeRow {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.comparisonNotice {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgb(20 32 51 / 0.08);
+  background: rgb(255 255  255 / 0.7);
+  backdrop-filter: blur(14px);
+}
+
 .playgroundToolbar {
   display: flex;
   justify-content: space-between;

@@ -10,6 +10,7 @@ type InspectorPaneProps = {
   onImportGoogleFont: (family: string) => void;
   token: TokenRecord | null;
   onUpdateToken: (token: TokenRecord, updates: Partial<{ name: string; value: string; category: TokenRecord["category"] }>) => void;
+  onDeleteToken: (token: TokenRecord) => void;
   onClose: () => void;
 };
 
@@ -21,7 +22,15 @@ function readOnlyBadgeLabel(token: TokenRecord | null) {
   return token.origin === "inherited" ? "Inherited" : "Tailwind default";
 }
 
-export function InspectorPane({ importedGoogleFonts, onCreateOverride, onImportGoogleFont, token, onUpdateToken, onClose }: InspectorPaneProps) {
+export function InspectorPane({
+  importedGoogleFonts,
+  onCreateOverride,
+  onImportGoogleFont,
+  token,
+  onUpdateToken,
+  onDeleteToken,
+  onClose
+}: InspectorPaneProps) {
   const className = token
     ? `${styles.shellPane} ${styles.inspectorColumn} ${styles.inspectorColumnOpen} ${styles.paneStack}`
     : `${styles.shellPane} ${styles.inspectorColumn} ${styles.paneStack}`;
@@ -47,6 +56,7 @@ export function InspectorPane({ importedGoogleFonts, onCreateOverride, onImportG
               onImportGoogleFont={onImportGoogleFont}
               token={token}
               onUpdateToken={onUpdateToken}
+              onDeleteToken={onDeleteToken}
             />
           </Flex>
         </ScrollArea>

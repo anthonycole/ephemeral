@@ -65,8 +65,18 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
 
   const effectiveHeaderActions = headerActions ?? (
     <>
-      <WorkspaceHeaderIconControl label="Open workspace to add token" title="Open workspace to add token" icon={PlusIcon} href="/workspace" />
-      <WorkspaceHeaderIconControl label="Open workspace CSS editor" title="Open workspace CSS editor" icon={CodeIcon} href="/workspace" />
+      <WorkspaceHeaderIconControl
+        label="Open workspace to add token"
+        title="Open workspace to add token"
+        icon={PlusIcon}
+        href="/workspace?headerAction=open-token-composer"
+      />
+      <WorkspaceHeaderIconControl
+        label="Open workspace CSS editor"
+        title="Open workspace CSS editor"
+        icon={CodeIcon}
+        href="/workspace?headerAction=open-editor"
+      />
     </>
   );
 

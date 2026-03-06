@@ -13,10 +13,11 @@ import { CommandPalette, type CommandAction } from "@/features/token-visualizer/
 import { CanvasPane } from "@/features/token-visualizer/components/canvas-pane";
 import { EditorPane } from "@/features/token-visualizer/components/editor-pane";
 import { InspectorPane } from "@/features/token-visualizer/components/inspector-pane";
-import { type PersistenceStatus, WorkspaceHeader } from "@/features/token-visualizer/components/workspace-header";
+import { WorkspaceHeaderActions } from "@/features/token-visualizer/components/workspace-header-actions";
 import { parseGoogleFontImports } from "@/features/token-visualizer/font-utils";
 import { GoogleFontLinks } from "@/features/token-visualizer/google-font-links";
 import { useCanvasPaneStateFromTokens, useEditorPaneState, useHeaderState, useInspectorPaneStateFromTokens, type TokenSourceFilter } from "@/features/token-visualizer/use-token-workspace";
+import { useWorkspaceShellSlot } from "@/features/token-visualizer/components/workspace-shell-slots";
 import { useTokenStore } from "@/features/token-visualizer/store";
 import styles from "@/features/token-visualizer/styles.module.css";
 
@@ -44,29 +45,31 @@ export function TokenWorkspace() {
   } = useEditorPaneState();
   const {
     activeCategory,
-    createToken,
     document,
     replaceWorkspace,
     searchQuery: storeSearchQuery,
     selectedTokenId,
     setActiveCategory,
     setSelectedTokenId,
+    createToken,
+    deleteToken,
     updateToken
   } = useTokenStore(
     useShallow((state) => ({
       activeCategory: state.activeCategory,
-      createToken: state.createToken,
       document: state.document,
       replaceWorkspace: state.replaceWorkspace,
       searchQuery: state.searchQuery,
       selectedTokenId: state.selectedTokenId,
-      setActiveCategory: state.setActiveCategory,
-      setSelectedTokenId: state.setSelectedTokenId,
-      updateToken: state.updateToken
-    }))
-  );
+    setActiveCategory: state.setActiveCategory,
+    setSelectedTokenId: state.setSelectedTokenId,
+    createToken: state.createToken,
+    deleteToken: state.deleteToken,
+    updateToken: state.updateToken
+  }))
+);
   const editorCssDraft = useTokenStore((state) => state.editorCss);
-  const [persistenceStatus, setPersistenceStatus] = useState<PersistenceStatus>("loading");
+  const [persistenceStatus, setPersistenceStatus] = useState<"loading" | "saving" | "saved" | "error">("loading");
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [hasLoadedWorkspace, setHasLoadedWorkspace] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
@@ -125,6 +128,25 @@ export function TokenWorkspace() {
 
   const gridClassName = selectedToken ? `${styles.workspaceGrid} ${styles.workspaceGridInspectorOpen}` : styles.workspaceGrid;
 
+  useWorkspaceShellSlot({
+    headerActions: (
+      <WorkspaceHeaderActions
+        importedGoogleFonts={importedGoogleFonts}
+        onCreateToken={(input) => {
+          createToken({
+            category: input.category,
+            name: input.name,
+            value: input.value
+          });
+        }}
+        onOpenEditor={() => setEditorOpen(true)}
+        onTokenComposerOpenChange={setTokenComposerOpen}
+        tokenComposerOpen={tokenComposerOpen}
+      />
+    ),
+    onOpenCommandPalette: () => setCommandPaletteOpen(true)
+  });
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" && editorOpen) {
@@ -142,6 +164,26 @@ export function TokenWorkspace() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [editorOpen]);
+
+  useEffect(() => {
+    const headerAction = searchParams.get("headerAction");
+
+    if (headerAction !== "open-token-composer" && headerAction !== "open-editor") {
+      return;
+    }
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    nextSearchParams.delete("headerAction");
+
+    if (headerAction === "open-token-composer") {
+      setTokenComposerOpen(true);
+    } else {
+      setEditorOpen(true);
+    }
+
+    const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   useEffect(() => {
     if (!editorOpen) {
@@ -462,13 +504,6 @@ export function TokenWorkspace() {
       run: () => setEditorOpen(true)
     },
     {
-      id: "create-token",
-      title: "Create token",
-      subtitle: "Open the add-token form",
-      keywords: ["token", "create", "new"],
-      run: () => setTokenComposerOpen(true)
-    },
-    {
       id: "open-playground",
       title: "Open playground",
       subtitle: "Open the isolated token playground route",
@@ -539,6 +574,24 @@ export function TokenWorkspace() {
       subtitle: "Return the canvas to the all-categories view",
       keywords: ["categories", "all", "canvas"],
       run: () => setActiveCategory("all")
+    },
+    {
+      id: "delete-token",
+      title: "Delete token",
+      subtitle: selectedToken ? `Delete ${selectedToken.name}` : "Select a token first",
+      keywords: ["delete", "remove", "token"],
+      disabled: !selectedToken || selectedToken.readOnly,
+      run: () => {
+        if (!selectedToken || selectedToken.readOnly) {
+          return;
+        }
+
+        if (!globalThis.confirm(`Delete ${selectedToken.name}?`)) {
+          return;
+        }
+
+        deleteToken(selectedToken.sourceId);
+      }
     }
   ];
 
@@ -556,15 +609,6 @@ export function TokenWorkspace() {
   return (
     <main className={styles.workspaceRoot}>
       <GoogleFontLinks directives={effectiveDocument.directives} />
-      <WorkspaceHeader
-        importedGoogleFonts={importedGoogleFonts}
-        onCreateToken={createToken}
-        onOpenEditor={() => setEditorOpen(true)}
-        onOpenCommandPalette={() => setCommandPaletteOpen(true)}
-        onTokenComposerOpenChange={setTokenComposerOpen}
-        persistenceStatus={persistenceStatus}
-        tokenComposerOpen={tokenComposerOpen}
-      />
       <Grid className={gridClassName} align="stretch">
         <CanvasPane
           activeCategory={activeCategory}
@@ -588,6 +632,7 @@ export function TokenWorkspace() {
           onImportGoogleFont={addInspectorGoogleFontImport}
           token={selectedToken}
           onUpdateToken={updateToken}
+          onDeleteToken={(token) => deleteToken(token.sourceId)}
           onClose={closeInspector}
         />
       </Grid>

@@ -5,6 +5,7 @@ import { createJSONStorage, persist, type StateStorage } from "zustand/middlewar
 import type { TokenCategory } from "@/lib/design-tokens";
 import {
   addDocumentToken,
+  removeDocumentToken,
   importCssDocument,
   normalizeTokenDocument,
   serializeDocumentToCss,
@@ -39,6 +40,7 @@ type TokenStoreState = {
   setSelectedTokenId: (value: string | null) => void;
   updateToken: (token: Pick<TokenRecord, "id" | "sourceId" | "name" | "value" | "category" | "scope" | "atRules">, updates: Partial<{ name: string; value: string; category: Exclude<TokenCategory, "all"> }>) => void;
   createToken: (token?: Partial<{ name: string; value: string; category: Exclude<TokenCategory, "all"> }>) => string;
+  deleteToken: (tokenId: string) => void;
   addGoogleFontImport: (family: string) => void;
   removeGoogleFontImport: (family: string) => void;
   resetToSample: () => void;
@@ -118,6 +120,23 @@ export const useTokenStore = create<TokenStoreState>()(
         });
 
         return token.sourceId;
+      },
+      deleteToken: (tokenId) => {
+        const currentState = get();
+        const nextDocument = removeDocumentToken(currentState.document, tokenId);
+        const nextCss = serializeDocumentToCss(nextDocument);
+
+        const nextSelectedTokenId =
+          currentState.selectedTokenId && nextDocument.tokens.some((token) => token.sourceId === currentState.selectedTokenId || token.id === currentState.selectedTokenId)
+            ? currentState.selectedTokenId
+            : null;
+
+        set({
+          document: nextDocument,
+          editorCss: currentState.editorCss === currentState.generatedCss ? nextCss : currentState.editorCss,
+          generatedCss: nextCss,
+          selectedTokenId: nextSelectedTokenId
+        });
       },
       addGoogleFontImport: (family) => {
         const normalizedFamily = normalizeGoogleFontFamily(family);

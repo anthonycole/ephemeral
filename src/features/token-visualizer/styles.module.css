@@ -28,6 +28,48 @@
   line-height: 1;
 }
 
+.workspaceContentFrame {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.workspaceSideRail {
+  width: 3.75rem;
+  border-right: 1px solid var(--gray-6);
+  padding: 0.5rem 0.5rem;
+}
+
+.workspaceSideRailList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+}
+
+.workspaceSideRailLink {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  color: var(--gray-11);
+  text-decoration: none;
+}
+
+.workspaceSideRailLink[data-active="true"] {
+  color: var(--accent-11);
+  background: var(--accent-a3);
+}
+
+.workspaceFrameMain {
+  min-width: 0;
+}
+
 .headerActionButton,
 .commandTrigger {
   min-width: 3.75rem;

@@ -196,6 +196,23 @@ export function upsertDocumentToken(
   };
 }
 
+export function removeDocumentToken(document: TokenDocument, tokenId: string) {
+  const normalizedDocument = normalizeTokenDocument(document);
+  const nextTokens = normalizedDocument.tokens.filter((token) => token.sourceId !== tokenId && token.id !== tokenId);
+
+  if (nextTokens.length === normalizedDocument.tokens.length) {
+    return normalizedDocument;
+  }
+
+  const nextTokenBlockKeys = new Set(nextTokens.map((token) => `${token.atRules.join("||")}::${token.scope}`));
+
+  return {
+    ...normalizedDocument,
+    tokens: nextTokens,
+    blockOrder: normalizedDocument.blockOrder.filter((block) => nextTokenBlockKeys.has(`${block.atRules.join("||")}::${block.scope}`))
+  };
+}
+
 export function addDocumentToken(
   document: TokenDocument,
   token?: Partial<Pick<TokenRecord, "name" | "value" | "category" | "scope" | "atRules">>
