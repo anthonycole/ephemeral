@@ -10,7 +10,7 @@ type InspectorPaneProps = {
   onImportGoogleFont: (family: string) => void;
   token: TokenRecord | null;
   onUpdateToken: (token: TokenRecord, updates: Partial<{ name: string; value: string; category: TokenRecord["category"] }>) => void;
-  onDeleteToken: (token: TokenRecord) => void;
+  onRequestDeleteToken: (token: TokenRecord) => void;
   onClose: () => void;
 };
 
@@ -28,7 +28,7 @@ export function InspectorPane({
   onImportGoogleFont,
   token,
   onUpdateToken,
-  onDeleteToken,
+  onRequestDeleteToken,
   onClose
 }: InspectorPaneProps) {
   const className = token
@@ -56,7 +56,7 @@ export function InspectorPane({
               onImportGoogleFont={onImportGoogleFont}
               token={token}
               onUpdateToken={onUpdateToken}
-              onDeleteToken={onDeleteToken}
+              onRequestDeleteToken={onRequestDeleteToken}
             />
           </Flex>
         </ScrollArea>

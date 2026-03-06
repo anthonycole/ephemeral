@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Grid } from "@radix-ui/themes";
+import { Dialog, Button, Flex, Grid } from "@radix-ui/themes";
 import { useShallow } from "zustand/react/shallow";
 import { isTokenCategoryFilter, type TokenCategoryFilter } from "@/features/token-catalogue/categories";
 import { materializeResolvedTheme } from "@/features/token-catalogue/token-materialization";
@@ -74,6 +74,7 @@ export function TokenWorkspace() {
   const [hasLoadedWorkspace, setHasLoadedWorkspace] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [pendingDeleteToken, setPendingDeleteToken] = useState<TokenRecord | null>(null);
   const [tokenComposerOpen, setTokenComposerOpen] = useState(false);
   const [sourceFilter, setSourceFilter] = useState<TokenSourceFilter>("all");
   const [baselineDocument, setBaselineDocument] = useState<TokenDocument | null>(null);
@@ -581,19 +582,18 @@ export function TokenWorkspace() {
       subtitle: selectedToken ? `Delete ${selectedToken.name}` : "Select a token first",
       keywords: ["delete", "remove", "token"],
       disabled: !selectedToken || selectedToken.readOnly,
-      run: () => {
-        if (!selectedToken || selectedToken.readOnly) {
-          return;
-        }
-
-        if (!globalThis.confirm(`Delete ${selectedToken.name}?`)) {
-          return;
-        }
-
-        deleteToken(selectedToken.sourceId);
-      }
+      run: () => setPendingDeleteToken(selectedToken)
     }
   ];
+
+  function handleDeleteTokenConfirm() {
+    if (!pendingDeleteToken || pendingDeleteToken.readOnly) {
+      return;
+    }
+
+    deleteToken(pendingDeleteToken.sourceId);
+    setPendingDeleteToken(null);
+  }
 
   function handleSelectToken(token: TokenRecord) {
     setActiveCategory(token.category);
@@ -632,10 +632,26 @@ export function TokenWorkspace() {
           onImportGoogleFont={addInspectorGoogleFontImport}
           token={selectedToken}
           onUpdateToken={updateToken}
-          onDeleteToken={(token) => deleteToken(token.sourceId)}
+          onRequestDeleteToken={(token) => setPendingDeleteToken(token)}
           onClose={closeInspector}
         />
       </Grid>
+
+      <Dialog.Root open={Boolean(pendingDeleteToken)} onOpenChange={(open) => !open && setPendingDeleteToken(null)}>
+        <Dialog.Content>
+          <Dialog.Title>Delete token</Dialog.Title>
+          <Dialog.Description>{pendingDeleteToken ? `Delete ${pendingDeleteToken.name}?` : "Delete token?"}</Dialog.Description>
+          <Flex gap="3" mt="4" justify="end">
+            <Button variant="soft" color="gray" onClick={() => setPendingDeleteToken(null)}>
+              Cancel
+            </Button>
+            <Button variant="solid" color="red" onClick={handleDeleteTokenConfirm} disabled={!pendingDeleteToken || pendingDeleteToken.readOnly}>
+              Delete token
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
       {editorOpen ? (
         <div className={styles.editorOverlay} role="dialog" aria-modal="true" aria-label="CSS import and export">
           <div className={styles.editorOverlayPanel}>

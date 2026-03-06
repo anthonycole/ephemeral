@@ -35,7 +35,7 @@ type InspectorContentProps = {
   onImportGoogleFont: (family: string) => void;
   token: TokenRecord | null;
   onUpdateToken: (token: TokenRecord, updates: Partial<{ name: string; value: string; category: TokenRecord["category"] }>) => void;
-  onDeleteToken: (token: TokenRecord) => void;
+  onRequestDeleteToken: (token: TokenRecord) => void;
 };
 
 const HEX_LITERAL_REGEX = /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i;
@@ -409,7 +409,14 @@ function ReadOnlyValue({ value }: { value: string }) {
   );
 }
 
-export function InspectorContent({ importedGoogleFonts, onCreateOverride, onImportGoogleFont, token, onUpdateToken, onDeleteToken }: InspectorContentProps) {
+export function InspectorContent({
+  importedGoogleFonts,
+  onCreateOverride,
+  onImportGoogleFont,
+  token,
+  onUpdateToken,
+  onRequestDeleteToken
+}: InspectorContentProps) {
   const supportsLengthUnit = token ? tokenSupportsLengthUnit(token) : false;
   const supportsDurationUnit = token ? tokenSupportsDurationUnit(token) : false;
   const tokenAtRules = token?.atRules ?? [];
@@ -613,11 +620,7 @@ export function InspectorContent({ importedGoogleFonts, onCreateOverride, onImpo
         <Button
           variant="soft"
           color="red"
-          onClick={() => {
-            if (globalThis.confirm(`Delete ${token.name}?`)) {
-              onDeleteToken(token);
-            }
-          }}
+          onClick={() => onRequestDeleteToken(token)}
         >
           Delete token
         </Button>
