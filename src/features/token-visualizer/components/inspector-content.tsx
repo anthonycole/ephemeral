@@ -337,10 +337,6 @@ function FontFamilyValueEditor({
 
   return (
     <Flex direction="column" gap="2">
-      <Flex align="center" gap="2" wrap="wrap">
-        <Badge>{fontToken.framework}</Badge>
-        <Badge color="gray">{fontToken.role}</Badge>
-      </Flex>
       {importedFamilies.length > 0 ? (
         <Select.Root
           value={selectedFamily}
@@ -394,12 +390,8 @@ function FontFamilyValueEditor({
 }
 
 function sourceLabel(token: TokenRecord) {
-  if (token.origin === "inherited") {
-    return "Inherited Tailwind default";
-  }
-
-  if (token.origin === "baseline") {
-    return "Tailwind default";
+  if (token.readOnly) {
+    return "Tailwind theme";
   }
 
   return "Workspace token";

@@ -128,6 +128,8 @@ export function TokenWorkspace() {
   const { selectedToken, addGoogleFontImport: addInspectorGoogleFontImport, closeInspector } = inspectorState;
 
   const gridClassName = selectedToken ? `${styles.workspaceGrid} ${styles.workspaceGridInspectorOpen}` : styles.workspaceGrid;
+  const workspaceStatus =
+    meta.hydrationMode === "inherit" && meta.baselineKey === "tailwind-default" ? "Inherited from Tailwind" : "Workspace";
 
   useWorkspaceShellSlot({
     headerActions: (
@@ -145,6 +147,7 @@ export function TokenWorkspace() {
         tokenComposerOpen={tokenComposerOpen}
       />
     ),
+    statusText: workspaceStatus,
     onOpenCommandPalette: () => setCommandPaletteOpen(true)
   });
 

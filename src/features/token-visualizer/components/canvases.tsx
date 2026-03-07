@@ -28,20 +28,7 @@ type ScaleGroup = {
   tokens: TokenRecord[];
 };
 
-function tokenOriginBadgeLabel(token: TokenRecord) {
-  if (token.readOnly !== true) {
-    return null;
-  }
-
-  return token.origin === "inherited" ? "Inherited" : "Tailwind";
-}
-
-function tokenOriginBadgeColor(token: TokenRecord): "gray" | "blue" {
-  return token.origin === "inherited" ? "blue" : "gray";
-}
-
 function TokenName({ token, size = "2", truncate = false }: { token: TokenRecord; size?: "1" | "2"; truncate?: boolean }) {
-  const originBadge = tokenOriginBadgeLabel(token);
   const tokenLabel = (
     <Text size={size} className={`font-mono ${truncate ? styles.tokenNameTextTruncated : ""}`.trim()}>
       {token.name}
@@ -51,11 +38,6 @@ function TokenName({ token, size = "2", truncate = false }: { token: TokenRecord
   return (
     <Flex align="center" gap="2" wrap="wrap" className={styles.tokenNameRow}>
       {truncate ? <Tooltip content={token.name}>{tokenLabel}</Tooltip> : tokenLabel}
-      {originBadge ? (
-        <Badge variant="soft" color={tokenOriginBadgeColor(token)} className={styles.tokenOriginBadge}>
-          {originBadge}
-        </Badge>
-      ) : null}
     </Flex>
   );
 }
@@ -502,8 +484,6 @@ export function TypographyCanvas({
   }
 
   function renderTypographyToken(token: TokenRecord, sampleClassName?: string) {
-    const fontDefinition = getFontTokenDefinition(token.name);
-
     return (
       <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.typographyComparisonRow}>
         <div className={styles.typographyComparisonMeta}>
@@ -515,25 +495,6 @@ export function TypographyCanvas({
               </Text>
             </Tooltip>
           </div>
-          {fontDefinition ? (
-            <div className={styles.typographyBadgeRow}>
-              {tokenOriginBadgeLabel(token) ? (
-                <Badge variant="soft" color={tokenOriginBadgeColor(token)} className={styles.tokenOriginBadge}>
-                  {tokenOriginBadgeLabel(token)}
-                </Badge>
-              ) : null}
-              <Badge variant="soft">{fontDefinition.framework}</Badge>
-              <Badge variant="soft" color="gray">
-                {fontDefinition.role}
-              </Badge>
-            </div>
-          ) : tokenOriginBadgeLabel(token) ? (
-            <div className={styles.typographyBadgeRow}>
-              <Badge variant="soft" color={tokenOriginBadgeColor(token)} className={styles.tokenOriginBadge}>
-                {tokenOriginBadgeLabel(token)}
-              </Badge>
-            </div>
-          ) : null}
         </div>
         <Tooltip content={typographySampleCopy(token)}>
           <Text size="3" className={`${styles.typographyComparisonSample} ${sampleClassName ?? ""}`.trim()} style={typographySampleStyle(token)}>

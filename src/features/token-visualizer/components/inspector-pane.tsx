@@ -1,4 +1,4 @@
-import { Badge, Button, Flex, Heading, ScrollArea } from "@radix-ui/themes";
+import { Button, Flex, Heading, ScrollArea } from "@radix-ui/themes";
 import type { TokenRecord } from "@/features/token-visualizer/document";
 import { InspectorContent } from "@/features/token-visualizer/components/inspector-content";
 import type { ImportedGoogleFont } from "@/features/token-visualizer/font-utils";
@@ -14,14 +14,6 @@ type InspectorPaneProps = {
   onClose: () => void;
 };
 
-function readOnlyBadgeLabel(token: TokenRecord | null) {
-  if (!token?.readOnly) {
-    return null;
-  }
-
-  return token.origin === "inherited" ? "Inherited" : "Tailwind default";
-}
-
 export function InspectorPane({
   importedGoogleFonts,
   onCreateOverride,
@@ -34,7 +26,6 @@ export function InspectorPane({
   const className = token
     ? `${styles.shellPane} ${styles.inspectorColumn} ${styles.inspectorColumnOpen} ${styles.paneStack}`
     : `${styles.shellPane} ${styles.inspectorColumn} ${styles.paneStack}`;
-  const badgeLabel = readOnlyBadgeLabel(token);
 
   return (
     <section className={className}>
@@ -42,7 +33,6 @@ export function InspectorPane({
         <Flex align="center" justify="between" gap="2">
           <Flex align="center" gap="2" wrap="wrap">
             <Heading size="5">Inspector</Heading>
-            {badgeLabel ? <Badge variant="soft">{badgeLabel}</Badge> : null}
           </Flex>
           <Button size="1" variant="soft" color="gray" onClick={onClose}>
             Close
