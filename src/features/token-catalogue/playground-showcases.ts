@@ -1,6 +1,7 @@
 import type { TokenRecord } from "@/features/token-visualizer/document";
 import { groupTokens, parseEditableLength, tokenValueForWidth, toMilliseconds } from "@/features/token-visualizer/utils";
 import { tokenCategoryDefinitions, tokenCategoryDescriptions } from "@/features/token-catalogue/categories";
+import type { PlaygroundStoryKey } from "@/features/token-catalogue/playground-stories";
 import { analyzePlaygroundColorLayout } from "@/features/token-catalogue/playground-color-layout";
 
 function escapeHtml(value: string) {
@@ -99,7 +100,8 @@ function renderSectionEnd() {
   return "</section>";
 }
 
-function renderColorSection(tokens: TokenRecord[]) {
+function renderColorSection(tokens: TokenRecord[], options: { compact?: boolean } = {}) {
+  const compact = options.compact === true;
   const displayTokens = tokens.filter((token) => !tokenNameIncludes(token, "shadow") && !tokenNameIncludes(token, "elevation"));
 
   if (displayTokens.length === 0) {
@@ -116,9 +118,11 @@ function renderColorSection(tokens: TokenRecord[]) {
           ? "Role colors shown as surfaces, text, borders, and accents."
           : "Available color tokens shown directly without inferred scales.";
 
-  const scaleRows = layout.scaleFamilies
+  const scaleFamilies = compact ? layout.scaleFamilies.slice(0, 3) : layout.scaleFamilies;
+  const scaleRows = scaleFamilies
     .map((family) => {
-      const tiles = family.steps
+      const steps = compact ? family.steps.slice(0, 8) : family.steps;
+      const tiles = steps
         .map(
           ({ step, token }) => `
             <div class="tw:playground-colorScaleTile">
@@ -136,14 +140,14 @@ function renderColorSection(tokens: TokenRecord[]) {
             <span class="tw:playground-tokenName">${escapeHtml(family.label)}</span>
             <span class="tw:playground-tokenValue">${family.coverage} mapped steps</span>
           </div>
-          <div class="tw:playground-colorScaleTrack" style="${escapeHtml(`--playground-scale-columns: ${family.steps.length};`)}">${tiles}</div>
+          <div class="tw:playground-colorScaleTrack ${compact ? "tw:playground-colorScaleTrackCompact" : ""}" style="${escapeHtml(`--playground-scale-columns: ${steps.length};`)}">${tiles}</div>
         </div>
       `;
     })
     .join("");
 
   const semanticRows = layout.looseTokens
-    .slice(0, layout.mode === "minimal" ? 6 : 4)
+    .slice(0, compact ? 3 : layout.mode === "minimal" ? 6 : 4)
     .map((token) => {
       const swatchStyle = escapeHtml(`background: ${token.value};`);
       return `
@@ -158,10 +162,11 @@ function renderColorSection(tokens: TokenRecord[]) {
     })
     .join("");
   const semanticGrid = layout.semanticTokens
+    .slice(0, compact ? 4 : layout.semanticTokens.length)
     .map(({ label, token }) => {
       const swatchStyle = escapeHtml(`background: ${token.value};`);
       return `
-        <div class="tw:playground-semanticCard">
+        <div class="tw:playground-semanticCard ${compact ? "tw:playground-semanticCardCompact" : ""}">
           <span class="tw:playground-semanticSwatch" style="${swatchStyle}"></span>
           <div class="tw:playground-semanticMeta">
             <span class="tw:playground-tokenName">${escapeHtml(label)}</span>
@@ -175,7 +180,7 @@ function renderColorSection(tokens: TokenRecord[]) {
 
   return `
     ${renderSectionStart("color", displayTokens.length)}
-      <div class="tw:playground-sectionBody">
+      <div class="tw:playground-sectionBody ${compact ? "tw:playground-sectionBodyCompact" : ""}">
         ${scaleRows ? `<div class="tw:playground-colorScaleGroup">${scaleRows}</div>` : ""}
         ${layout.mode !== "scale" && semanticGrid ? `<div class="tw:playground-semanticGrid">${semanticGrid}</div>` : ""}
         ${layout.mode !== "scale" && semanticRows ? `<div class="tw:playground-colorListCompact">${semanticRows}</div>` : ""}
@@ -217,18 +222,18 @@ function renderTypographySection(tokens: TokenRecord[]) {
   return `
     ${renderSectionStart("typography", tokens.length)}
       <div class="tw:playground-stack">
-        <h1 class="tw:playground-heading-1">Campaign landing headline</h1>
-        <h2 class="tw:playground-heading-2">Section hierarchy and pacing</h2>
-        <h3 class="tw:playground-heading-3">Supporting story blocks</h3>
-        <h4 class="tw:playground-heading-4">Compact interface headings</h4>
-        <h5 class="tw:playground-heading-5">Navigation and labels</h5>
-        <h6 class="tw:playground-heading-6">Metadata and fine print</h6>
-        <p class="tw:playground-copy">This is representative preview copy, not final content. It is here to help you evaluate hierarchy, tone, and reading comfort.</p>
-        <p class="tw:playground-copy tw:playground-copy-strong"><strong>Strong sample</strong> for calls to action, stat blocks, and key moments.</p>
-        <p class="tw:playground-copy tw:playground-copy-em"><em>Emphasis sample</em> for editorial cadence, highlights, and side notes.</p>
-        <p class="tw:playground-copy tw:playground-copy-serif">Serif sample for feature intros, pull quotes, and long-form reading.</p>
-        <blockquote class="tw:playground-copy tw:playground-copy-quote">Preview quote treatment for testimonials, editorial asides, or hero statements.</blockquote>
-        <p class="tw:playground-copy tw:playground-copy-mono">Mono sample for specs, tokens, and interface diagnostics: Aa Bb Cc 0123456789</p>
+        <h1 class="tw:playground-heading-1">Heading 1</h1>
+        <h2 class="tw:playground-heading-2">Heading 2</h2>
+        <h3 class="tw:playground-heading-3">Heading 3</h3>
+        <h4 class="tw:playground-heading-4">Heading 4</h4>
+        <h5 class="tw:playground-heading-5">Heading 5</h5>
+        <h6 class="tw:playground-heading-6">Heading 6</h6>
+        <p class="tw:playground-copy">Body text sample for reading size, line-height, and overall tone.</p>
+        <p class="tw:playground-copy tw:playground-copy-strong"><strong>Strong text sample</strong> for emphasis.</p>
+        <p class="tw:playground-copy tw:playground-copy-em"><em>Emphasis text sample</em> for italic or alternate voice.</p>
+        <p class="tw:playground-copy tw:playground-copy-serif">Serif sample text.</p>
+        <blockquote class="tw:playground-copy tw:playground-copy-quote">Quoted text sample.</blockquote>
+        <p class="tw:playground-copy tw:playground-copy-mono">Mono sample: Aa Bb Cc 0123456789</p>
       </div>
       ${weightSamples}
     ${renderSectionEnd()}
@@ -552,34 +557,39 @@ function renderThemeSection(tokens: TokenRecord[]) {
   const colorTokens = tokens.filter((token) => token.category === "color");
   const bodyText =
     colorTokens.length > 0
-      ? "A lightweight mock composition that inherits your imported tokens so you can review hierarchy, surfaces, and calls to action in context."
-      : "A lightweight mock composition ready to inherit imported tokens for quick design review.";
+      ? "Simple UI primitives using your saved tokens."
+      : "Simple UI primitives ready to inherit saved tokens.";
 
   return `
     <section class="tw:playground-section" data-playground-section="theme">
       <div class="tw:playground-sectionHeader">
         <div class="tw:playground-sectionMeta">
-          <h2 class="tw:playground-sectionTitle">Layout Preview</h2>
+          <h2 class="tw:playground-sectionTitle">Components</h2>
           <p class="tw:playground-sectionCopy">${escapeHtml(bodyText)}</p>
         </div>
       </div>
-      <div class="tw:playground-stack">
+      <div class="tw:playground-componentGrid">
         <article class="tw:playground-card">
-          <h3 class="tw:playground-heading-4">Feature callout</h3>
-          <p class="tw:playground-copy">Light gathers at the edges, color settles into rhythm, and each line finds its measure.</p>
-          <code class="tw:playground-copy tw:playground-copy-mono">font-sans / font-serif / font-mono</code>
+          <h3 class="tw:playground-heading-5">Card</h3>
+          <p class="tw:playground-copy">Simple bordered surface.</p>
         </article>
-        <input type="text" class="tw:playground-input" placeholder="Preview input" value="Preview input" />
-        <div class="tw:playground-actions">
-          <button type="button" class="tw:playground-button">Secondary action</button>
-          <button type="button" class="tw:playground-button tw:playground-button-primary">Primary action</button>
+        <div class="tw:playground-stack">
+          <label class="tw:playground-tokenName" for="playground-input">Input</label>
+          <input id="playground-input" type="text" class="tw:playground-input" placeholder="Preview input" value="Preview input" />
+        </div>
+        <div class="tw:playground-stack">
+          <span class="tw:playground-tokenName">Buttons</span>
+          <div class="tw:playground-actions">
+            <button type="button" class="tw:playground-button">Default</button>
+            <button type="button" class="tw:playground-button tw:playground-button-primary">Primary</button>
+          </div>
         </div>
       </div>
     </section>
   `;
 }
 
-export function renderPlaygroundShowcases(tokens: TokenRecord[]) {
+export function renderPlaygroundShowcases(tokens: TokenRecord[], story: PlaygroundStoryKey = "overview") {
   const groupedTokens = groupTokens(tokens);
   const renderedSections = Object.fromEntries(
     tokenCategoryDefinitions.map((definition) => {
@@ -614,9 +624,9 @@ export function renderPlaygroundShowcases(tokens: TokenRecord[]) {
     })
   ) as Record<string, string>;
 
-  const featureRowSections = [renderedSections.color, renderedSections.spacing].filter(Boolean).join("");
+  const compactColorSection = renderColorSection(groupedTokens.color, { compact: true });
+  const featureRowSections = [renderedSections.spacing, renderedSections.typography].filter(Boolean).join("");
   const secondaryColumnSections = [
-    renderedSections.typography,
     renderedSections.radius,
     renderedSections.shadow,
     renderedSections.sizing,
@@ -628,15 +638,36 @@ export function renderPlaygroundShowcases(tokens: TokenRecord[]) {
   ]
     .filter(Boolean)
     .join("");
+  const componentSections = [
+    renderThemeSection(tokens),
+    renderedSections.spacing,
+    renderedSections.radius,
+    renderedSections.shadow,
+    renderedSections.sizing,
+    renderedSections.opacity,
+    renderedSections["z-index"]
+  ].filter(Boolean).join("");
 
-  return `
-    <div class="tw:playground-shell">
-      <div class="tw:playground-panel">
+  const body =
+    story === "colors"
+      ? [renderedSections.color, renderThemeSection(tokens)].filter(Boolean).join("")
+      : story === "type"
+        ? [renderedSections.typography, renderThemeSection(tokens)].filter(Boolean).join("")
+        : story === "components"
+          ? componentSections
+            : `
+        ${compactColorSection}
         <div class="tw:playground-featureRow">${featureRowSections}</div>
         <div class="tw:playground-secondaryGrid">
           <div class="tw:playground-column">${secondaryColumnSections}</div>
         </div>
         ${renderThemeSection(tokens)}
+      `;
+
+  return `
+    <div class="tw:playground-shell">
+      <div class="tw:playground-panel">
+        ${body}
       </div>
     </div>
   `;

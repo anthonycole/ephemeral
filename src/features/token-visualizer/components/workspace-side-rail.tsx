@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
-import { ChartBar, SquaresFour } from "@phosphor-icons/react";
+import { SquaresFour } from "@phosphor-icons/react";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 type RailItem = {
@@ -19,12 +19,6 @@ const RAIL_ITEMS: RailItem[] = [
     label: "Workspace",
     icon: SquaresFour,
     isActive: (pathname) => pathname === "/workspace"
-  },
-  {
-    href: "/workspace/compare",
-    label: "Comparison",
-    icon: ChartBar,
-    isActive: (pathname) => pathname === "/workspace/compare"
   }
 ];
 

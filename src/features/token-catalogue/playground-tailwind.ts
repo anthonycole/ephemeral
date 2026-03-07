@@ -5,39 +5,32 @@ const PLAYGROUND_TAILWIND_SOURCE = `
 
 @layer components {
   .tw\\:playground-shell {
-    @apply tw:grid tw:min-h-[24rem] tw:w-full tw:p-6;
+    @apply tw:grid tw:min-h-[16rem] tw:w-full tw:bg-white tw:p-4 tw:text-slate-950;
     font-family: var(--playground-font-sans);
-    color: var(--playground-color-fg);
-    background: transparent;
   }
 
   .tw\\:playground-panel {
-    @apply tw:grid tw:w-full tw:gap-6 tw:p-0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: var(--playground-color-fg);
-    box-shadow: none;
+    @apply tw:grid tw:w-full tw:gap-5;
   }
 
   .tw\\:playground-section {
-    @apply tw:grid tw:gap-4;
+    @apply tw:grid tw:gap-3;
   }
 
   .tw\\:playground-featureRow {
-    @apply tw:grid tw:items-start tw:gap-6 tw:lg:grid-cols-2;
+    @apply tw:grid tw:gap-5 tw:lg:grid-cols-2;
   }
 
   .tw\\:playground-secondaryGrid {
-    @apply tw:grid tw:items-start tw:gap-6 tw:xl:grid-cols-2;
+    @apply tw:grid tw:gap-5;
   }
 
   .tw\\:playground-column {
-    @apply tw:grid tw:content-start tw:gap-6;
+    @apply tw:grid tw:gap-5;
   }
 
   .tw\\:playground-sectionHeader {
-    @apply tw:flex tw:flex-wrap tw:items-start tw:justify-between tw:gap-3;
+    @apply tw:flex tw:flex-wrap tw:items-start tw:justify-between tw:gap-2;
   }
 
   .tw\\:playground-sectionMeta {
@@ -45,72 +38,69 @@ const PLAYGROUND_TAILWIND_SOURCE = `
   }
 
   .tw\\:playground-sectionTitle {
-    @apply tw:m-0 tw:text-base tw:font-semibold tw:leading-tight;
-    color: var(--playground-color-fg);
+    @apply tw:m-0 tw:text-sm tw:font-semibold tw:leading-5 tw:text-slate-950;
   }
 
   .tw\\:playground-sectionCopy {
-    @apply tw:m-0 tw:text-sm tw:leading-6;
-    color: var(--playground-color-muted);
+    @apply tw:m-0 tw:text-xs tw:leading-5 tw:text-slate-600;
   }
 
   .tw\\:playground-sectionBody {
-    @apply tw:grid tw:gap-4;
+    @apply tw:grid tw:gap-3;
+  }
+
+  .tw\\:playground-sectionBodyCompact {
+    @apply tw:gap-2;
   }
 
   .tw\\:playground-sectionBody-grid {
-    @apply tw:grid tw:grid-cols-1 tw:items-start tw:gap-6 tw:lg:grid-cols-[minmax(13rem,16rem)_1fr];
+    @apply tw:grid tw:gap-4 tw:lg:grid-cols-[minmax(11rem,13rem)_1fr];
   }
 
   .tw\\:playground-stack {
-    @apply tw:grid tw:w-full tw:content-start tw:items-start tw:gap-3;
+    @apply tw:grid tw:gap-2;
+  }
+
+  .tw\\:playground-componentGrid {
+    @apply tw:grid tw:gap-3 tw:md:grid-cols-3;
   }
 
   .tw\\:playground-badge {
-    @apply tw:inline-flex tw:items-center tw:rounded-full tw:px-2.5 tw:py-1 tw:text-xs tw:font-medium;
-    background: color-mix(in oklab, var(--playground-color-bg) 88%, var(--playground-color-fg) 12%);
-    color: var(--playground-color-fg);
+    @apply tw:inline-flex tw:items-center tw:border tw:border-slate-200 tw:px-1.5 tw:py-0.5 tw:text-[11px] tw:font-medium tw:text-slate-700;
   }
 
   .tw\\:playground-heading-1 {
-    @apply tw:m-0 tw:text-5xl tw:font-semibold tw:leading-none;
+    @apply tw:m-0 tw:text-3xl tw:font-semibold tw:leading-tight tw:text-slate-950;
     font-family: var(--playground-font-heading);
-    color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-2 {
-    @apply tw:m-0 tw:text-4xl tw:font-semibold tw:leading-tight;
+    @apply tw:m-0 tw:text-2xl tw:font-semibold tw:leading-tight tw:text-slate-950;
     font-family: var(--playground-font-heading);
-    color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-3 {
-    @apply tw:m-0 tw:text-3xl tw:font-semibold tw:leading-tight;
+    @apply tw:m-0 tw:text-xl tw:font-semibold tw:leading-tight tw:text-slate-950;
     font-family: var(--playground-font-heading);
-    color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-4 {
-    @apply tw:m-0 tw:text-2xl tw:font-medium tw:leading-tight;
+    @apply tw:m-0 tw:text-lg tw:font-semibold tw:leading-tight tw:text-slate-950;
     font-family: var(--playground-font-heading);
-    color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-5 {
-    @apply tw:m-0 tw:text-xl tw:font-medium tw:leading-tight;
+    @apply tw:m-0 tw:text-base tw:font-medium tw:leading-tight tw:text-slate-950;
     font-family: var(--playground-font-heading);
-    color: var(--playground-color-fg);
   }
 
   .tw\\:playground-heading-6 {
-    @apply tw:m-0 tw:text-lg tw:font-medium tw:leading-tight;
+    @apply tw:m-0 tw:text-sm tw:font-medium tw:leading-tight tw:text-slate-950;
     font-family: var(--playground-font-heading);
-    color: var(--playground-color-fg);
   }
 
   .tw\\:playground-copy {
-    @apply tw:m-0 tw:text-sm tw:leading-6;
-    color: var(--playground-color-muted);
+    @apply tw:m-0 tw:text-xs tw:leading-5 tw:text-slate-700;
   }
 
   .tw\\:playground-copy-serif {
@@ -133,99 +123,85 @@ const PLAYGROUND_TAILWIND_SOURCE = `
     font-family: var(--playground-font-quote);
   }
 
-  .tw\\:playground-colorScaleGroup {
-    @apply tw:grid tw:gap-4;
-  }
-
-  .tw\\:playground-colorScaleRow {
+  .tw\\:playground-colorScaleGroup,
+  .tw\\:playground-colorScaleRow,
+  .tw\\:playground-colorListCompact,
+  .tw\\:playground-tokenList {
     @apply tw:grid tw:gap-2;
   }
 
-  .tw\\:playground-colorScaleHeader {
-    @apply tw:flex tw:items-center tw:justify-between tw:gap-3;
+  .tw\\:playground-colorScaleHeader,
+  .tw\\:playground-stackRowMeta,
+  .tw\\:playground-actions {
+    @apply tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2;
   }
 
   .tw\\:playground-colorScaleTrack {
-    @apply tw:grid tw:gap-2 tw:overflow-x-auto tw:pb-1;
-    grid-template-columns: repeat(var(--playground-scale-columns, 1), minmax(3.75rem, 1fr));
+    @apply tw:grid tw:gap-1 tw:overflow-x-auto;
+    grid-template-columns: repeat(var(--playground-scale-columns, 1), minmax(2.5rem, 1fr));
+  }
+
+  .tw\\:playground-colorScaleTrackCompact {
+    grid-template-columns: repeat(var(--playground-scale-columns, 1), minmax(2rem, 1fr));
   }
 
   .tw\\:playground-colorScaleTile {
     @apply tw:grid tw:gap-1;
   }
 
+  .tw\\:playground-colorScaleSwatch,
+  .tw\\:playground-semanticCard,
+  .tw\\:playground-chipCard,
+  .tw\\:playground-sizingDemo,
+  .tw\\:playground-perspectiveDemo,
+  .tw\\:playground-layerDemo,
+  .tw\\:playground-card {
+    @apply tw:border tw:border-slate-200 tw:bg-white;
+  }
+
   .tw\\:playground-colorScaleSwatch {
-    @apply tw:flex tw:min-h-16 tw:items-end tw:justify-start tw:p-2;
-    border: 1px solid color-mix(in oklab, var(--playground-color-fg) 10%, transparent);
-    border-radius: calc(var(--playground-radius-md) * 0.75);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18);
+    @apply tw:flex tw:min-h-10 tw:items-end tw:p-1;
   }
 
   .tw\\:playground-semanticGrid {
-    @apply tw:grid tw:grid-cols-1 tw:gap-3 tw:sm:grid-cols-2;
+    @apply tw:grid tw:gap-1.5 tw:sm:grid-cols-2;
   }
 
   .tw\\:playground-semanticCard {
-    @apply tw:grid tw:grid-cols-[3rem_minmax(0,1fr)] tw:items-start tw:gap-3 tw:p-3;
-    border-radius: calc(var(--playground-radius-md) * 0.85);
-    background: color-mix(in oklab, var(--playground-color-bg) 92%, var(--playground-color-fg) 8%);
+    @apply tw:grid tw:grid-cols-[2rem_minmax(0,1fr)] tw:gap-1.5 tw:p-1.5;
+  }
+
+  .tw\\:playground-semanticCardCompact {
+    @apply tw:grid-cols-[1.5rem_minmax(0,1fr)] tw:gap-1 tw:p-1;
   }
 
   .tw\\:playground-semanticSwatch {
-    @apply tw:block tw:min-h-12 tw:w-12;
-    border-radius: calc(var(--playground-radius-md) * 0.7);
-    border: 1px solid color-mix(in oklab, var(--playground-color-fg) 10%, transparent);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18);
+    @apply tw:block tw:h-8 tw:w-8 tw:border tw:border-slate-200;
   }
 
-  .tw\\:playground-semanticMeta {
-    @apply tw:grid tw:gap-0.5;
-  }
-
-  .tw\\:playground-colorScaleStep {
-    @apply tw:text-[11px] tw:font-semibold tw:leading-none;
-    color: rgb(255 255 255 / 0.92);
-    text-shadow: 0 1px 1px rgb(15 23 42 / 0.28);
-  }
-
-  .tw\\:playground-colorListCompact {
-    @apply tw:grid tw:gap-2;
-  }
-
-  .tw\\:playground-colorNote {
-    @apply tw:pt-1;
-  }
-
-  .tw\\:playground-tokenList {
-    @apply tw:grid tw:w-full tw:gap-2;
-  }
-
-  .tw\\:playground-tokenRow {
-    @apply tw:flex tw:items-center tw:gap-3;
-  }
-
-  .tw\\:playground-swatch {
-    @apply tw:h-4 tw:w-4 tw:shrink-0 tw:rounded-full;
-  }
-
+  .tw\\:playground-semanticMeta,
   .tw\\:playground-tokenMeta {
     @apply tw:grid tw:gap-0.5;
   }
 
+  .tw\\:playground-colorScaleStep,
   .tw\\:playground-tokenName {
-    @apply tw:text-xs tw:font-medium tw:leading-tight;
-    color: var(--playground-color-fg);
+    @apply tw:text-[11px] tw:font-medium tw:leading-tight tw:text-slate-950;
   }
 
   .tw\\:playground-tokenValue {
-    @apply tw:text-xs tw:leading-tight;
-    color: var(--playground-color-muted);
+    @apply tw:text-[11px] tw:leading-tight tw:text-slate-600;
   }
 
-  .tw\\:playground-spacing {
-    @apply tw:grid tw:gap-2;
+  .tw\\:playground-tokenRow {
+    @apply tw:flex tw:items-center tw:gap-2;
   }
 
+  .tw\\:playground-swatch {
+    @apply tw:h-3 tw:w-3 tw:shrink-0 tw:border tw:border-slate-200;
+  }
+
+  .tw\\:playground-spacing,
   .tw\\:playground-stackDemo {
     @apply tw:grid tw:gap-2;
   }
@@ -238,66 +214,44 @@ const PLAYGROUND_TAILWIND_SOURCE = `
     @apply tw:grid tw:gap-1;
   }
 
-  .tw\\:playground-stackRowMeta {
-    @apply tw:flex tw:items-center tw:justify-between tw:gap-3;
+  .tw\\:playground-spacingRail,
+  .tw\\:playground-breakpointDemo {
+    @apply tw:w-full tw:border tw:border-slate-200 tw:bg-slate-50;
   }
 
   .tw\\:playground-spacingRail {
-    @apply tw:h-2 tw:w-full;
-    border-radius: 0;
-    background: color-mix(in oklab, var(--playground-color-bg) 90%, var(--playground-color-fg) 10%);
+    @apply tw:h-2;
   }
 
-  .tw\\:playground-spacingBar {
-    @apply tw:h-full;
-    min-width: 0.25rem;
-    max-width: 100%;
-    border-radius: 0;
-    background: var(--playground-color-accent);
-  }
-
-  .tw\\:playground-actions {
-    @apply tw:flex tw:flex-wrap tw:gap-3;
+  .tw\\:playground-spacingBar,
+  .tw\\:playground-breakpointBar {
+    @apply tw:h-full tw:bg-slate-900;
   }
 
   .tw\\:playground-chipGrid {
-    @apply tw:grid tw:grid-cols-1 tw:gap-3 tw:sm:grid-cols-2 tw:xl:grid-cols-3;
+    @apply tw:grid tw:gap-2 tw:sm:grid-cols-2 tw:xl:grid-cols-3;
   }
 
   .tw\\:playground-chipCard {
-    @apply tw:grid tw:gap-2 tw:p-3;
-    border-radius: var(--playground-radius-md);
-    background: color-mix(in oklab, var(--playground-color-bg) 92%, var(--playground-color-fg) 8%);
-    color: var(--playground-color-fg);
+    @apply tw:grid tw:gap-2 tw:p-2;
   }
 
-  .tw\\:playground-radiusDemo {
-    @apply tw:h-16 tw:w-full;
-    background: color-mix(in oklab, var(--playground-color-accent) 18%, var(--playground-color-bg) 82%);
-  }
-
-  .tw\\:playground-shadowDemo {
-    @apply tw:h-16 tw:w-full;
-    border-radius: var(--playground-radius-md);
-    background: color-mix(in oklab, var(--playground-color-bg) 95%, var(--playground-color-fg) 5%);
+  .tw\\:playground-radiusDemo,
+  .tw\\:playground-shadowDemo,
+  .tw\\:playground-opacityDemo {
+    @apply tw:h-12 tw:w-full tw:border tw:border-slate-200 tw:bg-white;
   }
 
   .tw\\:playground-shadowText {
-    @apply tw:text-lg tw:font-semibold;
-    color: var(--playground-color-fg);
+    @apply tw:text-base tw:font-semibold tw:text-slate-950;
   }
 
   .tw\\:playground-effectStage {
-    @apply tw:grid tw:min-h-16 tw:w-full tw:place-items-center tw:overflow-hidden;
-    border-radius: var(--playground-radius-md);
-    background:
-      radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--playground-color-accent) 55%, white 45%) 0, transparent 42%),
-      linear-gradient(135deg, color-mix(in oklab, var(--playground-color-bg) 88%, var(--playground-color-fg) 12%), var(--playground-color-panel-strong));
+    @apply tw:grid tw:min-h-12 tw:w-full tw:place-items-center tw:border tw:border-slate-200 tw:bg-slate-50;
   }
 
   .tw\\:playground-effectOrb {
-    @apply tw:h-8 tw:w-8 tw:rounded-full;
-    background: var(--playground-color-accent);
+    @apply tw:h-6 tw:w-6 tw:rounded-full tw:bg-slate-900;
   }
 
   .tw\\:playground-blurDemo {
@@ -305,130 +259,83 @@ const PLAYGROUND_TAILWIND_SOURCE = `
   }
 
   .tw\\:playground-blurText {
-    @apply tw:text-sm tw:font-medium;
-    color: var(--playground-color-fg);
+    @apply tw:text-xs tw:font-medium tw:text-slate-700;
   }
 
-  .tw\\:playground-sizingDemo {
-    @apply tw:grid tw:min-h-16 tw:w-full tw:place-items-center;
-    border-radius: var(--playground-radius-md);
-    background: color-mix(in oklab, var(--playground-color-bg) 94%, var(--playground-color-fg) 6%);
+  .tw\\:playground-sizingDemo,
+  .tw\\:playground-perspectiveDemo,
+  .tw\\:playground-layerDemo {
+    @apply tw:grid tw:min-h-12 tw:w-full tw:place-items-center;
   }
 
-  .tw\\:playground-aspectDemo {
+  .tw\\:playground-aspectDemo,
+  .tw\\:playground-perspectivePlane {
+    @apply tw:bg-slate-900;
     width: min(100%, 10rem);
-    min-height: 2.5rem;
-    border-radius: calc(var(--playground-radius-md) * 0.8);
-    background: linear-gradient(135deg, var(--playground-color-accent), var(--playground-color-accent-strong));
-  }
-
-  .tw\\:playground-perspectiveDemo {
-    @apply tw:grid tw:h-20 tw:w-full tw:place-items-center;
-    border-radius: var(--playground-radius-md);
-    background: color-mix(in oklab, var(--playground-color-bg) 94%, var(--playground-color-fg) 6%);
+    min-height: 2rem;
   }
 
   .tw\\:playground-perspectivePlane {
-    @apply tw:h-10 tw:w-16;
-    border-radius: calc(var(--playground-radius-md) * 0.75);
-    background: linear-gradient(135deg, var(--playground-color-accent), var(--playground-color-accent-strong));
+    @apply tw:h-8 tw:w-14;
     transform: rotateX(58deg) rotateZ(-18deg);
-  }
-
-  .tw\\:playground-opacityDemo {
-    @apply tw:h-16 tw:w-full;
-    border-radius: var(--playground-radius-md);
-    background:
-      linear-gradient(90deg, var(--playground-color-accent) 0 50%, color-mix(in oklab, var(--playground-color-bg) 88%, var(--playground-color-fg) 12%) 50% 100%);
-  }
-
-  .tw\\:playground-layerDemo {
-    @apply tw:relative tw:h-20 tw:w-full;
-    border-radius: var(--playground-radius-md);
-    background: color-mix(in oklab, var(--playground-color-bg) 94%, var(--playground-color-fg) 6%);
   }
 
   .tw\\:playground-layerBase,
   .tw\\:playground-layerMid,
   .tw\\:playground-layerTop {
-    @apply tw:absolute;
-    border-radius: calc(var(--playground-radius-md) * 0.75);
+    @apply tw:absolute tw:border tw:border-slate-300;
   }
 
   .tw\\:playground-layerBase {
-    inset: 1.5rem 3rem auto auto;
-    height: 2.25rem;
-    width: 4rem;
-    background: color-mix(in oklab, var(--playground-color-fg) 16%, transparent);
+    inset: 1.1rem 2.5rem auto auto;
+    height: 1.75rem;
+    width: 3.2rem;
+    background: white;
   }
 
   .tw\\:playground-layerMid {
-    inset: 2rem auto auto 2rem;
-    height: 2.5rem;
-    width: 5rem;
-    background: color-mix(in oklab, var(--playground-color-accent) 28%, transparent);
+    inset: 1.5rem auto auto 1.5rem;
+    height: 2rem;
+    width: 4rem;
+    background: rgb(241 245 249);
   }
 
   .tw\\:playground-layerTop {
-    inset: 1rem auto auto 4rem;
-    height: 3rem;
-    width: 5.5rem;
-    background: var(--playground-color-accent);
+    inset: 0.75rem auto auto 3.1rem;
+    height: 2.4rem;
+    width: 4.5rem;
+    background: rgb(15 23 42);
   }
 
   .tw\\:playground-motion {
-    @apply tw:flex tw:flex-wrap tw:items-center tw:gap-4;
+    @apply tw:flex tw:flex-wrap tw:items-center tw:gap-3;
   }
 
   .tw\\:playground-motionOrb {
-    @apply tw:h-5 tw:w-5 tw:rounded-full;
-    background: var(--playground-color-accent);
+    @apply tw:h-4 tw:w-4 tw:rounded-full tw:bg-slate-900;
     animation-name: tw-playground-pulse;
     animation-iteration-count: infinite;
     animation-direction: alternate;
   }
 
-  .tw\\:playground-breakpointDemo {
-    @apply tw:w-full;
-  }
-
-  .tw\\:playground-breakpointBar {
-    @apply tw:h-2;
-    border-radius: 0;
-    background: var(--playground-color-accent);
-  }
-
   .tw\\:playground-button {
-    @apply tw:inline-flex tw:items-center tw:justify-center tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:outline-none;
-    border: 0;
-    border-radius: var(--playground-radius-md);
-    background: color-mix(in oklab, var(--playground-color-bg) 90%, var(--playground-color-fg) 10%);
-    color: var(--playground-color-fg);
+    @apply tw:inline-flex tw:items-center tw:justify-center tw:border tw:border-slate-300 tw:bg-white tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:text-slate-900;
   }
 
   .tw\\:playground-button-primary {
-    background: var(--playground-color-accent);
-    color: var(--playground-color-on-accent);
+    @apply tw:border-slate-900 tw:bg-slate-900 tw:text-white;
   }
 
   .tw\\:playground-card {
-    @apply tw:grid tw:gap-2 tw:p-4;
-    border: 0;
-    border-radius: var(--playground-radius-md);
-    background: color-mix(in oklab, var(--playground-color-bg) 90%, var(--playground-color-fg) 10%);
-    color: var(--playground-color-fg);
+    @apply tw:grid tw:gap-2 tw:p-3;
   }
 
   .tw\\:playground-input {
-    @apply tw:w-full tw:px-4 tw:py-3 tw:text-sm tw:outline-none;
-    border: 0;
-    border-radius: var(--playground-radius-md);
-    background: color-mix(in oklab, var(--playground-color-bg) 90%, var(--playground-color-fg) 10%);
-    color: var(--playground-color-fg);
+    @apply tw:w-full tw:border tw:border-slate-300 tw:bg-white tw:px-2.5 tw:py-1.5 tw:text-xs tw:text-slate-900;
   }
 
   .tw\\:playground-input::placeholder {
-    color: var(--playground-color-muted);
+    color: rgb(100 116 139);
   }
 }
 
@@ -457,8 +364,10 @@ const PLAYGROUND_TAILWIND_CANDIDATES = [
   "tw:playground-sectionTitle",
   "tw:playground-sectionCopy",
   "tw:playground-sectionBody",
+  "tw:playground-sectionBodyCompact",
   "tw:playground-sectionBody-grid",
   "tw:playground-stack",
+  "tw:playground-componentGrid",
   "tw:playground-badge",
   "tw:playground-heading-1",
   "tw:playground-heading-2",
@@ -476,11 +385,13 @@ const PLAYGROUND_TAILWIND_CANDIDATES = [
   "tw:playground-colorScaleRow",
   "tw:playground-colorScaleHeader",
   "tw:playground-colorScaleTrack",
+  "tw:playground-colorScaleTrackCompact",
   "tw:playground-colorScaleTile",
   "tw:playground-colorScaleSwatch",
   "tw:playground-colorScaleStep",
   "tw:playground-semanticGrid",
   "tw:playground-semanticCard",
+  "tw:playground-semanticCardCompact",
   "tw:playground-semanticSwatch",
   "tw:playground-semanticMeta",
   "tw:playground-colorListCompact",
@@ -529,16 +440,15 @@ const PLAYGROUND_TAILWIND_CANDIDATES = [
 
 let compiledPlaygroundTailwindCssPromise: Promise<string> | null = null;
 
-async function compilePlaygroundTailwindCss() {
-  const compiler = await compile(PLAYGROUND_TAILWIND_SOURCE, {
-    base: process.cwd(),
-    onDependency() {}
-  });
+export async function getPlaygroundTailwindCss() {
+  compiledPlaygroundTailwindCssPromise ??= (async () => {
+    const compiler = await compile(PLAYGROUND_TAILWIND_SOURCE, {
+      base: process.cwd(),
+      onDependency() {}
+    });
 
-  return compiler.build(PLAYGROUND_TAILWIND_CANDIDATES);
-}
+    return compiler.build(PLAYGROUND_TAILWIND_CANDIDATES);
+  })();
 
-export function getPlaygroundTailwindCss() {
-  compiledPlaygroundTailwindCssPromise ??= compilePlaygroundTailwindCss();
   return compiledPlaygroundTailwindCssPromise;
 }

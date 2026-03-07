@@ -5,6 +5,7 @@ import type { TokenRecord } from "@/features/token-visualizer/document";
 import { parseGoogleFontImports } from "@/features/token-visualizer/font-utils";
 import { transformImportedCssForPlayground } from "@/features/token-catalogue/playground-runtime-css";
 import { renderPlaygroundShowcases } from "@/features/token-catalogue/playground-showcases";
+import type { PlaygroundStoryKey } from "@/features/token-catalogue/playground-stories";
 import { createSemanticDeclarations } from "@/features/token-catalogue/theme-snapshot";
 import styles from "@/features/token-catalogue/styles.module.css";
 
@@ -13,6 +14,7 @@ type PlaygroundPreviewProps = {
   tokens: TokenRecord[];
   importedCss: string;
   runtimeCss: string;
+  story: PlaygroundStoryKey;
   title?: string;
 };
 
@@ -62,7 +64,7 @@ function buildPlaygroundDocument({ body, stylesheet, googleFontHrefs }: { body: 
 </html>`;
 }
 
-export function PlaygroundPreview({ directives, tokens, importedCss, runtimeCss, title = "Token playground preview" }: PlaygroundPreviewProps) {
+export function PlaygroundPreview({ directives, tokens, importedCss, runtimeCss, story, title = "Token playground preview" }: PlaygroundPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const observerCleanupRef = useRef<(() => void) | null>(null);
   const [frameHeight, setFrameHeight] = useState(520);
@@ -77,7 +79,7 @@ export function PlaygroundPreview({ directives, tokens, importedCss, runtimeCss,
     const directiveSource = nonGoogleDirectives.join("\n");
     return `${directiveSource ? `${directiveSource}\n\n` : ""}:root {\n${tokenDeclarations}\n${semanticDeclarations ? `\n${semanticDeclarations}` : ""}\n}\n\n${importedRuntimeCss}\n\n${runtimeCss}\n\n${PLAYGROUND_RECIPE_CSS}`;
   }, [importedRuntimeCss, nonGoogleDirectives, runtimeCss, semanticDeclarations, tokenDeclarations]);
-  const body = useMemo(() => renderPlaygroundShowcases(tokens), [tokens]);
+  const body = useMemo(() => renderPlaygroundShowcases(tokens, story), [story, tokens]);
   const previewDocument = useMemo(() => buildPlaygroundDocument({ body, stylesheet, googleFontHrefs }), [body, googleFontHrefs, stylesheet]);
 
   const bindFrameMeasurement = useCallback(() => {

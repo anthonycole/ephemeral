@@ -1,6 +1,4 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { importCssDocument, type TokenDocument } from "@/features/token-visualizer/document";
+import type { TokenDocument } from "@/features/token-visualizer/document";
 import { SAMPLE_DOCUMENT } from "@/features/token-visualizer/sample-workspace";
 import { getWorkspace } from "@/features/token-visualizer/workspace-repo";
 import { getLegacyWorkspaceMeta, type WorkspaceMeta } from "@/features/token-catalogue/workspace-meta";
@@ -16,8 +14,6 @@ export type PlaygroundPaneSource = {
   meta: WorkspaceMeta;
   updatedAt: string | null;
 };
-
-let tailwindDefaultSourcePromise: Promise<PlaygroundPaneSource | null> | null = null;
 
 export async function getPrimaryPlaygroundSource(): Promise<PlaygroundPaneSource> {
   const workspace = await getWorkspace("default");
@@ -43,32 +39,4 @@ export async function getPrimaryPlaygroundSource(): Promise<PlaygroundPaneSource
     meta: getLegacyWorkspaceMeta(),
     updatedAt: null
   };
-}
-
-export function getTailwindDefaultSource() {
-  tailwindDefaultSourcePromise ??= (async () => {
-    try {
-      const filePath = path.join(process.cwd(), "src", "lib", "fixtures", "tailwind-default.css");
-      const rawCss = await readFile(filePath, "utf8");
-      const document = importCssDocument(rawCss);
-
-      if (document.tokens.length === 0) {
-        return null;
-      }
-
-      return {
-        key: "tailwind-default",
-        label: "Tailwind default",
-        source: "baseline",
-        document,
-        directives: document.directives,
-        meta: getLegacyWorkspaceMeta(),
-        updatedAt: null
-      } satisfies PlaygroundPaneSource;
-    } catch {
-      return null;
-    }
-  })();
-
-  return tailwindDefaultSourcePromise;
 }

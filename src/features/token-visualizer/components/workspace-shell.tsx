@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowSquareOut, Code as CodeIcon, Plus as PlusIcon } from "@phosphor-icons/react";
-import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Flex, Heading } from "@radix-ui/themes";
 import { WorkspaceHeaderIconControl } from "@/features/token-visualizer/components/workspace-header-icon-control";
@@ -10,11 +9,10 @@ import { WorkspaceSideRail } from "@/features/token-visualizer/components/worksp
 import styles from "@/features/token-visualizer/styles.module.css";
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
   const [headerActions, setHeaderActions] = useState<ReactNode | null>(null);
   const [statusText, setStatusText] = useState<string | null>(null);
   const [openCommandPalette, setOpenCommandPalette] = useState<(() => void) | null>(null);
-  const defaultStatus = pathname === "/workspace/compare" ? "Comparison dashboard" : "Workspace";
+  const defaultStatus = "Workspace";
   const status = statusText ?? defaultStatus;
 
   const handleOpenCommandPalette = useCallback(() => {
