@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getBaselineSource, type BaselineKey } from "@/features/token-catalogue/workspace-baseline";
+import { getBaselineSource, type BaselineKey } from "@/model/tokens/workspace-baseline";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

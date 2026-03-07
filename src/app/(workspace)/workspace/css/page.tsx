@@ -1,4 +1,4 @@
-import { WorkspaceCssEditor } from "@/features/token-visualizer/workspace-css-editor";
+import { WorkspaceCssEditor } from "@/routes/workspace/pages/workspace-css-editor";
 
 export default function WorkspaceCssPage() {
   return <WorkspaceCssEditor />;

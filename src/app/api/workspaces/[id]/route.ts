@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { normalizeTokenDocument, type TokenDocument } from "@/features/token-visualizer/document";
-import { normalizeWorkspaceMeta, type WorkspaceMeta } from "@/features/token-catalogue/workspace-meta";
-import { getWorkspace, saveWorkspace } from "@/features/token-visualizer/workspace-repo";
+import { normalizeTokenDocument, type TokenDocument } from "@/model/tokens/document";
+import { normalizeWorkspaceMeta, type WorkspaceMeta } from "@/model/tokens/workspace-meta";
+import { getWorkspace, saveWorkspace } from "@/data/repositories/workspace-repo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

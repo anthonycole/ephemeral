@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { TokenWorkspace } from "@/features/token-visualizer";
+import { TokenWorkspace } from "@/routes/workspace/pages/token-workspace";
 
 export default function WorkspacePage() {
   return (
