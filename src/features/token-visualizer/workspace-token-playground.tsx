@@ -8,7 +8,7 @@ import styles from "@/features/token-visualizer/token-preview.module.css";
 export function WorkspaceTokenPlayground() {
   useWorkspaceShellSlot({
     headerActions: <></>,
-    statusText: "Preview"
+    statusText: "Playground"
   });
 
   return (

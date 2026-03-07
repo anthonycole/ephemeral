@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus as PlusIcon } from "@phosphor-icons/react";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Flex, Heading } from "@radix-ui/themes";
 import { WorkspaceHeaderIconControl } from "@/features/token-visualizer/components/workspace-header-icon-control";
 import { WorkspaceShellSlotProvider } from "@/features/token-visualizer/components/workspace-shell-slots";
@@ -87,7 +87,9 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           </div>
         </header>
         <div className={styles.workspaceContentFrame}>
-          <WorkspaceSideRail />
+          <Suspense fallback={<div className={styles.workspaceSideRail} aria-hidden="true" />}>
+            <WorkspaceSideRail />
+          </Suspense>
           <div className={styles.workspaceFrameMain}>{children}</div>
         </div>
       </main>

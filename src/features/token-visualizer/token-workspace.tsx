@@ -270,6 +270,13 @@ export function TokenWorkspace() {
 
   const commandActions: CommandAction[] = [
     {
+      id: "open-playground",
+      title: "Open playground",
+      subtitle: "Open the token playground inside the workspace",
+      keywords: ["playground", "tokens", "preview"],
+      run: () => router.push("/workspace/playground")
+    },
+    {
       id: "open-preview",
       title: "Open preview",
       subtitle: "Open the published token preview",

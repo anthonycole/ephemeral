@@ -1,5 +1,5 @@
-import { WorkspaceTokenPlayground } from "@/features/token-visualizer/workspace-token-playground";
+import { WorkspaceCssEditor } from "@/features/token-visualizer/workspace-css-editor";
 
 export default function WorkspaceCssPage() {
-  return <WorkspaceTokenPlayground />;
+  return <WorkspaceCssEditor />;
 }

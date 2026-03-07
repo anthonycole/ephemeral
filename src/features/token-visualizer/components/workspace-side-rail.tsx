@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ComponentType } from "react";
-import { Eye, SquaresFour } from "@phosphor-icons/react";
+import { Eye, Code, SquaresFour } from "@phosphor-icons/react";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 type RailItem = {
@@ -24,10 +24,17 @@ const RAIL_ITEMS: RailItem[] = [
   },
   {
     key: "css",
-    label: "Preview",
-    icon: Eye,
+    label: "CSS",
+    icon: Code,
     href: (search) => (search.size > 0 ? `/workspace/css?${search.toString()}` : "/workspace/css"),
     isActive: (pathname) => pathname === "/workspace/css"
+  },
+  {
+    key: "playground",
+    label: "Playground",
+    icon: Eye,
+    href: (search) => (search.size > 0 ? `/workspace/playground?${search.toString()}` : "/workspace/playground"),
+    isActive: (pathname) => pathname === "/workspace/playground"
   }
 ];
 
