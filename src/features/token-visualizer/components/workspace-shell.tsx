@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowSquareOut, Code as CodeIcon, Plus as PlusIcon } from "@phosphor-icons/react";
+import { ArrowSquareOut, Plus as PlusIcon } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Flex, Heading } from "@radix-ui/themes";
 import { WorkspaceHeaderIconControl } from "@/features/token-visualizer/components/workspace-header-icon-control";
@@ -68,12 +68,6 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         title="Open workspace to add token"
         icon={PlusIcon}
         href="/workspace?headerAction=open-token-composer"
-      />
-      <WorkspaceHeaderIconControl
-        label="Open workspace CSS editor"
-        title="Open workspace CSS editor"
-        icon={CodeIcon}
-        href="/workspace?headerAction=open-editor"
       />
     </>
   );

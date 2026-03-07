@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Dialog, Button, Flex, Grid } from "@radix-ui/themes";
 import { useShallow } from "zustand/react/shallow";
@@ -25,6 +25,14 @@ const WORKSPACE_ID = "default";
 
 function resolveCategoryFilter(value: string | null): TokenCategoryFilter {
   return isTokenCategoryFilter(value) ? value : "all";
+}
+
+function getCurrentSearchParams(fallback: ReadonlyURLSearchParams) {
+  if (typeof window === "undefined") {
+    return new URLSearchParams(fallback.toString());
+  }
+
+  return new URLSearchParams(window.location.search);
 }
 
 export function TokenWorkspace() {
@@ -73,7 +81,6 @@ export function TokenWorkspace() {
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [hasLoadedWorkspace, setHasLoadedWorkspace] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [editorOpen, setEditorOpen] = useState(false);
   const [pendingDeleteToken, setPendingDeleteToken] = useState<TokenRecord | null>(null);
   const [tokenComposerOpen, setTokenComposerOpen] = useState(false);
   const [sourceFilter, setSourceFilter] = useState<TokenSourceFilter>("all");
@@ -88,6 +95,8 @@ export function TokenWorkspace() {
   const skipNextTokenUrlWriteRef = useRef(false);
   const urlCategory = resolveCategoryFilter(searchParams.get("category"));
   const urlTokenId = searchParams.get("token");
+  const activePanel = searchParams.get("panel");
+  const editorOpen = activePanel === "css";
   const resolvedTheme = useMemo(
     () =>
       resolveTheme({
@@ -108,6 +117,13 @@ export function TokenWorkspace() {
       tokens: effectiveTokens
     };
   }, [baselineDocument, document, effectiveTokens, meta.hydrationMode, resolvedTheme]);
+  const editorCssValue = useMemo(() => {
+    if (editorCss.trim().length > 0 || meta.hydrationMode !== "inherit") {
+      return editorCss;
+    }
+
+    return serializeDocumentToCss(effectiveDocument);
+  }, [editorCss, effectiveDocument, meta.hydrationMode]);
   const importedGoogleFonts = useMemo(() => parseGoogleFontImports(effectiveDocument.directives), [effectiveDocument.directives]);
   const canvasState = useCanvasPaneStateFromTokens({
     tokens: effectiveTokens,
@@ -128,8 +144,43 @@ export function TokenWorkspace() {
   const { selectedToken, addGoogleFontImport: addInspectorGoogleFontImport, closeInspector } = inspectorState;
 
   const gridClassName = selectedToken ? `${styles.workspaceGrid} ${styles.workspaceGridInspectorOpen}` : styles.workspaceGrid;
-  const workspaceStatus =
-    meta.hydrationMode === "inherit" && meta.baselineKey === "tailwind-default" ? "Inherited from Tailwind" : "Workspace";
+  const workspaceStatus = editorOpen
+    ? "CSS Import / Export"
+    : meta.hydrationMode === "inherit" && meta.baselineKey === "tailwind-default"
+      ? "Inherited from Tailwind"
+      : "Workspace";
+
+  const updateWorkspaceUrl = useCallback(
+    (mutate: (nextSearchParams: URLSearchParams) => void, mode: "push" | "replace" = "replace") => {
+      const nextSearchParams = getCurrentSearchParams(searchParams);
+      mutate(nextSearchParams);
+      const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname;
+
+      if (mode === "push") {
+        router.push(nextUrl, { scroll: false });
+        return;
+      }
+
+      router.replace(nextUrl, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
+
+  const openCssPanel = useCallback(
+    (mode: "push" | "replace" = "push") => {
+      updateWorkspaceUrl((nextSearchParams) => {
+        nextSearchParams.set("panel", "css");
+        nextSearchParams.delete("headerAction");
+      }, mode);
+    },
+    [updateWorkspaceUrl]
+  );
+
+  const closeCssPanel = useCallback(() => {
+    updateWorkspaceUrl((nextSearchParams) => {
+      nextSearchParams.delete("panel");
+    });
+  }, [updateWorkspaceUrl]);
 
   useWorkspaceShellSlot({
     headerActions: (
@@ -142,7 +193,6 @@ export function TokenWorkspace() {
             value: input.value
           });
         }}
-        onOpenEditor={() => setEditorOpen(true)}
         onTokenComposerOpenChange={setTokenComposerOpen}
         tokenComposerOpen={tokenComposerOpen}
       />
@@ -155,7 +205,7 @@ export function TokenWorkspace() {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" && editorOpen) {
         event.preventDefault();
-        setEditorOpen(false);
+        closeCssPanel();
         return;
       }
 
@@ -167,7 +217,7 @@ export function TokenWorkspace() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [editorOpen]);
+  }, [closeCssPanel, editorOpen]);
 
   useEffect(() => {
     const headerAction = searchParams.get("headerAction");
@@ -182,25 +232,12 @@ export function TokenWorkspace() {
     if (headerAction === "open-token-composer") {
       setTokenComposerOpen(true);
     } else {
-      setEditorOpen(true);
+      nextSearchParams.set("panel", "css");
     }
 
     const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname;
     router.replace(nextUrl, { scroll: false });
   }, [pathname, router, searchParams]);
-
-  useEffect(() => {
-    if (!editorOpen) {
-      return;
-    }
-
-    const previousOverflow = globalThis.document.body.style.overflow;
-    globalThis.document.body.style.overflow = "hidden";
-
-    return () => {
-      globalThis.document.body.style.overflow = previousOverflow;
-    };
-  }, [editorOpen]);
 
   useEffect(() => {
     let isActive = true;
@@ -280,7 +317,7 @@ export function TokenWorkspace() {
       return;
     }
 
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    const nextSearchParams = getCurrentSearchParams(searchParams);
 
     if (activeCategory === "all") {
       nextSearchParams.delete("category");
@@ -353,7 +390,7 @@ export function TokenWorkspace() {
       return;
     }
 
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    const nextSearchParams = getCurrentSearchParams(searchParams);
 
     if (selectedTokenId) {
       nextSearchParams.set("token", selectedTokenId);
@@ -505,7 +542,7 @@ export function TokenWorkspace() {
       title: "Open CSS editor",
       subtitle: "Open the full-screen CSS import and export view",
       keywords: ["css", "editor", "import", "export"],
-      run: () => setEditorOpen(true)
+      run: () => openCssPanel()
     },
     {
       id: "open-playground",
@@ -610,35 +647,52 @@ export function TokenWorkspace() {
   }
 
   return (
-    <main className={styles.workspaceRoot}>
+    <main className={styles.workspacePaneRoot}>
       <GoogleFontLinks directives={effectiveDocument.directives} />
-      <Grid className={gridClassName} align="stretch">
-        <CanvasPane
-          activeCategory={activeCategory}
-          onActiveCategoryChange={setActiveCategory}
-          counts={counts}
-          visibleCount={visibleTokens.length}
-          sourceFilter={sourceFilter}
-          onSourceFilterChange={setSourceFilter}
-          searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
-          importedGoogleFonts={importedGoogleFonts}
-          onImportGoogleFont={addGoogleFontImport}
-          onRemoveGoogleFont={removeGoogleFontImport}
-          groupedVisibleTokens={groupedVisibleTokens}
-          onSelectToken={setSelectedTokenId}
-          supportsVirtualizedSingleCategory={supportsVirtualizedSingleCategory}
+      {editorOpen ? (
+        <EditorPane
+          className={styles.editorTabPane}
+          editorCss={editorCssValue}
+          lastSavedAt={lastSavedAt}
+          onClose={closeCssPanel}
+          onMaterializeDefaults={handleMaterializeDefaults}
+          persistenceStatus={persistenceStatus}
+          onEditorCssChange={setEditorCss}
+          onImportCss={importEditorCss}
+          onResetToSample={resetToSample}
+          onStartInheritedTheme={startInheritedTheme}
+          syntaxErrors={syntaxErrors}
+          workspaceMeta={meta}
         />
-        <InspectorPane
-          importedGoogleFonts={importedGoogleFonts}
-          onCreateOverride={(token) => updateToken(token, {})}
-          onImportGoogleFont={addInspectorGoogleFontImport}
-          token={selectedToken}
-          onUpdateToken={updateToken}
-          onRequestDeleteToken={(token) => setPendingDeleteToken(token)}
-          onClose={closeInspector}
-        />
-      </Grid>
+      ) : (
+        <Grid className={gridClassName} align="stretch">
+          <CanvasPane
+            activeCategory={activeCategory}
+            onActiveCategoryChange={setActiveCategory}
+            counts={counts}
+            visibleCount={visibleTokens.length}
+            sourceFilter={sourceFilter}
+            onSourceFilterChange={setSourceFilter}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            importedGoogleFonts={importedGoogleFonts}
+            onImportGoogleFont={addGoogleFontImport}
+            onRemoveGoogleFont={removeGoogleFontImport}
+            groupedVisibleTokens={groupedVisibleTokens}
+            onSelectToken={setSelectedTokenId}
+            supportsVirtualizedSingleCategory={supportsVirtualizedSingleCategory}
+          />
+          <InspectorPane
+            importedGoogleFonts={importedGoogleFonts}
+            onCreateOverride={(token) => updateToken(token, {})}
+            onImportGoogleFont={addInspectorGoogleFontImport}
+            token={selectedToken}
+            onUpdateToken={updateToken}
+            onRequestDeleteToken={(token) => setPendingDeleteToken(token)}
+            onClose={closeInspector}
+          />
+        </Grid>
+      )}
 
       <Dialog.Root open={Boolean(pendingDeleteToken)} onOpenChange={(open) => !open && setPendingDeleteToken(null)}>
         <Dialog.Content>
@@ -654,27 +708,6 @@ export function TokenWorkspace() {
           </Flex>
         </Dialog.Content>
       </Dialog.Root>
-
-      {editorOpen ? (
-        <div className={styles.editorOverlay} role="dialog" aria-modal="true" aria-label="CSS import and export">
-          <div className={styles.editorOverlayPanel}>
-            <EditorPane
-              className={styles.editorOverlayPane}
-              editorCss={editorCss}
-              lastSavedAt={lastSavedAt}
-              onClose={() => setEditorOpen(false)}
-              onMaterializeDefaults={handleMaterializeDefaults}
-              persistenceStatus={persistenceStatus}
-              onEditorCssChange={setEditorCss}
-              onImportCss={importEditorCss}
-              onResetToSample={resetToSample}
-              onStartInheritedTheme={startInheritedTheme}
-              syntaxErrors={syntaxErrors}
-              workspaceMeta={meta}
-            />
-          </div>
-        </div>
-      ) : null}
       <CommandPalette
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
