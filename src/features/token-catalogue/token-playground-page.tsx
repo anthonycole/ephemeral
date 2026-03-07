@@ -38,23 +38,33 @@ export async function TokenPlaygroundPage({
   const headerStatus = `Playground / ${selectedStory.label}`;
 
   return (
-    <main className={styles.page}>
-      <section className={styles.playgroundLayout}>
-        <section className={styles.playgroundCanvas}>
-          <header className={workspaceStyles.appHeader}>
-            <div className={workspaceStyles.appHeaderGrid}>
-              <div>
-                <h1 className={workspaceStyles.appTitle}>ephemeral</h1>
-                <span className={workspaceStyles.appStatus}>{headerStatus}</span>
-              </div>
-              <div className={styles.playgroundWorkspaceActions}>
-                <Link href="/workspace" className={styles.playgroundActionLink}>
-                  Workspace
-                </Link>
-              </div>
-            </div>
-          </header>
+    <main className={workspaceStyles.workspaceRoot}>
+      <header className={workspaceStyles.appHeader}>
+        <div className={workspaceStyles.appHeaderGrid}>
+          <div className={styles.playgroundWorkspaceTitleStack}>
+            <h1 className={`${workspaceStyles.appTitle} ${styles.playgroundWorkspaceTitle}`.trim()}>
+              ephemeral
+            </h1>
+            <span className={workspaceStyles.appStatus}>{headerStatus}</span>
+          </div>
+          <div className={styles.playgroundHeaderActions}>
+            <Link
+              href="/workspace"
+              className={`${workspaceStyles.headerActionButton} ${workspaceStyles.headerIconButton} ${styles.playgroundHeaderIconLink}`.trim()}
+              aria-label="Open workspace"
+              title="Open workspace"
+            >
+              <span className={styles.playgroundHeaderIconGlyph} aria-hidden="true">
+                ↗
+              </span>
+              <span className={workspaceStyles.srOnly}>Open workspace</span>
+            </Link>
+          </div>
+        </div>
+      </header>
 
+      <section className={styles.playgroundShell}>
+        <div className={styles.playgroundTabsWrap}>
           <nav className={styles.playgroundStoryRail} aria-label="Playground stories">
             {listPlaygroundStories().map((candidate) => {
               const href = buildPlaygroundHref({ system, story: candidate.key });
@@ -78,7 +88,9 @@ export async function TokenPlaygroundPage({
               Updated {new Date(primaryPane.updatedAt).toLocaleString()}
             </p>
           ) : null}
+        </div>
 
+        <section className={styles.playgroundCanvas}>
           {primaryPane ? (
             <PlaygroundPreview
               directives={primaryPane.directives}

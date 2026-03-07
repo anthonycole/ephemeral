@@ -3,16 +3,19 @@
   background: rgb(255 255 255);
 }
 
-.routeRow {
+.playgroundShell {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
-.playgroundLayout {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+.playgroundTabsWrap {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.75rem 0.875rem 0.625rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  background: rgb(255 255 255);
 }
 
 .workspaceDashboardSlot {
@@ -116,13 +119,15 @@
   padding: 0;
   border: 0;
   background: rgb(255 255 255);
+  flex: 1;
+  min-height: 0;
 }
 
 .playgroundStoryRail {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.375rem;
-  padding: 0 0.875rem 0.375rem;
+  gap: 0.5rem;
+  padding: 0;
 }
 
 .playgroundStoryLink {
@@ -143,20 +148,47 @@
   background: rgb(241 245 249);
 }
 
-.playgroundWorkspaceActions {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  gap: 0.375rem;
-  padding-right: 0.75rem;
-}
-
 .playgroundMetaRow {
   margin: 0;
-  padding: 0 0.875rem 0.375rem;
   font-size: 0.75rem;
   line-height: 1.3;
   color: rgb(100 116 139);
+}
+
+.playgroundHeaderIconLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(203 213 225);
+  background: rgb(255 255 255);
+  color: rgb(71 85 105);
+  text-decoration: none;
+}
+
+.playgroundHeaderIconGlyph {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.playgroundWorkspaceTitleStack {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.playgroundWorkspaceTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.playgroundHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 0.5rem;
+  padding-right: 0.75rem;
 }
 
 .compareSummary {
@@ -939,17 +971,13 @@
     padding: 0;
   }
 
-  .playgroundCanvas {
-    padding: 0;
+  .playgroundTabsWrap {
+    gap: 0.3rem;
+    padding: 0.5rem;
   }
 
   .playgroundStoryRail {
     gap: 0.3rem;
-    padding: 0 0.5rem 0.3rem;
-  }
-
-  .comparePaneCanvas {
-    padding: 0.45rem;
   }
 
   .tokenGrid {
