@@ -11,6 +11,7 @@ import {
   TokenComposerUnit,
   TypographyTokenType
 } from "@/features/token-visualizer/components/workspace-token-composer-utils";
+import { buildFontFamilyValue } from "@/features/token-visualizer/font-utils";
 import styles from "@/features/token-visualizer/styles.module.css";
 
 type WorkspaceTokenComposerValueFieldProps = {
@@ -30,6 +31,7 @@ type WorkspaceTokenComposerValueFieldProps = {
   importedTypographyFamilies: string[];
   selectedTypographyFamily: string;
   onTypographyFamilyChange: (value: string) => void;
+  tokenName: string;
   usesManagedUnit: boolean;
   tokenUnit: TokenComposerUnit;
   onTokenUnitChange: (value: TokenComposerUnit) => void;
@@ -57,6 +59,7 @@ export function WorkspaceTokenComposerValueField({
   importedTypographyFamilies,
   selectedTypographyFamily,
   onTypographyFamilyChange,
+  tokenName,
   usesManagedUnit,
   tokenUnit,
   onTokenUnitChange,
@@ -66,6 +69,8 @@ export function WorkspaceTokenComposerValueField({
   tokenRawValue,
   onTokenRawValueChange
 }: WorkspaceTokenComposerValueFieldProps) {
+  const fontStackPreview = buildFontFamilyValue(selectedTypographyFamily || "Inter", tokenName || "--font-family");
+
   if (tokenCategory === "color") {
     return (
       <Flex direction="column" gap="2">
@@ -100,7 +105,7 @@ export function WorkspaceTokenComposerValueField({
               value={tokenColorValue}
               onChange={(event) => onTokenColorValueChange(event.target.value)}
               placeholder="#2563eb"
-              className={`${styles.tokenComposerField} ${styles.colorHexField}`}
+              className={`${styles.tokenComposerField} ${styles.codeLikeField} ${styles.colorHexField}`}
             />
           </>
         ) : (
@@ -113,7 +118,7 @@ export function WorkspaceTokenComposerValueField({
               value={tokenCssColorValue}
               onChange={(event) => onTokenCssColorValueChange(event.target.value)}
               placeholder="oklch(0.62 0.19 259)"
-              className={`${styles.tokenComposerField} ${styles.colorHexField}`}
+              className={`${styles.tokenComposerField} ${styles.codeLikeField} ${styles.colorHexField}`}
             />
           </>
         )}
@@ -126,7 +131,7 @@ export function WorkspaceTokenComposerValueField({
       <Flex direction="column" gap="2">
         {importedTypographyFamilies.length > 0 ? (
           <Select.Root value={selectedTypographyFamily} onValueChange={onTypographyFamilyChange}>
-            <Select.Trigger />
+            <Select.Trigger className={styles.codeLikeSelectTrigger} />
             <Select.Content>
               {importedTypographyFamilies.map((family) => (
                 <Select.Item key={family} value={family}>
@@ -143,6 +148,7 @@ export function WorkspaceTokenComposerValueField({
         <Text size="1" color="gray">
           Uses the imported font stack for this token.
         </Text>
+        <pre className={styles.codeLikeReadout}>{fontStackPreview}</pre>
       </Flex>
     );
   }
@@ -171,7 +177,7 @@ export function WorkspaceTokenComposerValueField({
                   ? "0.02"
                   : "Value"
           }
-          className={styles.tokenComposerField}
+          className={`${styles.tokenComposerField} ${styles.codeLikeField}`}
         />
       ) : (
         <TextField.Root
@@ -185,12 +191,12 @@ export function WorkspaceTokenComposerValueField({
                 ? "0 1px 2px rgb(0 0 0 / 0.2)"
                 : "Value"
           }
-          className={styles.tokenComposerField}
+          className={`${styles.tokenComposerField} ${styles.codeLikeField}`}
         />
       )}
       {availableUnits.length > 1 ? (
         <Select.Root value={tokenUnit} onValueChange={(value) => onTokenUnitChange(value as TokenComposerUnit)}>
-          <Select.Trigger style={{ minWidth: 96 }} />
+          <Select.Trigger style={{ minWidth: 96 }} className={styles.codeLikeSelectTrigger} />
           <Select.Content>
             {availableUnits.map((unit) => (
               <Select.Item key={unit} value={unit}>

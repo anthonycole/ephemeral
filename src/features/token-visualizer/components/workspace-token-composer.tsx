@@ -100,7 +100,7 @@ export function WorkspaceTokenComposer({ importedGoogleFonts, onCreateToken, ope
                 value={composer.tokenName}
                 onChange={(event) => composer.setTokenName(event.target.value)}
                 placeholder="--color-brand-500"
-                className={styles.tokenComposerField}
+                className={`${styles.tokenComposerField} ${styles.codeLikeField}`}
               />
               <Text size="1" color="gray">
                 Required. Use a CSS custom property name.
@@ -127,6 +127,7 @@ export function WorkspaceTokenComposer({ importedGoogleFonts, onCreateToken, ope
                 importedTypographyFamilies={composer.importedTypographyFamilies}
                 selectedTypographyFamily={composer.selectedTypographyFamily}
                 onTypographyFamilyChange={composer.setTokenFontFamily}
+                tokenName={composer.tokenName}
                 usesManagedUnit={composer.usesManagedUnit}
                 tokenUnit={composer.tokenUnit}
                 onTokenUnitChange={composer.setTokenUnit}

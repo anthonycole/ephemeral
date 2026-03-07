@@ -103,6 +103,53 @@
   width: 100%;
 }
 
+.codeLikeField {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--gray-6);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.94), rgb(248 250 252 / 0.98)),
+    linear-gradient(90deg, rgb(15 23 42 / 0.02), transparent 2.5rem);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
+}
+
+.codeLikeField :global(input) {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.8125rem;
+}
+
+.codeLikeField :global(input::placeholder) {
+  color: var(--gray-9);
+  opacity: 0.8;
+}
+
+.codeLikeSelectTrigger {
+  border-radius: 10px;
+  border: 1px solid var(--gray-6);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.94), rgb(248 250 252 / 0.98)),
+    linear-gradient(90deg, rgb(15 23 42 / 0.02), transparent 2.5rem);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.8125rem;
+}
+
+.codeLikeReadout {
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: 10px;
+  border: 1px solid var(--gray-6);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.92), rgb(248 250 252 / 0.98)),
+    linear-gradient(90deg, rgb(15 23 42 / 0.02), transparent 2.5rem);
+  color: var(--gray-12);
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .tokenComposerColorPreview {
   display: grid;
   grid-template-columns: 3rem minmax(0, 1fr);
@@ -415,9 +462,21 @@
 
 .tokenNameRow {
   min-width: 0;
+  width: 100%;
+}
+
+.tokenNameTextTruncated {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tokenOriginBadge {
+  flex-shrink: 0;
   letter-spacing: 0.01em;
 }
 
@@ -735,25 +794,42 @@
   display: grid;
   gap: 0.4rem;
   align-items: start;
-  justify-items: start;
+  justify-items: stretch;
+  min-width: 0;
 }
 
 .typographyTokenMetaStack {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .typographyBadgeRow {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 0.375rem;
+  justify-self: start;
+}
+
+.typographyTokenValue {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .typographyComparisonSample {
-  display: flex;
-  align-items: flex-start;
+  display: block;
+  width: 100%;
+  min-width: 0;
   line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .typographyFamilySample {

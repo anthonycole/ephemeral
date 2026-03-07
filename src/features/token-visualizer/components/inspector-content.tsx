@@ -198,7 +198,7 @@ function HexColorValueEditor({
           const nextHex = normalizeHexColor(token.value) ?? normalizedValue;
           setDraftHex(nextHex);
         }}
-        className={styles.colorHexField}
+        className={`${styles.codeLikeField} ${styles.colorHexField}`}
       />
       <Text size="1" color="gray">
         Stored as hex.
@@ -280,7 +280,7 @@ function CssColorValueEditor({
         onBlur={() => {
           setDraftValue(token.value);
         }}
-        className={styles.colorHexField}
+        className={`${styles.codeLikeField} ${styles.colorHexField}`}
       />
       <Text size="1" color="gray">
         Stored as CSS color.
@@ -298,7 +298,11 @@ function RawColorValueEditor({
 }) {
   return (
     <Flex direction="column" gap="2">
-      <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} className={styles.colorHexField} />
+      <TextField.Root
+        value={token.value}
+        onChange={(event) => onUpdateToken(token, { value: event.target.value })}
+        className={`${styles.codeLikeField} ${styles.colorHexField}`}
+      />
       <Text size="1" color="gray">
         Picker unavailable for this color format. Edit the raw CSS color directly.
       </Text>
@@ -328,7 +332,7 @@ function FontFamilyValueEditor({
   }, [token.id, token.value]);
 
   if (!fontToken) {
-    return <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} />;
+    return <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} className={styles.codeLikeField} />;
   }
 
   return (
@@ -348,7 +352,7 @@ function FontFamilyValueEditor({
             onUpdateToken(token, { value: buildFontFamilyValue(value, token.name) });
           }}
         >
-          <Select.Trigger />
+          <Select.Trigger className={styles.codeLikeSelectTrigger} />
           <Select.Content>
             <Select.Item value="__custom">Current stack</Select.Item>
             {importedFamilies.map((family) => (
@@ -364,6 +368,7 @@ function FontFamilyValueEditor({
           value={fontFamilyDraft}
           onChange={(event) => setFontFamilyDraft(event.target.value)}
           placeholder="Import Google Font"
+          className={styles.codeLikeField}
         />
         <Button
           size="1"
@@ -382,7 +387,8 @@ function FontFamilyValueEditor({
       <Text size="1" color="gray">
         Font stack
       </Text>
-      <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} />
+      <pre className={styles.codeLikeReadout}>{token.value}</pre>
+      <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} className={styles.codeLikeField} />
     </Flex>
   );
 }
@@ -550,7 +556,11 @@ export function InspectorContent({
         <Text size="1" color="gray">
           Name
         </Text>
-        {isReadOnly ? <ReadOnlyValue value={token.name} /> : <TextField.Root value={token.name} onChange={(event) => onUpdateToken(token, { name: event.target.value })} />}
+        {isReadOnly ? (
+          <ReadOnlyValue value={token.name} />
+        ) : (
+          <TextField.Root value={token.name} onChange={(event) => onUpdateToken(token, { name: event.target.value })} className={styles.codeLikeField} />
+        )}
       </Flex>
       <Flex direction="column" gap="1">
         <Text size="1" color="gray">
@@ -569,9 +579,10 @@ export function InspectorContent({
               step="0.0625"
               value={lengthAmountInput}
               onChange={(event) => handleLengthAmountChange(event.target.value)}
+              className={styles.codeLikeField}
             />
             <Select.Root value={lengthUnit} onValueChange={(value) => handleLengthUnitChange(value as "px" | "rem")}>
-              <Select.Trigger style={{ minWidth: 84 }} />
+              <Select.Trigger style={{ minWidth: 84 }} className={styles.codeLikeSelectTrigger} />
               <Select.Content>
                 <Select.Item value="rem">rem</Select.Item>
                 <Select.Item value="px">px</Select.Item>
@@ -580,9 +591,15 @@ export function InspectorContent({
           </Flex>
         ) : supportsDurationUnit ? (
           <Flex gap="2">
-            <TextField.Root type="number" step="0.05" value={durationAmountInput} onChange={(event) => handleDurationAmountChange(event.target.value)} />
+            <TextField.Root
+              type="number"
+              step="0.05"
+              value={durationAmountInput}
+              onChange={(event) => handleDurationAmountChange(event.target.value)}
+              className={styles.codeLikeField}
+            />
             <Select.Root value={durationUnit} onValueChange={(value) => handleDurationUnitChange(value as "ms" | "s")}>
-              <Select.Trigger style={{ minWidth: 84 }} />
+              <Select.Trigger style={{ minWidth: 84 }} className={styles.codeLikeSelectTrigger} />
               <Select.Content>
                 <Select.Item value="ms">ms</Select.Item>
                 <Select.Item value="s">s</Select.Item>
@@ -590,7 +607,7 @@ export function InspectorContent({
             </Select.Root>
           </Flex>
         ) : (
-          <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} />
+          <TextField.Root value={token.value} onChange={(event) => onUpdateToken(token, { value: event.target.value })} className={styles.codeLikeField} />
         )}
       </Flex>
       <Flex direction="column" gap="1">

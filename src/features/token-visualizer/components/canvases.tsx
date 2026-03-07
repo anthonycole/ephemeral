@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useMemo, useState } from "react";
-import { Badge, Box, Button, Card, Flex, Text, TextField } from "@radix-ui/themes";
+import { Badge, Box, Button, Card, Flex, Text, TextField, Tooltip } from "@radix-ui/themes";
 import { groupColorTokens, parseColorTokenMeta, resolveColorDisplayMode } from "@/features/token-visualizer/color-meta";
 import { VirtualizedCardList } from "@/features/token-visualizer/components/virtualized-card-list";
 import type { TokenRecord } from "@/features/token-visualizer/document";
@@ -40,14 +40,17 @@ function tokenOriginBadgeColor(token: TokenRecord): "gray" | "blue" {
   return token.origin === "inherited" ? "blue" : "gray";
 }
 
-function TokenName({ token, size = "2" }: { token: TokenRecord; size?: "1" | "2" }) {
+function TokenName({ token, size = "2", truncate = false }: { token: TokenRecord; size?: "1" | "2"; truncate?: boolean }) {
   const originBadge = tokenOriginBadgeLabel(token);
+  const tokenLabel = (
+    <Text size={size} className={`font-mono ${truncate ? styles.tokenNameTextTruncated : ""}`.trim()}>
+      {token.name}
+    </Text>
+  );
 
   return (
     <Flex align="center" gap="2" wrap="wrap" className={styles.tokenNameRow}>
-      <Text size={size} className="font-mono">
-        {token.name}
-      </Text>
+      {truncate ? <Tooltip content={token.name}>{tokenLabel}</Tooltip> : tokenLabel}
       {originBadge ? (
         <Badge variant="soft" color={tokenOriginBadgeColor(token)} className={styles.tokenOriginBadge}>
           {originBadge}
@@ -505,10 +508,12 @@ export function TypographyCanvas({
       <button key={token.id} type="button" onClick={() => onSelect(token.sourceId)} className={styles.typographyComparisonRow}>
         <div className={styles.typographyComparisonMeta}>
           <div className={styles.typographyTokenMetaStack}>
-            <TokenName token={token} size="1" />
-            <Text size="1" color="gray" className="font-mono">
-              {token.value}
-            </Text>
+            <TokenName token={token} size="1" truncate />
+            <Tooltip content={token.value}>
+              <Text size="1" color="gray" className={`font-mono ${styles.typographyTokenValue}`.trim()}>
+                {token.value}
+              </Text>
+            </Tooltip>
           </div>
           {fontDefinition ? (
             <div className={styles.typographyBadgeRow}>
@@ -530,9 +535,11 @@ export function TypographyCanvas({
             </div>
           ) : null}
         </div>
-        <Text size="3" className={`${styles.typographyComparisonSample} ${sampleClassName ?? ""}`.trim()} style={typographySampleStyle(token)}>
-          {typographySampleCopy(token)}
-        </Text>
+        <Tooltip content={typographySampleCopy(token)}>
+          <Text size="3" className={`${styles.typographyComparisonSample} ${sampleClassName ?? ""}`.trim()} style={typographySampleStyle(token)}>
+            {typographySampleCopy(token)}
+          </Text>
+        </Tooltip>
       </button>
     );
   }
