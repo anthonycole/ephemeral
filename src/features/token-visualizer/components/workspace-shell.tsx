@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowSquareOut, Plus as PlusIcon } from "@phosphor-icons/react";
+import { Plus as PlusIcon } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Flex, Heading } from "@radix-ui/themes";
 import { WorkspaceHeaderIconControl } from "@/features/token-visualizer/components/workspace-header-icon-control";
@@ -83,10 +83,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
               </Heading>
               <span className={styles.appStatus}>{status}</span>
             </Flex>
-            <Flex align="center" justify="end" gap="2" pr="3">
-              {effectiveHeaderActions}
-              <WorkspaceHeaderIconControl label="Open playground" title="Open playground" icon={ArrowSquareOut} href="/playground" />
-            </Flex>
+            <Flex align="center" justify="end" gap="2" pr="3">{effectiveHeaderActions}</Flex>
           </div>
         </header>
         <div className={styles.workspaceContentFrame}>

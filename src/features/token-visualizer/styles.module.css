@@ -11,6 +11,35 @@
   flex-direction: column;
 }
 
+.toastViewport {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.toastCard {
+  min-width: 12rem;
+  max-width: min(22rem, calc(100vw - 2rem));
+  padding: 0.75rem 0.875rem;
+  border-radius: 12px;
+  border: 1px solid var(--gray-6);
+  background: rgb(255 255 255 / 0.96);
+  box-shadow: 0 18px 36px rgb(15 23 42 / 0.12);
+  color: var(--gray-12);
+}
+
+.toastCardSuccess {
+  border-color: color-mix(in oklab, var(--green-8) 55%, var(--gray-6));
+  color: var(--green-11);
+}
+
+.toastCardError {
+  border-color: color-mix(in oklab, var(--red-8) 55%, var(--gray-6));
+  color: var(--red-11);
+}
+
 .appHeader {
   border-bottom: 1px solid var(--gray-6);
   padding: 0.625rem 0 0.75rem;
@@ -354,6 +383,16 @@
   padding: 1rem;
 }
 
+.editorRoutePane {
+  width: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 1rem;
+}
+
 .editorWorkspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -384,11 +423,22 @@
   min-width: 0;
 }
 
+.editorSelectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 11rem;
+}
+
 .editorToolbarButton {
   gap: 0.4rem;
 }
 
 .editorThemeField {
+  min-width: 11rem;
+}
+
+.editorPresetField {
   min-width: 11rem;
 }
 
@@ -402,6 +452,14 @@
 .editorCodeArea > * {
   flex: 1 1 auto;
   min-height: 0;
+}
+
+.editorActionRow {
+  padding-top: 0.125rem;
+}
+
+.editorControlsFooter {
+  padding-top: 0.125rem;
 }
 
 .editorErrorList {

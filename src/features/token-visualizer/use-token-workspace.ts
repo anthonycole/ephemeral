@@ -3,13 +3,11 @@
 import { useDeferredValue, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { TokenCategory } from "@/lib/design-tokens";
-import { validateCssSyntax } from "@/lib/design-tokens";
 import type { TokenRecord } from "@/features/token-visualizer/document";
 import { getCategoryDefinition } from "@/features/token-visualizer/config";
 import { useTokenStore } from "@/features/token-visualizer/store";
 import type { TokenCounts } from "@/features/token-visualizer/types";
 import { groupTokens } from "@/features/token-visualizer/utils";
-import { useDebouncedValue } from "@/features/token-visualizer/use-debounced-value";
 
 export type TokenSourceFilter = "all" | "authored" | "defaults";
 
@@ -20,30 +18,6 @@ export function useHeaderState() {
       setSearchQuery: state.setSearchQuery
     }))
   );
-}
-
-export function useEditorPaneState() {
-  const editorState = useTokenStore(
-    useShallow((state) => ({
-      editorCss: state.editorCss,
-      generatedCss: state.generatedCss,
-      meta: state.meta,
-      setEditorCss: state.setEditorCss,
-      importEditorCss: state.importEditorCss,
-      addGoogleFontImport: state.addGoogleFontImport,
-      removeGoogleFontImport: state.removeGoogleFontImport,
-      resetToSample: state.resetToSample,
-      startInheritedTheme: state.startInheritedTheme
-    }))
-  );
-  const deferredEditorCss = useDeferredValue(editorState.editorCss);
-  const debouncedEditorCss = useDebouncedValue(deferredEditorCss, 180);
-  const syntaxErrors = useMemo(() => validateCssSyntax(debouncedEditorCss), [debouncedEditorCss]);
-
-  return {
-    ...editorState,
-    syntaxErrors
-  };
 }
 
 export function useCanvasPaneState() {

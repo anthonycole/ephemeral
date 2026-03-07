@@ -1,33 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Dialog, Button, Flex, Grid } from "@radix-ui/themes";
+import { Button, Dialog, Flex, Grid } from "@radix-ui/themes";
 import { useShallow } from "zustand/react/shallow";
 import { isTokenCategoryFilter, type TokenCategoryFilter } from "@/features/token-catalogue/categories";
-import { materializeResolvedTheme } from "@/features/token-catalogue/token-materialization";
-import { createEffectiveTokenRecord, resolveTheme } from "@/features/token-catalogue/token-resolution";
-import type { WorkspaceMeta } from "@/features/token-catalogue/workspace-meta";
-import { serializeDocumentToCss, type TokenDocument, type TokenRecord } from "@/features/token-visualizer/document";
 import { CommandPalette, type CommandAction } from "@/features/token-visualizer/components/command-palette";
 import { CanvasPane } from "@/features/token-visualizer/components/canvas-pane";
-import { EditorPane } from "@/features/token-visualizer/components/editor-pane";
 import { InspectorPane } from "@/features/token-visualizer/components/inspector-pane";
 import { WorkspaceHeaderActions } from "@/features/token-visualizer/components/workspace-header-actions";
-import { parseGoogleFontImports } from "@/features/token-visualizer/font-utils";
 import { GoogleFontLinks } from "@/features/token-visualizer/google-font-links";
-import { useCanvasPaneStateFromTokens, useEditorPaneState, useHeaderState, useInspectorPaneStateFromTokens, type TokenSourceFilter } from "@/features/token-visualizer/use-token-workspace";
+import type { TokenRecord } from "@/features/token-visualizer/document";
 import { useWorkspaceShellSlot } from "@/features/token-visualizer/components/workspace-shell-slots";
 import { useTokenStore } from "@/features/token-visualizer/store";
+import { useCanvasPaneStateFromTokens, useHeaderState, useInspectorPaneStateFromTokens, type TokenSourceFilter } from "@/features/token-visualizer/use-token-workspace";
+import { useWorkspaceRecordState } from "@/features/token-visualizer/use-workspace-record-state";
 import styles from "@/features/token-visualizer/styles.module.css";
-
-const WORKSPACE_ID = "default";
 
 function resolveCategoryFilter(value: string | null): TokenCategoryFilter {
   return isTokenCategoryFilter(value) ? value : "all";
 }
 
-function getCurrentSearchParams(fallback: ReadonlyURLSearchParams) {
+function getCurrentSearchParams(fallback: { toString(): string }) {
   if (typeof window === "undefined") {
     return new URLSearchParams(fallback.toString());
   }
@@ -41,52 +35,35 @@ export function TokenWorkspace() {
   const searchParams = useSearchParams();
   const { searchQuery, setSearchQuery } = useHeaderState();
   const {
-    editorCss,
-    meta,
-    syntaxErrors,
-    setEditorCss,
-    addGoogleFontImport,
-    importEditorCss,
-    removeGoogleFontImport,
-    resetToSample,
-    startInheritedTheme
-  } = useEditorPaneState();
-  const {
     activeCategory,
-    document,
-    replaceWorkspace,
     searchQuery: storeSearchQuery,
     selectedTokenId,
     setActiveCategory,
     setSelectedTokenId,
     createToken,
     deleteToken,
-    updateToken
+    updateToken,
+    addGoogleFontImport,
+    removeGoogleFontImport
   } = useTokenStore(
     useShallow((state) => ({
       activeCategory: state.activeCategory,
-      document: state.document,
-      replaceWorkspace: state.replaceWorkspace,
       searchQuery: state.searchQuery,
       selectedTokenId: state.selectedTokenId,
-    setActiveCategory: state.setActiveCategory,
-    setSelectedTokenId: state.setSelectedTokenId,
-    createToken: state.createToken,
-    deleteToken: state.deleteToken,
-    updateToken: state.updateToken
-  }))
-);
-  const editorCssDraft = useTokenStore((state) => state.editorCss);
-  const [persistenceStatus, setPersistenceStatus] = useState<"loading" | "saving" | "saved" | "error">("loading");
-  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
-  const [hasLoadedWorkspace, setHasLoadedWorkspace] = useState(false);
+      setActiveCategory: state.setActiveCategory,
+      setSelectedTokenId: state.setSelectedTokenId,
+      createToken: state.createToken,
+      deleteToken: state.deleteToken,
+      updateToken: state.updateToken,
+      addGoogleFontImport: state.addGoogleFontImport,
+      removeGoogleFontImport: state.removeGoogleFontImport
+    }))
+  );
+  const { effectiveDocument, effectiveTokens, hasLoadedWorkspace, importedGoogleFonts, meta } = useWorkspaceRecordState();
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [pendingDeleteToken, setPendingDeleteToken] = useState<TokenRecord | null>(null);
   const [tokenComposerOpen, setTokenComposerOpen] = useState(false);
   const [sourceFilter, setSourceFilter] = useState<TokenSourceFilter>("all");
-  const [baselineDocument, setBaselineDocument] = useState<TokenDocument | null>(null);
-  const skipNextSaveRef = useRef(false);
-  const saveSequenceRef = useRef(0);
   const initializedCategorySyncRef = useRef(false);
   const previousUrlCategoryRef = useRef<TokenCategoryFilter | null>(null);
   const skipNextCategoryUrlWriteRef = useRef(false);
@@ -95,36 +72,7 @@ export function TokenWorkspace() {
   const skipNextTokenUrlWriteRef = useRef(false);
   const urlCategory = resolveCategoryFilter(searchParams.get("category"));
   const urlTokenId = searchParams.get("token");
-  const activePanel = searchParams.get("panel");
-  const editorOpen = activePanel === "css";
-  const resolvedTheme = useMemo(
-    () =>
-      resolveTheme({
-        authored: document,
-        baseline: meta.baselineKey && baselineDocument ? baselineDocument : null,
-        meta
-      }),
-    [baselineDocument, document, meta]
-  );
-  const effectiveTokens = useMemo(() => resolvedTheme.tokens.map((token, index) => createEffectiveTokenRecord(token, index)), [resolvedTheme.tokens]);
-  const effectiveDocument = useMemo(() => {
-    if (meta.hydrationMode === "inherit" && baselineDocument) {
-      return materializeResolvedTheme(resolvedTheme);
-    }
 
-    return {
-      ...document,
-      tokens: effectiveTokens
-    };
-  }, [baselineDocument, document, effectiveTokens, meta.hydrationMode, resolvedTheme]);
-  const editorCssValue = useMemo(() => {
-    if (editorCss.trim().length > 0 || meta.hydrationMode !== "inherit") {
-      return editorCss;
-    }
-
-    return serializeDocumentToCss(effectiveDocument);
-  }, [editorCss, effectiveDocument, meta.hydrationMode]);
-  const importedGoogleFonts = useMemo(() => parseGoogleFontImports(effectiveDocument.directives), [effectiveDocument.directives]);
   const canvasState = useCanvasPaneStateFromTokens({
     tokens: effectiveTokens,
     activeCategory,
@@ -144,43 +92,8 @@ export function TokenWorkspace() {
   const { selectedToken, addGoogleFontImport: addInspectorGoogleFontImport, closeInspector } = inspectorState;
 
   const gridClassName = selectedToken ? `${styles.workspaceGrid} ${styles.workspaceGridInspectorOpen}` : styles.workspaceGrid;
-  const workspaceStatus = editorOpen
-    ? "CSS Import / Export"
-    : meta.hydrationMode === "inherit" && meta.baselineKey === "tailwind-default"
-      ? "Inherited from Tailwind"
-      : "Workspace";
-
-  const updateWorkspaceUrl = useCallback(
-    (mutate: (nextSearchParams: URLSearchParams) => void, mode: "push" | "replace" = "replace") => {
-      const nextSearchParams = getCurrentSearchParams(searchParams);
-      mutate(nextSearchParams);
-      const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname;
-
-      if (mode === "push") {
-        router.push(nextUrl, { scroll: false });
-        return;
-      }
-
-      router.replace(nextUrl, { scroll: false });
-    },
-    [pathname, router, searchParams]
-  );
-
-  const openCssPanel = useCallback(
-    (mode: "push" | "replace" = "push") => {
-      updateWorkspaceUrl((nextSearchParams) => {
-        nextSearchParams.set("panel", "css");
-        nextSearchParams.delete("headerAction");
-      }, mode);
-    },
-    [updateWorkspaceUrl]
-  );
-
-  const closeCssPanel = useCallback(() => {
-    updateWorkspaceUrl((nextSearchParams) => {
-      nextSearchParams.delete("panel");
-    });
-  }, [updateWorkspaceUrl]);
+  const workspaceStatus =
+    meta.hydrationMode === "inherit" && meta.baselineKey === "tailwind-default" ? "Inherited from Tailwind" : "Workspace";
 
   useWorkspaceShellSlot({
     headerActions: (
@@ -203,12 +116,6 @@ export function TokenWorkspace() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && editorOpen) {
-        event.preventDefault();
-        closeCssPanel();
-        return;
-      }
-
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setCommandPaletteOpen(true);
@@ -217,70 +124,29 @@ export function TokenWorkspace() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closeCssPanel, editorOpen]);
+  }, []);
 
   useEffect(() => {
     const headerAction = searchParams.get("headerAction");
+    const activePanel = searchParams.get("panel");
 
-    if (headerAction !== "open-token-composer" && headerAction !== "open-editor") {
+    if (headerAction === "open-editor" || activePanel === "css") {
+      const nextSearchParams = new URLSearchParams(searchParams.toString());
+      nextSearchParams.delete("headerAction");
+      nextSearchParams.delete("panel");
+      const nextUrl = nextSearchParams.size > 0 ? `/workspace/css?${nextSearchParams.toString()}` : "/workspace/css";
+      router.replace(nextUrl, { scroll: false });
       return;
     }
 
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
-    nextSearchParams.delete("headerAction");
-
     if (headerAction === "open-token-composer") {
+      const nextSearchParams = new URLSearchParams(searchParams.toString());
+      nextSearchParams.delete("headerAction");
       setTokenComposerOpen(true);
-    } else {
-      nextSearchParams.set("panel", "css");
+      const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname;
+      router.replace(nextUrl, { scroll: false });
     }
-
-    const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname;
-    router.replace(nextUrl, { scroll: false });
   }, [pathname, router, searchParams]);
-
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadBaseline(nextMeta: WorkspaceMeta) {
-      if (!nextMeta.baselineKey) {
-        setBaselineDocument(null);
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/baselines/${nextMeta.baselineKey}`, {
-          cache: "force-cache"
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load baseline: ${response.status}`);
-        }
-
-        const payload = (await response.json()) as {
-          baseline: {
-            document: TokenDocument;
-          };
-        };
-
-        if (isActive) {
-          setBaselineDocument(payload.baseline.document);
-        }
-      } catch (error) {
-        console.error(error);
-
-        if (isActive) {
-          setBaselineDocument(null);
-        }
-      }
-    }
-
-    void loadBaseline(meta);
-
-    return () => {
-      isActive = false;
-    };
-  }, [meta]);
 
   useEffect(() => {
     const previousUrlCategory = previousUrlCategoryRef.current;
@@ -402,184 +268,13 @@ export function TokenWorkspace() {
     router.replace(nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname, { scroll: false });
   }, [hasLoadedWorkspace, pathname, router, searchParams, selectedTokenId, urlTokenId]);
 
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadWorkspace() {
-      setPersistenceStatus("loading");
-
-      try {
-        const response = await fetch(`/api/workspaces/${WORKSPACE_ID}`, {
-          cache: "no-store"
-        });
-
-        if (response.status === 404) {
-          if (isActive) {
-            setPersistenceStatus("saved");
-            setLastSavedAt(null);
-            setHasLoadedWorkspace(true);
-          }
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(`Failed to load workspace: ${response.status}`);
-        }
-
-        const payload = (await response.json()) as {
-          workspace: {
-            document: TokenDocument;
-            editorCss: string;
-            meta: WorkspaceMeta;
-          };
-        };
-
-        if (!isActive) {
-          return;
-        }
-
-        skipNextSaveRef.current = true;
-        replaceWorkspace({
-          document: payload.workspace.document,
-          editorCss: payload.workspace.editorCss,
-          meta: payload.workspace.meta
-        });
-        setPersistenceStatus("saved");
-        setLastSavedAt(null);
-      } catch (error) {
-        console.error(error);
-
-        if (isActive) {
-          setPersistenceStatus("error");
-        }
-      } finally {
-        if (isActive) {
-          setHasLoadedWorkspace(true);
-        }
-      }
-    }
-
-    void loadWorkspace();
-
-    return () => {
-      isActive = false;
-    };
-  }, [replaceWorkspace]);
-
-  useEffect(() => {
-    if (!hasLoadedWorkspace) {
-      return;
-    }
-
-    if (skipNextSaveRef.current) {
-      skipNextSaveRef.current = false;
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      const requestId = saveSequenceRef.current + 1;
-      saveSequenceRef.current = requestId;
-      setPersistenceStatus("saving");
-
-      void (async () => {
-        try {
-          const response = await fetch(`/api/workspaces/${WORKSPACE_ID}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              editorCss: editorCssDraft,
-              document,
-              meta
-            })
-          });
-
-          if (!response.ok) {
-            throw new Error(`Failed to save workspace: ${response.status}`);
-          }
-
-          if (saveSequenceRef.current === requestId) {
-            setPersistenceStatus("saved");
-            setLastSavedAt(Date.now());
-          }
-        } catch (error) {
-          console.error(error);
-
-          if (saveSequenceRef.current === requestId) {
-            setPersistenceStatus("error");
-          }
-        }
-      })();
-    }, 500);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [document, editorCssDraft, hasLoadedWorkspace, meta]);
-
-  function handleMaterializeDefaults() {
-    if (!baselineDocument) {
-      return;
-    }
-
-    const materializedDocument = materializeResolvedTheme(resolvedTheme);
-
-    skipNextSaveRef.current = true;
-    replaceWorkspace({
-      document: materializedDocument,
-      editorCss: serializeDocumentToCss(materializedDocument),
-      meta: {
-        ...meta,
-        hydrationMode: "materialized"
-      }
-    });
-  }
-
   const commandActions: CommandAction[] = [
     {
-      id: "open-css-editor",
-      title: "Open CSS editor",
-      subtitle: "Open the full-screen CSS import and export view",
-      keywords: ["css", "editor", "import", "export"],
-      run: () => openCssPanel()
-    },
-    {
-      id: "open-playground",
-      title: "Open playground",
-      subtitle: "Open the isolated token playground route",
-      keywords: ["playground", "preview", "tokens"],
-      run: () => router.push("/playground")
-    },
-    {
-      id: "import-css",
-      title: "Import CSS",
-      subtitle: syntaxErrors.length > 0 ? "Disabled while the editor has CSS syntax errors" : "Parse the editor CSS into the workspace",
-      keywords: ["parse", "sync", "tokens"],
-      disabled: syntaxErrors.length > 0,
-      run: () => importEditorCss()
-    },
-    {
-      id: "start-inherited-theme",
-      title: "Start inherited theme",
-      subtitle: "Begin with Tailwind defaults applied as the baseline",
-      keywords: ["baseline", "inherit", "defaults", "tailwind"],
-      run: () => startInheritedTheme()
-    },
-    {
-      id: "materialize-defaults",
-      title: "Materialize defaults",
-      subtitle: "Copy inherited baseline tokens into the authored document",
-      keywords: ["hydrate", "materialize", "baseline", "defaults"],
-      disabled: meta.hydrationMode !== "inherit" || !baselineDocument,
-      run: () => handleMaterializeDefaults()
-    },
-    {
-      id: "reset-sample",
-      title: "Start over",
-      subtitle: "Replace the current workspace with the starter example",
-      keywords: ["reset", "sample", "default"],
-      run: () => resetToSample()
+      id: "open-preview",
+      title: "Open preview",
+      subtitle: "Open the published token preview",
+      keywords: ["preview", "tokens", "publish"],
+      run: () => router.push("/workspace/css")
     },
     {
       id: "focus-search",
@@ -641,6 +336,16 @@ export function TokenWorkspace() {
     setSelectedTokenId(token.sourceId);
   }
 
+  function handleSelectTokenById(tokenId: string) {
+    const token = effectiveTokens.find((candidate) => candidate.sourceId === tokenId);
+
+    if (!token) {
+      return;
+    }
+
+    handleSelectToken(token);
+  }
+
   function handleSelectCategory(category: typeof activeCategory) {
     setActiveCategory(category);
     setSearchQuery("");
@@ -649,50 +354,33 @@ export function TokenWorkspace() {
   return (
     <main className={styles.workspacePaneRoot}>
       <GoogleFontLinks directives={effectiveDocument.directives} />
-      {editorOpen ? (
-        <EditorPane
-          className={styles.editorTabPane}
-          editorCss={editorCssValue}
-          lastSavedAt={lastSavedAt}
-          onClose={closeCssPanel}
-          onMaterializeDefaults={handleMaterializeDefaults}
-          persistenceStatus={persistenceStatus}
-          onEditorCssChange={setEditorCss}
-          onImportCss={importEditorCss}
-          onResetToSample={resetToSample}
-          onStartInheritedTheme={startInheritedTheme}
-          syntaxErrors={syntaxErrors}
-          workspaceMeta={meta}
+      <Grid className={gridClassName} align="stretch">
+        <CanvasPane
+          activeCategory={activeCategory}
+          onActiveCategoryChange={setActiveCategory}
+          counts={counts}
+          visibleCount={visibleTokens.length}
+          sourceFilter={sourceFilter}
+          onSourceFilterChange={setSourceFilter}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          importedGoogleFonts={importedGoogleFonts}
+          onImportGoogleFont={addGoogleFontImport}
+          onRemoveGoogleFont={removeGoogleFontImport}
+          groupedVisibleTokens={groupedVisibleTokens}
+          onSelectToken={handleSelectTokenById}
+          supportsVirtualizedSingleCategory={supportsVirtualizedSingleCategory}
         />
-      ) : (
-        <Grid className={gridClassName} align="stretch">
-          <CanvasPane
-            activeCategory={activeCategory}
-            onActiveCategoryChange={setActiveCategory}
-            counts={counts}
-            visibleCount={visibleTokens.length}
-            sourceFilter={sourceFilter}
-            onSourceFilterChange={setSourceFilter}
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            importedGoogleFonts={importedGoogleFonts}
-            onImportGoogleFont={addGoogleFontImport}
-            onRemoveGoogleFont={removeGoogleFontImport}
-            groupedVisibleTokens={groupedVisibleTokens}
-            onSelectToken={setSelectedTokenId}
-            supportsVirtualizedSingleCategory={supportsVirtualizedSingleCategory}
-          />
-          <InspectorPane
-            importedGoogleFonts={importedGoogleFonts}
-            onCreateOverride={(token) => updateToken(token, {})}
-            onImportGoogleFont={addInspectorGoogleFontImport}
-            token={selectedToken}
-            onUpdateToken={updateToken}
-            onRequestDeleteToken={(token) => setPendingDeleteToken(token)}
-            onClose={closeInspector}
-          />
-        </Grid>
-      )}
+        <InspectorPane
+          importedGoogleFonts={importedGoogleFonts}
+          onCreateOverride={(token) => updateToken(token, {})}
+          onImportGoogleFont={addInspectorGoogleFontImport}
+          token={selectedToken}
+          onUpdateToken={updateToken}
+          onRequestDeleteToken={(token) => setPendingDeleteToken(token)}
+          onClose={closeInspector}
+        />
+      </Grid>
 
       <Dialog.Root open={Boolean(pendingDeleteToken)} onOpenChange={(open) => !open && setPendingDeleteToken(null)}>
         <Dialog.Content>

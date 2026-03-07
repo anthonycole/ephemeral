@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import Link from "next/link";
-import { ArrowSquareOut, Code as CodeIcon, Command as CommandIcon, Plus as PlusIcon } from "@phosphor-icons/react";
+import { Eye as EyeIcon, Command as CommandIcon, Plus as PlusIcon } from "@phosphor-icons/react";
 import { Badge, Button, Flex, Heading, Popover, Select, Text, TextField } from "@radix-ui/themes";
 import TerrazzoColorPicker from "@terrazzo/react-color-picker";
 import useColor, { parse as parseTerrazzoColor } from "@terrazzo/use-color";
@@ -610,23 +609,11 @@ export function WorkspaceHeader({
             color="gray"
             onClick={onOpenEditor}
             className={`${styles.headerActionButton} ${styles.headerIconButton}`}
-            aria-label="Open CSS import and export"
-            title="Open CSS import and export"
+            aria-label="Open preview"
+            title="Open preview"
           >
-            <CodeIcon size={16} weight="regular" />
-            <span className={styles.srOnly}>Open CSS import and export</span>
-          </Button>
-          <Button
-            asChild
-            type="button"
-            variant="soft"
-            color="gray"
-            className={`${styles.headerActionButton} ${styles.headerIconButton}`}
-          >
-            <Link href="/playground" aria-label="Open playground" title="Open playground">
-              <ArrowSquareOut size={16} weight="regular" />
-              <span className={styles.srOnly}>Open playground</span>
-            </Link>
+            <EyeIcon size={16} weight="regular" />
+            <span className={styles.srOnly}>Open preview</span>
           </Button>
           <Button
             type="button"

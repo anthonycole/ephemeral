@@ -1,0 +1,70 @@
+.previewRoutePane {
+  width: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 1rem;
+}
+
+.previewHost {
+  overflow: hidden;
+  border: 1px solid var(--gray-6);
+  border-radius: 16px;
+  background: var(--color-panel, white);
+  box-shadow: 0 12px 30px rgb(15 23 42 / 0.04);
+}
+
+.previewFrame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.frameRoot {
+  min-height: 100vh;
+  padding: 1.5rem;
+  background: var(--gray-1);
+}
+
+.frameStack {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.frameSection {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.frameSectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.frameCode {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.frameMuted {
+  color: var(--gray-10);
+}
+
+.frameState {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: var(--gray-1);
+}
